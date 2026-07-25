@@ -1,0 +1,21 @@
+# 誰得批准哪些路徑。搭配 branch protection「Require review from Code Owners」才有效力。
+# 把 @ArcherArtemis222 換成你的帳號；AI 代理若有各自帳號，填在對應行。
+
+# 預設：全部歸你
+*                                       @ArcherArtemis222
+
+# 凍結區：共用轉換器核心。改這裡會讓 ProjectA 的 decide 憑證失效，只有你能簽。
+/Lean4RealConstruction/Core/             @ArcherArtemis222
+/Lean4RealConstruction/Core.lean         @ArcherArtemis222
+
+# 依賴釘選：任何變動都是重大事件
+/lean-toolchain                          @ArcherArtemis222
+/lakefile.toml                           @ArcherArtemis222
+/lake-manifest.json                      @ArcherArtemis222
+/.github/                                @ArcherArtemis222
+/scripts/                                @ArcherArtemis222
+
+# 分區：可交給各自的代理
+/Lean4RealConstruction/ProjectA/         @ArcherArtemis222
+/Lean4RealConstruction/ProjectB/         @ArcherArtemis222
+/Lean4RealConstruction/Recon/            @ArcherArtemis222

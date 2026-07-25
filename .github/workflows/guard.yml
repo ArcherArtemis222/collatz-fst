@@ -1,0 +1,43 @@
+# 秒級守衛：不裝 Lean，只檢查「有沒有人越界」。CI 的第一道閘門。
+name: guard
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  boundaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 匯入邊界（資料夾所有權的機器版）
+        run: python3 scripts/check_boundaries.py
+
+  pins:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: 依賴釘選未經授權不得變動
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$BASE" "$HEAD" -- lean-toolchain lakefile.toml lake-manifest.json || true)"
+          if [ -n "$changed" ]; then
+            echo "此 PR 動到了依賴釘選："
+            echo "$changed"
+            if ! printf '%s' "$LABELS" | tr ',' '\n' | grep -qx deps; then
+              echo
+              echo "::error::mathlib / toolchain 一動，全部 Farkas 憑證的 decide 引理都可能失效。"
+              echo "::error::確定要改，請給這個 PR 貼上 'deps' 標籤，並在說明裡寫清楚重建結果。"
+              exit 1
+            fi
+            echo "已貼 deps 標籤，放行。"
+          else
+            echo "依賴釘選未變動。"
+          fi

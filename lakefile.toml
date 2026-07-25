@@ -1,0 +1,25 @@
+name = "Lean4-Real-Construction"
+defaultTargets = ["Lean4RealConstruction"]
+
+# ── 依賴：硬釘 revision ────────────────────────────────────────────────
+# 這條 rev 就是 HandOver 全部證明所依據的 mathlib（Lean v4.28.0-rc1）。
+# 任何 AI 協作者都【不得】改動這一行或執行 `lake update`（見 AGENTS.md）。
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "c66c0c58f2770d2f264035b0229a6d1712e00dc5"
+
+# 編輯器/文件工具（預設關閉：會拖慢 CI）。要用就取消註解，本機 lake update 後別 commit manifest。
+# [[require]]
+# name = "Paperproof"
+# git = "https://github.com/Paper-Proof/paperproof.git"
+# subDir = "lean"
+# rev = "fea2a7cf6cc9e442299c5b3b4585fefb66fd6c2c"
+#
+# [[require]]
+# name = "doc-gen4"
+# git = "https://github.com/leanprover/doc-gen4"
+# rev = "dc1e7a305e4976270e0ca593f952d755da502b12"
+
+[[lean_lib]]
+name = "Lean4RealConstruction"

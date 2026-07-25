@@ -1,0 +1,41 @@
+# 完整建置：把每一條證明重跑一次。約 10–30 分鐘（首次無 cache 會更久）。
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: lake build（含 mathlib olean cache）
+        uses: leanprover/lean-action@v1
+        with:
+          use-mathlib-cache: "true"
+          build-args: "--log-level=warning"
+          # 用 kernel 重新型別檢查整個環境
+          leanchecker: "true"
+
+  no-sorry:
+    # 獨立型別檢查器 nanoda，並且【禁止】sorryAx。
+    # 這是多方協作最重要的一道閘門：誰都無法偷偷留洞。
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          use-mathlib-cache: "true"
+          nanoda: "true"
+          nanoda-allow-sorry: "false"
