@@ -9,7 +9,7 @@ jobs:
   boundaries:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: 匯入邊界（資料夾所有權的機器版）
         run: python3 scripts/check_boundaries.py
 
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: 依賴釘選未經授權不得變動

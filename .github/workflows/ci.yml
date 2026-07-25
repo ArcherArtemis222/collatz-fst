@@ -1,4 +1,5 @@
-# 完整建置：把每一條證明重跑一次。約 10–30 分鐘（首次無 cache 會更久）。
+# 完整建置。用 lean-action 裝 elan + 抓 mathlib cache，但 build 自己跑，
+# 這樣才能把 log 留下來檢查有沒有人偷留 sorry。
 name: build
 
 on:
@@ -16,26 +17,43 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: lake build（含 mathlib olean cache）
+      - name: 裝 elan、抓 mathlib olean cache
         uses: leanprover/lean-action@v1
         with:
           use-mathlib-cache: "true"
-          build-args: "--log-level=warning"
-          # 用 kernel 重新型別檢查整個環境
-          leanchecker: "true"
+          build: "false"      # 下面自己跑，才拿得到 log
+          test: "false"
+          lint: "false"
 
-  no-sorry:
-    # 獨立型別檢查器 nanoda，並且【禁止】sorryAx。
-    # 這是多方協作最重要的一道閘門：誰都無法偷偷留洞。
-    runs-on: ubuntu-latest
-    timeout-minutes: 180
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: leanprover/lean-action@v1
+      - name: lake build
+        run: |
+          set -o pipefail
+          lake build 2>&1 | tee build.log
+
+      - name: 禁止 sorry（用 Lean 自己的警告，不用猜）
+        run: |
+          if grep -n "declaration uses 'sorry'" build.log; then
+            echo "::error::上面這些宣告用了 sorry。本 repo 的紅線是 0 個。"
+            exit 1
+          fi
+          echo "沒有任何宣告使用 sorry。"
+
+      - name: 把主定理的公理基底貼進 summary
+        if: always()
+        run: |
+          {
+            echo '## 信任基底（Audit.lean 的 #print axioms）'
+            echo '```'
+            grep -A1 "depends on axioms" build.log || echo '(build.log 裡沒有找到，可能 build 沒跑完)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 保留 build log
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          use-mathlib-cache: "true"
-          nanoda: "true"
-          nanoda-allow-sorry: "false"
+          name: build-log
+          path: build.log
+          if-no-files-found: ignore

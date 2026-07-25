@@ -43,7 +43,7 @@ namespace Lean4RealConstruction.Audit
 
 /-! ## 強制版樣板（見檔頭說明，確認實際輸出後取消註解）
 
-/-! info: 'CollatzFST.LP.no_nonneg_linear_ranking' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'CollatzFST.LP.no_nonneg_linear_ranking' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms CollatzFST.LP.no_nonneg_linear_ranking
 
