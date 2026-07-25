@@ -29,21 +29,21 @@ namespace Lean4RealConstruction.Audit
 
 /-! ## Project A：三大不可行性定理 -/
 
-/-- Level 2 單模式（10 維差分子空間）。 -/
+/-! Level 2 單模式（10 維差分子空間）。 -/
 #print axioms CollatzFST.LP.no_nonneg_linear_ranking
 
-/-- Level 2 單模式，全體奇數版。⚠ 目前量詞尚未排除 `x = 1`，見 docs/ROADMAP-A.md A-1。 -/
+/-! Level 2 單模式，全體奇數版。⚠ 目前量詞尚未排除 `x = 1`，見 docs/ROADMAP-A.md A-1。 -/
 #print axioms CollatzFST.LP.no_global_odd_ranking
 
-/-- Level 2 雙模式（valuation-parity），Σλ = 7826。 -/
+/-! Level 2 雙模式（valuation-parity），Σλ = 7826。 -/
 #print axioms CollatzFST.TwoMode.no_go_2mode_potential
 
-/-- Level 3 × valuation-parity 雙模式，Σλ = 31746。 -/
+/-! Level 3 × valuation-parity 雙模式，Σλ = 31746。 -/
 #print axioms CollatzFST.L3.no_go_level3_2mode_potential
 
 /-! ## 強制版樣板（見檔頭說明，確認實際輸出後取消註解）
 
-/-- info: 'CollatzFST.LP.no_nonneg_linear_ranking' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-! info: 'CollatzFST.LP.no_nonneg_linear_ranking' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms CollatzFST.LP.no_nonneg_linear_ranking
 
