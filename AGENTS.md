@@ -7,7 +7,8 @@
 ## 0. 一句話版本
 
 **`Core/` 是凍結的；`lean-toolchain` 與 `lakefile.toml` 的 mathlib rev 是凍結的；
-其餘各自在自己的分區內工作，一律走 branch → PR，不直接 push `main`。**
+其餘各自在自己的分區內工作，一律走 branch → PR，不直接 push `main`；
+凍結區的變更需要專案主人的具名指示；有指示就照做並在 PR 標明，沒有就停下來問。**
 
 ---
 
