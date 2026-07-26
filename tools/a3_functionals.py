@@ -75,6 +75,21 @@ LEAN_INEDGES: dict[tuple, list] = {
     (2, 'S', 1): [((2, 'K', 0), 1), ((2, 'S', 0), 1), ((2, 'S', 1), 1)],
 }
 
+# Lean `ProjectA/Collatz_FST_FlowDelta.lean` §53–54 的 9 條差分層恆等式（秩 8）。
+# 每條抄成 {座標: 係數} 的字典，語意是 Σ coeff[i] * ΔF[i] = 0（0-based 座標）。
+# 第二條錨：Lean 那邊的定理若被改動、或 Python 這邊的模型漂移，都會對不上。
+LEAN_DELTA_RELATIONS: list[tuple[str, dict[int, int]]] = [
+    ("dF_zero_0",               {0: 1}),
+    ("dF_zero_1",               {1: 1}),
+    ("dF_flow_1K0",             {4: 1, 2: -1, 3: -1}),
+    ("dF_flow_2K0",             {3: 1, 4: -1, 5: -1}),
+    ("dF_flow_1S0",             {14: 1, 16: 1, 10: -1, 11: -1}),
+    ("dF_flow_1S1",             {7: 1, 9: 1, 12: -1, 13: -1}),
+    ("dF_flow_2S0",             {11: 1, 13: 1, 14: -1, 15: -1}),
+    ("dF_flow_2S1",             {5: 1, 15: 1, 16: -1}),
+    ("dF_flow_terminal_merged", {2: 1, 10: 1, 12: 1, 7: -1, 9: -1}),
+]
+
 
 def todd(x: int) -> int:
     n = 3 * x + 1
@@ -160,11 +175,38 @@ def check_lean_anchor() -> None:
           "入邊表總邊數 = 16（每條轉移邊恰屬一個狀態）")
 
 
+def relation_vector(coeff: dict[int, int]) -> list[int]:
+    v = [0] * 18
+    for i, c in coeff.items():
+        v[i] = c
+    return v
+
+
+def check_delta_relations(D: sp.Matrix) -> None:
+    """與 Lean `FlowDelta` 的 9 條差分層恆等式對帳（秩 8）。"""
+    print("\n=== Lean↔Python 錨：9 條差分層恆等式（FlowDelta §53–54）===")
+    rows = []
+    for name, coeff in LEAN_DELTA_RELATIONS:
+        v = relation_vector(coeff)
+        rows.append(v)
+        check(annihilates(D, v), f"{name} 在 ΔF 上恆為零")
+    check(rank(rows) == 18 - D.rank(),
+          f"9 條的秩 = {rank(rows)}（需要 18 − dim span(ΔF) = {18 - D.rank()}）⇒ 完備")
+
+    # 這 9 條應該就是「死狀態 + 可用流守恆」張出的同一個空間，不多不少
+    deaths = [death(0), death(1)]
+    usable = ([flow(g) for g in S8 if g not in TERMINALS]
+              + [[a + b for a, b in zip(flow(TERMINALS[0]), flow(TERMINALS[1]))]])
+    check(rank(rows + deaths + usable) == rank(rows),
+          "Lean 的 9 條與『死狀態 + 可用流守恆』張出同一個空間")
+
+
 def main() -> int:
     check_lean_anchor()
 
     odds = list(range(3, ODD_MAX, 2))
     D = sp.Matrix.vstack(*[F(todd(x)) - F(x) for x in odds])
+    check_delta_relations(D)
 
     print(f"\n=== A-3 上界：需要哪幾條泛函（奇數 3 ≤ x < {ODD_MAX}）===")
 

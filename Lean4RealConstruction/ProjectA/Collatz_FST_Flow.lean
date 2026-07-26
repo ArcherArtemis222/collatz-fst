@@ -342,8 +342,9 @@ section Verification
     (microTrace2 (1, Phase.K, 0) (extIn x)).countP (fun t => step2 t.1 t.2 == g)
       == ((inEdges g).map fun e => occ2 (1, Phase.K, 0) (extIn x) e).sum
 
--- 終末狀態恆落在 {(0,S,0), (0,S,1)}（下一步合併那兩條流守恆的依據）。
--- 對**所有** x 成立，含 x = 0、x = 1 與偶數——不要只掃奇數，免得誤以為 1 是特例。
+-- 終末狀態：§51 `run2_extIn_terminal` 的**數值回歸**。定理管「對所有 x」，
+-- 這條管「x < 240 的具體數值」——兩者互為錨，任一邊壞了另一邊會叫，所以定理有了也留著。
+-- 涵蓋 x = 0、x = 1 與偶數，不要只掃奇數（免得誤以為 1 是特例）。
 #guard (List.range 240).all fun x =>
   run2 (1, Phase.K, 0) (extIn x) ∈ [((0 : ℕ), Phase.S, (0 : ℕ)), (0, Phase.S, 1)]
 
