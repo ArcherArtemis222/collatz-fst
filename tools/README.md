@@ -11,8 +11,8 @@ Lean 端三條 no-go 定理裡寫死的數字（見證集合 `W₁₀`/`W₁₂`
 | 算術 | 精確有理（sympy），無浮點 | 浮點 LP / SMT |
 | 決定性 | 完全決定性 | 有隨機取樣，結果會變 |
 | 依賴 | numpy、sympy | 再加 scipy、z3-solver |
-| 耗時 | < 1 秒 ／ 約一分鐘 | 數十秒到數十分鐘 |
-| CI | `certificates.py` **每次 push 都跑** | 不跑 |
+| 耗時 | < 1 秒 ／ 約 2 秒（實測） | 數十秒到數十分鐘 |
+| CI | **每次 push 都跑** | 不跑 |
 
 ## 環境
 
@@ -39,12 +39,20 @@ python3 tools/certificates.py
 ## a3_functionals.py 驗了什麼
 
 ROADMAP A-3 的上界問題「到底要證哪幾條泛函、夠不夠」。同樣是精確有理、完全決定性，
-但驗的不是憑證數字而是**結構結論**，所以另立一檔、不進 CI（跑一次約一分鐘）：
+但驗的不是憑證數字而是**結構結論**，所以另立一檔。**進 CI，每次 push 都跑**
+（實測約 2 秒，掛在 `certificates.py` 那個 job 的第二步）：
 
 * `dim span(ΔF) = 10`，故上界需要 8 條獨立泛函。
 * 死狀態 2 條 + Kirchhoff 流守恆可用 7 條（秩 6）= 秩 8，**完備**。
 * `boundary_step_unique` 與 K 區交錯計數落在上述列空間內，是被蘊含的推論，
   **不需要另證**——這是對 ROADMAP 舊表的修正，詳見 `docs/ROADMAP-A.md` A-3。
+* **Lean↔Python 對帳**：`LEAN_INEDGES` 是從 Lean `Flow.inEdges` 的 `#guard` 抄來的
+  16 邊關聯表，本腳本用自己的 `step2` 重算後逐條比對。與 `certificates.py` 的
+  `LEAN_DF10` 同一個模式——**沒有這條錨，腳本守的只是數學結論**，
+  Lean 的 `step2` 被改動時不會叫。
+
+ROADMAP A-3 現在寫進了具體秩數字，這支腳本就是它們在 repo 裡的出處。
+沒有它，那些數字只是傳說——`W₁₂` / `W₂₀` 憑證當初就是這樣壞掉的。
 
 ## search/ 各檔用途
 
