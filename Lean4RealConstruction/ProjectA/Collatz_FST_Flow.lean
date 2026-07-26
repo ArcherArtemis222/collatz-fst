@@ -25,6 +25,10 @@ HandOver 主張 Level 2 差分空間是精確的 **10 維**有理線性子空間
 * `inflow_eq_sum_occ2`（§50）：入流 = Σ_{(h,b) : step2 h b = g} occ2 (h, b)，
   16 條轉移邊的關聯結構；至此兩側都是 18 維特徵上的線性泛函。
 * `kirchhoff_occ2` / `kirchhoff_occ2_extIn`：合併後的特徵層 Kirchhoff 關係。
+* `runCarry_extIn`、`run2_extIn_terminal`（§51）：終末進位為 0，故終末狀態
+  對**所有** x 恆落在 {(0,S,0), (0,S,1)}。
+* `kirchhoff_occ2_extIn_clean`（6 條）／`kirchhoff_occ2_extIn_merged`（1 條）：
+  終末指示消去後，A-3 上界要用的 7 條常數關係。
 
 ## 上界所需泛函（已用精確有理秩驗算，見 `tools/a3_functionals.py`）
 
@@ -33,9 +37,9 @@ ROADMAP 舊表列的 `boundary_step_unique`（e₃+e₆=1）與 K 區交錯（e�
 落在上述列空間內，是被蘊含的推論，**不需要另證**。
 
 流守恆是 8 條（每個可達狀態一條），其中：8 條之和恆為零故至多 7 條獨立；
-又因終末狀態恆落在 (0,S,0)/(0,S,1) 兩者之一（見本檔 `#guard`），
+又因終末狀態恆落在 (0,S,0)/(0,S,1) 兩者之一（§51 `run2_extIn_terminal`），
 這兩條的端點指示在 ΔF 上不個別對消，**須相加合併**成一條（合併後指示恆為 1）。
-6 條乾淨 + 1 條合併 = 7 條，秩 6。
+6 條乾淨 + 1 條合併 = 7 條，秩 6——即 §51 的 `_clean` 與 `_merged`。
 -/
 import Lean4RealConstruction.Core.Collatz_FST_Level2
 
@@ -218,6 +222,83 @@ theorem kirchhoff_occ2_extIn (x : ℕ) (g : ℕ × Phase × ℕ) :
       = occ2 (1, Phase.K, 0) (extIn x) (g, 0) + occ2 (1, Phase.K, 0) (extIn x) (g, 1)
         + (if run2 (1, Phase.K, 0) (extIn x) = g then 1 else 0) :=
   kirchhoff_occ2 g (by decide) (extIn_bits x)
+
+/-! ## §51 終末狀態，與由它得出的 7 條可用流守恆
+
+`kirchhoff_occ2_extIn` 右端還帶著終末指示 `[run2 … = g]`，它隨 x 變動，
+所以還不是「對所有 x 的常數關係」。本節把終末狀態釘死：
+
+  對**所有** x（含 0、1 與偶數），`run2 (1,K,0) (extIn x) ∈ {(0,S,0), (0,S,1)}`
+
+於此得到 A-3 上界要用的 7 條：6 個非終末狀態各一條（終末指示恆 0），
+加上兩個可能終末**合併**的一條（合併後指示恆 1）。這正是
+`tools/a3_functionals.py` 算出的「7 條、秩 6」的結構來源。 -/
+
+/-- extIn 的兩個哨兵零把進位沖到 0（進位 < 3 時，`c → c/2 → 0`）。
+Core 只有這條的 `#eval`（`Collatz_FST_Monoid.lean` §16），這裡定理化。 -/
+lemma runCarry_two_zeros {c : ℕ} (hc : c < 3) : runCarry [0, 0] c = 0 := by
+  interval_cases c <;> decide
+
+lemma digits_two_bits (x : ℕ) : ∀ b ∈ Nat.digits 2 x, b < 2 := fun b hb =>
+  extIn_bits x b (List.mem_append_left _ hb)
+
+/-- **讀完 extIn x 後最終進位為 0**。兩個哨兵零之前進位已受 `run_carry_lt_three`
+約束在 `< 3`，兩步整除即歸零。 -/
+theorem runCarry_extIn (x : ℕ) : runCarry (extIn x) 1 = 0 := by
+  show runCarry (Nat.digits 2 x ++ [0, 0]) 1 = 0
+  rw [t_append]
+  exact runCarry_two_zeros (run_carry_lt_three (by norm_num) (digits_two_bits x))
+
+/-- **終末狀態定理**：讀完 `extIn x` 後的 Level 2 狀態恆為 `(0,S,0)` 或 `(0,S,1)`。
+對**所有** x 成立——含 `x = 0`、`x = 1` 與偶數，與奇偶無關。
+
+兩個成分：終末進位為 0（`runCarry_extIn`）；終末落在 8 個可達狀態內
+（`run2_mem_S8`）。關鍵在於 **`S8` 已經排除了死狀態 `(0,K,0)`**——這正是
+「K 相位進位恆 ∈ {1,2}」那條不變量，Core 已用 `Inv` / `inv_step` / `S8_closed`
+證掉（K→K 只在 `3b+c` 為偶時發生，`c=1` 只能走 `b=1`→`c=2`、`c=2` 只能走
+`b=0`→`c=1`，互跳而碰不到 0；起點 `(1,K,0)` 的進位是 1）。
+於是「進位 = 0」把 `S8` 的 8 個候選砍到只剩兩個 S 狀態。 -/
+theorem run2_extIn_terminal (x : ℕ) :
+    run2 (1, Phase.K, 0) (extIn x) = ((0 : ℕ), Phase.S, (0 : ℕ))
+      ∨ run2 (1, Phase.K, 0) (extIn x) = ((0 : ℕ), Phase.S, (1 : ℕ)) := by
+  have key : ∀ s ∈ S8, s.1 = 0 →
+      s = ((0 : ℕ), Phase.S, (0 : ℕ)) ∨ s = ((0 : ℕ), Phase.S, (1 : ℕ)) := by decide
+  exact key _ (run2_mem_S8 (extIn_bits x))
+    (by rw [run2_fst]; exact runCarry_extIn x)
+
+/-- 非終末狀態的**乾淨流守恆**（6 條）：終末指示恆為 0，
+整條關係只剩 `occ2` 與初始指示，對所有 x 為同一條常數關係。 -/
+theorem kirchhoff_occ2_extIn_clean (x : ℕ) (g : ℕ × Phase × ℕ)
+    (h0 : g ≠ ((0 : ℕ), Phase.S, (0 : ℕ))) (h1 : g ≠ ((0 : ℕ), Phase.S, (1 : ℕ))) :
+    ((inEdges g).map (fun e => occ2 (1, Phase.K, 0) (extIn x) e)).sum
+        + (if ((1 : ℕ), Phase.K, (0 : ℕ)) = g then 1 else 0)
+      = occ2 (1, Phase.K, 0) (extIn x) (g, 0) + occ2 (1, Phase.K, 0) (extIn x) (g, 1) := by
+  have hne : run2 (1, Phase.K, 0) (extIn x) ≠ g := by
+    rcases run2_extIn_terminal x with h | h <;> rw [h] <;> exact fun hh => by
+      first | exact h0 hh.symm | exact h1 hh.symm
+  rw [kirchhoff_occ2_extIn x g, if_neg hne, Nat.add_zero]
+
+/-- 兩個可能終末的**合併流守恆**（第 7 條）：單獨看終末指示隨 x 變動，
+相加後恆為 1（`run2_extIn_terminal` 說恰好落在其中一個），於是又成為常數關係。 -/
+theorem kirchhoff_occ2_extIn_merged (x : ℕ) :
+    ((inEdges ((0 : ℕ), Phase.S, (0 : ℕ))).map (fun e => occ2 (1, Phase.K, 0) (extIn x) e)).sum
+        + ((inEdges ((0 : ℕ), Phase.S, (1 : ℕ))).map
+            (fun e => occ2 (1, Phase.K, 0) (extIn x) e)).sum
+      = (occ2 (1, Phase.K, 0) (extIn x) (((0 : ℕ), Phase.S, (0 : ℕ)), 0)
+          + occ2 (1, Phase.K, 0) (extIn x) (((0 : ℕ), Phase.S, (0 : ℕ)), 1))
+        + (occ2 (1, Phase.K, 0) (extIn x) (((0 : ℕ), Phase.S, (1 : ℕ)), 0)
+            + occ2 (1, Phase.K, 0) (extIn x) (((0 : ℕ), Phase.S, (1 : ℕ)), 1))
+        + 1 := by
+  have e0 := kirchhoff_occ2_extIn x ((0 : ℕ), Phase.S, (0 : ℕ))
+  have e1 := kirchhoff_occ2_extIn x ((0 : ℕ), Phase.S, (1 : ℕ))
+  have hinit0 : ¬ (((1 : ℕ), Phase.K, (0 : ℕ)) = ((0 : ℕ), Phase.S, (0 : ℕ))) := by decide
+  have hinit1 : ¬ (((1 : ℕ), Phase.K, (0 : ℕ)) = ((0 : ℕ), Phase.S, (1 : ℕ))) := by decide
+  rw [if_neg hinit0, Nat.add_zero] at e0
+  rw [if_neg hinit1, Nat.add_zero] at e1
+  have hsum : (if run2 (1, Phase.K, 0) (extIn x) = ((0 : ℕ), Phase.S, (0 : ℕ)) then 1 else 0)
+      + (if run2 (1, Phase.K, 0) (extIn x) = ((0 : ℕ), Phase.S, (1 : ℕ)) then 1 else 0) = 1 := by
+    rcases run2_extIn_terminal x with h | h <;> rw [h] <;> decide
+  omega
 
 /-! ## 數據驗證（回歸；`#guard` 失敗即 build 紅） -/
 
