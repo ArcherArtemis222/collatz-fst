@@ -195,6 +195,72 @@ theorem kirchhoff_occ3_extIn (x : ℕ) (g : ℕ × Phase × ℕ × ℕ) :
         + (if run3 (1, Phase.K, 0, 0) (extIn x) = g then 1 else 0) :=
   kirchhoff_occ3 g (by decide) (extIn_bits x)
 
+/-! ## §72 模式位元恆等式的全稱版
+
+`L3.mode_bit_endpoints3`（在 `Collatz_FST_L3_2Mode_NoGo.lean`）只用 `decide` 證了
+40 個端點的 `F3[16] + F3[33] = 1`。雙模式的第 65 條泛函
+（`θ₀[16] + θ₁[33] = 0`，見 `tools/l3_recon.py`）需要**全稱版**。
+
+不必新證：`F3[16] + F3[33]` 就是「**起點在 K 相位且輸出 1** 的步數」——
+`S14` 的 K 側只有 `(1,K,0,0)` 與 `(2,K,0,0)`，而從 `(1,K,0,0)` 輸出 1 ⟺ 讀 0、
+從 `(2,K,0,0)` 輸出 1 ⟺ 讀 1，恰好就是 `KEYS3` 的第 16 與第 33 個 key。
+而那個步數由 Core 的 `boundary_step_unique` 給定為 1；Level 3 的 trace 投影到
+Level 2（忘掉 `h₂`）即可套用。 -/
+
+/-- Level 3 的 trace 投影到 Level 1 的 trace（`microTrace2_proj` 的類比）。
+狀態 `(c, P, h₂, h₁)` 對應 Level 2 的 `(c, P, h₁)`：`step3` 的 `h₁' = outBit`
+與 `step2` 的 `d_prev' = outBit` 是同一件事。 -/
+theorem microTrace3_proj : ∀ (w : List ℕ) (c : ℕ) (P : Phase) (h₂ h₁ : ℕ),
+    (microTrace3 (c, P, h₂, h₁) w).map (fun t => (t.1.1, t.1.2.1, t.2))
+      = microTraceP (c, P) w := by
+  intro w
+  induction w with
+  | nil => intro c P h₂ h₁; rfl
+  | cons b bs ih =>
+      intro c P h₂ h₁
+      show ((c, P, b) : ℕ × Phase × ℕ) :: (microTrace3 (step3 (c, P, h₂, h₁) b) bs).map _
+          = (c, P, b) :: microTraceP (nextCarry c b, phaseStep P (outBit c b)) bs
+      show _ :: (microTrace3 (nextCarry c b, phaseStep P (outBit c b), h₁, outBit c b) bs).map _
+          = _
+      rw [ih]
+
+/-- **模式位元恆等式（全稱版）**：對**所有** x，
+`F3[16] + F3[33] = 1`，即 `occ3 ((1,K,0,0), 0) + occ3 ((2,K,0,0), 1) = 1`。
+
+這是 `mode_bit_endpoints3` 從 40 個端點推廣到全稱，也是雙模式第 65 條泛函
+`θ₀[16] + θ₁[33] = 0` 的來源（`F3[16] = 1 − m`、`F3[33] = m`）。 -/
+theorem occ3_mode_bit_sum (x : ℕ) :
+    occ3 (1, Phase.K, 0, 0) (extIn x) (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
+      + occ3 (1, Phase.K, 0, 0) (extIn x) (((2 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 1) = 1 := by
+  -- ① 那個和 = trace 上「起點在 K 且輸出 1」的步數
+  have hsum : (microTrace3 (1, Phase.K, 0, 0) (extIn x)).countP
+        (fun t => t.1.2.1 == Phase.K && outBit t.1.1 t.2 == 1)
+      = occ3 (1, Phase.K, 0, 0) (extIn x) (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
+        + occ3 (1, Phase.K, 0, 0) (extIn x) (((2 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 1) := by
+    have h := Flow.countP_eq_sum_count
+      (fun e : (ℕ × Phase × ℕ × ℕ) × ℕ => e.1.2.1 == Phase.K && outBit e.1.1 e.2 == 1)
+      allEdges3 allEdges3_nodup (microTrace3 (1, Phase.K, 0, 0) (extIn x)) fun t ht => by
+        obtain ⟨h1, h2⟩ := microTrace3_mem_S14 (extIn x) _ (by decide) (extIn_bits x) t ht
+        exact mem_allEdges3 h1 h2
+    rw [h, show allEdges3.filter
+        (fun e : (ℕ × Phase × ℕ × ℕ) × ℕ => e.1.2.1 == Phase.K && outBit e.1.1 e.2 == 1)
+      = [(((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0),
+         (((2 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 1)] from by decide]
+    simp [occ3]
+  -- ② 投影到 Level 1 後，那個步數由 boundary_step_unique 給定為 1
+  rw [← hsum, show (microTrace3 (1, Phase.K, 0, 0) (extIn x)).countP
+        (fun t => t.1.2.1 == Phase.K && outBit t.1.1 t.2 == 1)
+      = (microTraceP (1, Phase.K) (extIn x)).countP
+          (fun t => t.2.1 == Phase.K && outBit t.1 t.2.2 == 1) from by
+    rw [← microTrace3_proj (extIn x) 1 Phase.K 0 0, List.countP_map]; rfl]
+  -- Core 的 boundary_step_unique 是對 microTrace2 敘述的，同樣投影過去
+  have hb := boundary_step_unique x
+  rwa [show (microTrace2 (1, Phase.K, 0) (extIn x)).countP
+        (fun t => t.1.2.1 == Phase.K && outBit t.1.1 t.2 == 1)
+      = (microTraceP (1, Phase.K) (extIn x)).countP
+          (fun t => t.2.1 == Phase.K && outBit t.1 t.2.2 == 1) from by
+    rw [← microTrace2_proj (extIn x) 1 Phase.K 0, List.countP_map]; rfl] at hb
+
 /-! ## §69 數值回歸（`#guard` 失敗即 build 紅）
 
 與 `tools/l3_recon.py` 的 `LEAN_L3_*` 常數對帳。 -/
@@ -233,6 +299,11 @@ section Verification
 #guard (List.range 240).all fun x =>
   run3 (1, Phase.K, 0, 0) (extIn x)
     ∈ [((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ)), (0, Phase.S, 1, 0)]
+
+-- 模式位元恆等式（§72 全稱定理的數值錨；亦即 F3[16] + F3[33] = 1）
+#guard (List.range 240).all fun x =>
+  occ3 (1, Phase.K, 0, 0) (extIn x) (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
+    + occ3 (1, Phase.K, 0, 0) (extIn x) (((2 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 1) == 1
 
 end Verification
 
