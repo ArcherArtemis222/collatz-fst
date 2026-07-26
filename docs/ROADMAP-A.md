@@ -100,17 +100,42 @@ HandOver 主張兩件事，目前都只活在註解與 `#eval` 裡，還不是�
 `Matrix.rank` 或直接算一個 10×10 子式的行列式 ≠ 0，`decide` / `norm_num` 可處理。
 
 **上界（≤ 10）才是重點：** 要對**所有**奇數 `x` 證明 8 條線性泛函在 `ΔF x` 上為零。
-好消息是 `Core/Collatz_FST_Level2.lean` 已經備好材料：
 
-| 泛函 | 對應已證定理 |
-|---|---|
-| `e₁, e₂`（死狀態） | `occ2_deadState` |
-| `e₃ + e₆ = 1`（邊界步唯一） | `boundary_step_unique` |
-| `e₄ = e₅ + e₆` | K 區交錯路徑計數，`Collatz_FST_Ext.alt_of_one_mod_four` |
-| 其餘四條（Kirchhoff 流守恆） | `run2_mem_S8` + `count2_pair` + `birth_death_conservation` |
+### 泛函對照表（2026-07-26 修訂，經精確有理秩驗算）
 
-把「各狀態出入次數差 = 初/末指示」寫成一條對 `microTrace2` 的歸納引理，
-是這一項的核心技術債。建議**先只做這一條**，當成獨立 PR。
+舊版的表是憑 `Core/Collatz_FST_Level2.lean` 檔頭推的，沒實算。實際跑過
+`python3 tools/a3_functionals.py`（sympy 精確有理，非浮點）後，需要的東西比原本少：
+
+| 泛函 | 條數 | 秩 | 對應材料 |
+|---|---|---|---|
+| 死狀態（座標 0、1 恆為零） | 2 | 2 | `occ2_deadState` |
+| Kirchhoff 流守恆（可用形式） | 7 | 6 | `Flow.kirchhoff_occ2` |
+| **合計** | | **8** | ＝ 18 − dim span(ΔF) = 18 − 10 ⇒ **完備** |
+
+也就是說舊表另列的 `boundary_step_unique`（`e₃+e₆=1`）與 K 區交錯計數
+（`e₄=e₅+e₆`）**是被流守恆蘊含的推論，不需要另證**——兩者都落在上表的列空間內
+（腳本逐條驗過）。下一輪不要再去證這兩條。
+
+**流守恆為何是「7 條、秩 6」而非 8 條。** 每個可達狀態一條共 8 條，但
+
+1. 8 條之和恆為零（每步恰出一次、入一次），故至多 7 條獨立；
+2. 終末狀態恆落在 `(0,S,0)` / `(0,S,1)` 兩者之一（非唯一！）。這兩條的端點指示
+   在 `ΔF` 上不個別對消，**必須相加合併**成一條（合併後指示恆為 1 而對消）。
+
+6 條乾淨 + 1 條合併 = 7 條，秩 6。
+
+### 進度
+
+把「各狀態出入次數差 = 初/末指示」寫成對 `microTrace2` 的歸納引理，是這一項的
+核心技術債，已完成（見 `ProjectA/Collatz_FST_Flow.lean`）：
+
+- `Flow.microTrace2_flow_conservation`：入流(g) + [初始=g] = 出流(g) + [終末=g]
+- `Flow.state_outflow_eq_occ2`：出流(g) = occ2 (g,0) + occ2 (g,1)
+- `Flow.inflow_eq_sum_occ2`：入流(g) = Σ_{(h,b) : step2 h b = g} occ2 (h,b)（16 條轉移邊）
+- `Flow.kirchhoff_occ2`：合併後的特徵層線性關係，即上表第二列
+
+**還沒做的：** 逐狀態把 `kirchhoff_occ2` 化成 `ΔF` 上的泛函（需要「終末 ∈ 兩個
+S 狀態」的定理化，目前只有 `#guard`）、下界的 10×10 行列式、以及維度定理本身。
 
 Level 3 的 31 維同理，但先要形式化「可達邊恰 28 條」（`S8_reachable` 的 Level 3 版本）。
 
