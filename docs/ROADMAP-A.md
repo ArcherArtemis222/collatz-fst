@@ -134,8 +134,17 @@ HandOver 主張兩件事，目前都只活在註解與 `#eval` 裡，還不是�
 - `Flow.inflow_eq_sum_occ2`：入流(g) = Σ_{(h,b) : step2 h b = g} occ2 (h,b)（16 條轉移邊）
 - `Flow.kirchhoff_occ2`：合併後的特徵層線性關係，即上表第二列
 
-**還沒做的：** 逐狀態把 `kirchhoff_occ2` 化成 `ΔF` 上的泛函（需要「終末 ∈ 兩個
-S 狀態」的定理化，目前只有 `#guard`）、下界的 10×10 行列式、以及維度定理本身。
+上表第二列的「7 條」也已經是 Lean 定理了（§51）。關鍵是終末狀態：
+
+- `Flow.runCarry_extIn`：讀完 `extIn x` 後最終進位為 0（兩個哨兵零沖掉進位）
+- `Flow.run2_extIn_terminal`：故終末狀態對**所有** x 恆落在 `{(0,S,0), (0,S,1)}`
+  ——`S8` 已排除死狀態 `(0,K,0)`（即「K 相位進位 ∈ {1,2}」，Core 的 `Inv`/`S8_closed`），
+  所以「進位 = 0」把 8 個候選砍到只剩兩個
+- `Flow.kirchhoff_occ2_extIn_clean`（6 條）／`Flow.kirchhoff_occ2_extIn_merged`（1 條）：
+  終末指示消去後的常數關係
+
+**還沒做的：** 把這 7 條 + 死狀態 2 條轉成 `LP.ΔF` 上的泛函敘述（差分層，
+兩個端點的初始指示對消）、下界的 10×10 行列式、以及維度定理本身。
 
 Level 3 的 31 維同理，但先要形式化「可達邊恰 28 條」（`S8_reachable` 的 Level 3 版本）。
 
