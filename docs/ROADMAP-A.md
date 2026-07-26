@@ -143,8 +143,23 @@ HandOver 主張兩件事，目前都只活在註解與 `#eval` 裡，還不是�
 - `Flow.kirchhoff_occ2_extIn_clean`（6 條）／`Flow.kirchhoff_occ2_extIn_merged`（1 條）：
   終末指示消去後的常數關係
 
-**還沒做的：** 把這 7 條 + 死狀態 2 條轉成 `LP.ΔF` 上的泛函敘述（差分層，
-兩個端點的初始指示對消）、下界的 10×10 行列式、以及維度定理本身。
+**差分層也完成了**（`ProjectA/Collatz_FST_FlowDelta.lean`）：對 `x` 與 `Todd x`
+各用一次 §51 的關係再相減，初始指示對消，得到 9 條純 `LP.ΔF` 座標恆等式（秩 8）
+（對**所有** x，不限奇數——`Todd x` 不需要奇偶假設）：
+
+| 來源 | 差分層恆等式（0-based 座標） |
+|---|---|
+| 死狀態 ×2 | `dF_zero_0`、`dF_zero_1`：`ΔF₀ = ΔF₁ = 0` |
+| flow (1,K,0) | `dF_flow_1K0`：`ΔF₄ = ΔF₂ + ΔF₃` |
+| flow (2,K,0) | `dF_flow_2K0`：`ΔF₃ = ΔF₄ + ΔF₅` ← 舊表的「K 區交錯 e₄ = e₅ + e₆」就是這條 |
+| flow (1,S,0) | `dF_flow_1S0`：`ΔF₁₄ + ΔF₁₆ = ΔF₁₀ + ΔF₁₁` |
+| flow (1,S,1) | `dF_flow_1S1`：`ΔF₇ + ΔF₉ = ΔF₁₂ + ΔF₁₃` |
+| flow (2,S,0) | `dF_flow_2S0`：`ΔF₁₁ + ΔF₁₃ = ΔF₁₄ + ΔF₁₅` |
+| flow (2,S,1) | `dF_flow_2S1`：`ΔF₅ + ΔF₁₅ = ΔF₁₆` |
+| flow 合併終末 | `dF_flow_terminal_merged`：`ΔF₂ + ΔF₁₀ + ΔF₁₂ = ΔF₇ + ΔF₉` |
+
+**還沒做的：** 把這 9 條打包成係數向量並論證秩 = 8、下界的 10×10 行列式、
+以及維度定理本身（`dim span(ΔF) = 10`）。
 
 Level 3 的 31 維同理，但先要形式化「可達邊恰 28 條」（`S8_reachable` 的 Level 3 版本）。
 
