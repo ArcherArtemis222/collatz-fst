@@ -20,7 +20,14 @@ ROADMAP A-3 的上界要對所有奇數 x 證明「若干條線性泛函在 ΔF 
 6 條乾淨 + 1 條合併 = 7 條，秩 6。
 
 與 `certificates.py` 的分工：那支驗「既有憑證的數字對不對」，這支驗
-「上界要證哪幾條引理」。兩支都是精確有理、完全決定性。
+「上界要證哪幾條引理」。兩支都是精確有理、完全決定性，都在 CI 每次 push 跑。
+
+## Lean 端的錨
+
+`LEAN_INEDGES` 是從 Lean `ProjectA/Collatz_FST_Flow.lean` 的 `#guard`（`Flow.inEdges`
+的實際內容）抄過來的，本腳本用自己的 `step2` 重算後逐條對帳——與 `certificates.py`
+的 `LEAN_DF10` 同一個模式。**沒有這一條，本腳本守的只是「數學結論」而非
+「Lean↔Python 一致性」**：有人改了 Lean 的 `step2`，Python 這邊不會叫。
 """
 
 from __future__ import annotations
@@ -54,6 +61,19 @@ IDX = {k: i for i, k in enumerate(KEYS)}
 TERMINALS = [(0, 'S', 0), (0, 'S', 1)]
 
 ODD_MAX = 4000
+
+# Lean `ProjectA/Collatz_FST_Flow.lean` 的 `#guard`（`S8.map inEdges` 的實際內容）。
+# 這是本腳本與 Lean 之間唯一的錨：兩邊都寫死同一張 16 邊關聯表，各自獨立重算後對帳。
+LEAN_INEDGES: dict[tuple, list] = {
+    (1, 'K', 0): [((2, 'K', 0), 0)],
+    (2, 'K', 0): [((1, 'K', 0), 1)],
+    (0, 'S', 0): [((0, 'S', 0), 0), ((0, 'S', 1), 0)],
+    (0, 'S', 1): [((1, 'K', 0), 0), ((1, 'S', 0), 0), ((1, 'S', 1), 0)],
+    (1, 'S', 0): [((2, 'S', 0), 0), ((2, 'S', 1), 0)],
+    (1, 'S', 1): [((0, 'S', 0), 1), ((0, 'S', 1), 1)],
+    (2, 'S', 0): [((1, 'S', 0), 1), ((1, 'S', 1), 1)],
+    (2, 'S', 1): [((2, 'K', 0), 1), ((2, 'S', 0), 1), ((2, 'S', 1), 1)],
+}
 
 
 def todd(x: int) -> int:
@@ -121,7 +141,28 @@ def annihilates(D: sp.Matrix, f: list[int]) -> bool:
     return (D * sp.Matrix(f)) == sp.zeros(D.rows, 1)
 
 
+def in_edges(g: tuple) -> list:
+    """落點為 g 的入邊（allEdges 順序：S8 序 × b = 0, 1）。對照 Lean `Flow.inEdges`。"""
+    return [(h, b) for h in S8 for b in (0, 1) if step2(h, b) == g]
+
+
+def check_lean_anchor() -> None:
+    """與 Lean `#guard` 寫死的 16 邊關聯表逐條對帳。"""
+    print("\n=== Lean↔Python 錨：16 邊關聯表 ===")
+    mine = {g: in_edges(g) for g in S8}
+    check(mine == LEAN_INEDGES,
+          "本腳本重算的入邊表與 Lean `Flow.inEdges` 的 #guard 逐條吻合（8 狀態 / 16 邊）")
+    if mine != LEAN_INEDGES:
+        for g in S8:
+            if mine[g] != LEAN_INEDGES.get(g):
+                print(f"        {g}: Python {mine[g]} vs Lean {LEAN_INEDGES.get(g)}")
+    check(sum(len(v) for v in LEAN_INEDGES.values()) == 16,
+          "入邊表總邊數 = 16（每條轉移邊恰屬一個狀態）")
+
+
 def main() -> int:
+    check_lean_anchor()
+
     odds = list(range(3, ODD_MAX, 2))
     D = sp.Matrix.vstack(*[F(todd(x)) - F(x) for x in odds])
 
@@ -132,9 +173,11 @@ def main() -> int:
     check(rank_D == 10, f"dim span(ΔF) = {rank_D}（HandOver 宣稱 10）")
     print(f"        上界需要的獨立泛函數 = 18 − {rank_D} = {need}")
 
-    finals = {trace(x)[1] for x in odds} | {trace(todd(x))[1] for x in odds}
+    # 終末狀態：對**所有** x 檢查（含 0、1 與偶數），不只奇數——這性質與奇偶無關
+    finals = ({trace(x)[1] for x in range(ODD_MAX)}
+              | {trace(todd(x))[1] for x in odds})
     check(finals <= set(TERMINALS),
-          f"終末狀態 ⊆ {TERMINALS}，實測 = {sorted(finals)}")
+          f"終末狀態 ⊆ {TERMINALS}（所有 0 ≤ x < {ODD_MAX}），實測 = {sorted(finals)}")
 
     deaths = [death(0), death(1)]
     check(all(annihilates(D, f) for f in deaths), "死狀態 2 條皆湮滅 ΔF")
