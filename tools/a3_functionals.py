@@ -122,10 +122,20 @@ def todd(x: int) -> int:
     return n
 
 
+def ext_in(x: int) -> list[int]:
+    """`extIn x = Nat.digits 2 x ++ [0, 0]`。
+
+    `x = 0` 要特別處理：`Nat.digits 2 0 = []`，而 `bin(0)[2:] == "0"`
+    會多給一個零。詳見 `certificates.py` 的 `_bits`。
+    """
+    digits = [] if x == 0 else [int(t) for t in bin(x)[2:]][::-1]
+    return digits + [0, 0]
+
+
 def trace(x: int):
     """(微觀轉移串, 終末狀態)；輸入為 extIn x = LSB-first + 兩個哨兵零。"""
     s, out = (1, 'K', 0), []
-    for b in [int(t) for t in bin(x)[2:]][::-1] + [0, 0]:
+    for b in ext_in(x):
         out.append((s, b))
         s = step2(s, b)
     return out, s
