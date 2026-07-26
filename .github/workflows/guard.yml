@@ -57,3 +57,6 @@ jobs:
         # ROADMAP A-3 寫進了具體秩數字（10 / 8 / 2 / 7 條秩 6 / 合併秩 8）。
         # 沒有這一步，那些數字在 repo 裡沒有任何東西能重現——就是 W₁₂/W₂₀ 的失敗模式。
         run: python3 tools/a3_functionals.py
+      - name: Level 3 偵察數字（14 狀態 / 28 邊 / 終末 2 個 / 31 維 / 缺 1 條）
+        # 這批數字在寫 Lean 之前就先釘住。約 15 秒（秩計算為主）。
+        run: python3 tools/l3_recon.py

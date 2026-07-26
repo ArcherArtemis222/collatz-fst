@@ -55,8 +55,15 @@ MODE_IDX_L3 = 33
 
 
 def _bits(x: int) -> list[int]:
-    """extIn x：LSB-first 二進位 + 兩個哨兵零。"""
-    return [int(b) for b in bin(x)[2:]][::-1] + [0, 0]
+    """extIn x：LSB-first 二進位 + 兩個哨兵零。
+
+    `x = 0` 要特別處理：Lean 的 `Nat.digits 2 0 = []`，故 `extIn 0 = [0, 0]`，
+    而 `bin(0)[2:] == "0"` 會多給一個零變成 `[0, 0, 0]`。目前的見證集全是奇數
+    ≥ 25，所以這個 off-by-one 不咬人；但 Level 3 偵察一掃到 `x = 0` 就會偏掉
+    （實際發生過：多出一個假的終末狀態 `(0,S,0,0)`）。
+    """
+    digits = [] if x == 0 else [int(b) for b in bin(x)[2:]][::-1]
+    return digits + [0, 0]
 
 
 def F2(x: int) -> np.ndarray:
