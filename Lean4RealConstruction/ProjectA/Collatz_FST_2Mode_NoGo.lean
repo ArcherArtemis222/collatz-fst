@@ -10,6 +10,10 @@ Mathlib rev c66c0c58（Lean v4.28.0-rc1）。承接 `Collatz_FST_2Mode_Recon.lea
 （模式觀測量 m(x) = F(x)[5]，即 K→S 出口的凝聚/碎裂二分）後，
 36 維（θ₀ ⊕ θ₁ 皆非負）的雙模式勢能**仍不能**在 W₁₂ 的每一步嚴格下降。
 
+`no_go_2mode_affine_potential`（仿射版，ROADMAP A-2）：勢能升級為
+V_m(x) = β_m + θ_mᵀ F(x)（β₀ β₁ 不受非負限制）仍不可行——
+憑證滿足模式流量平衡，β 項在 Farkas 組合中自動抵消，同一組 λ 直接收掉。
+
 ## 證明骨架
 
 * 12 條 `Todd_x`（v₂ = 2,2,2,1,1,2,1,1,2,1,1,1，`padicValNat_two_pow_mul`）。
@@ -255,6 +259,93 @@ theorem no_go_2mode_potential :
       + (162 : ℚ) * (dot θ₀ (F 1025) - dot θ₁ (F 683))
       + (163 : ℚ) * (dot θ₁ (F 1067) - dot θ₁ (F 711))
       + (558 : ℚ) * (dot θ₀ (F 1169) - dot θ₁ (F 779))
+      = 36 * θ₀ 11 + 36 * θ₀ 15 + 36 * θ₀ 16 + 36 * θ₀ 17 + 94 * θ₁ 7 + 522 * θ₁ 8 + 527 * θ₁ 9 + 621 * θ₁ 12 := by
+    rw [F_25, F_19, F_161, F_121, F_353, F_265, F_391, F_587, F_471, F_707, F_481, F_361, F_583, F_875, F_663, F_995, F_681, F_511, F_683, F_1025, F_711, F_1067, F_779, F_1169]
+    simp only [dot]
+    push_cast
+    ring
+  rw [key] at hlt
+  have hge : (0 : ℚ) ≤ 36 * θ₀ 11 + 36 * θ₀ 15 + 36 * θ₀ 16 + 36 * θ₀ 17 + 94 * θ₁ 7 + 522 * θ₁ 8 + 527 * θ₁ 9 + 621 * θ₁ 12 :=
+    add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (mul_nonneg (by norm_num) (hθ₀ 11)) (mul_nonneg (by norm_num) (hθ₀ 15))) (mul_nonneg (by norm_num) (hθ₀ 16))) (mul_nonneg (by norm_num) (hθ₀ 17))) (mul_nonneg (by norm_num) (hθ₁ 7))) (mul_nonneg (by norm_num) (hθ₁ 8))) (mul_nonneg (by norm_num) (hθ₁ 9))) (mul_nonneg (by norm_num) (hθ₁ 12))
+  exact absurd hlt (not_lt.mpr hge)
+
+/-- **仿射版主定理**（ROADMAP A-2；HandOver「仿射截距強健性 (Affine Offsets)」條款）：
+勢能升級為 V_m(x) = β_m + θ_mᵀ F(x)，截距 `β₀ β₁` **不受非負限制**（可正可負），
+非負權重的雙模式仿射勢能仍不能在 W₁₂ 的每一步嚴格下降。
+
+證明骨架與 `no_go_2mode_potential` 完全相同（同一組 λ、同批 `Todd_*`/`hm_*` 引理、
+同樣的 `if_pos`/`if_neg`）：憑證滿足模式流量平衡 Σλ(e_{m(y)} − e_{m(x)}) = [0, 0]
+（`tools/certificates.py` 重算驗證），β 項在 Farkas 組合中自動抵消，
+組合恆等式 `key` 的右端不變。 -/
+theorem no_go_2mode_affine_potential :
+    ¬ ∃ (β₀ β₁ : ℚ) (θ₀ θ₁ : Fin 18 → ℚ),
+      (∀ i, 0 ≤ θ₀ i) ∧ (∀ i, 0 ≤ θ₁ i) ∧
+      ∀ x ∈ W12,
+        (if (F (Todd x)).getD 5 0 = 1 then β₁ + dot θ₁ (F (Todd x))
+                                       else β₀ + dot θ₀ (F (Todd x)))
+          - (if (F x).getD 5 0 = 1 then β₁ + dot θ₁ (F x) else β₀ + dot θ₀ (F x)) < 0 := by
+  rintro ⟨β₀, β₁, θ₀, θ₁, hθ₀, hθ₁, hdesc⟩
+  have h1 := hdesc 25 (by decide)
+  have h2 := hdesc 161 (by decide)
+  have h3 := hdesc 353 (by decide)
+  have h4 := hdesc 391 (by decide)
+  have h5 := hdesc 471 (by decide)
+  have h6 := hdesc 481 (by decide)
+  have h7 := hdesc 583 (by decide)
+  have h8 := hdesc 663 (by decide)
+  have h9 := hdesc 681 (by decide)
+  have h10 := hdesc 683 (by decide)
+  have h11 := hdesc 711 (by decide)
+  have h12 := hdesc 779 (by decide)
+  rw [Todd_25, if_pos hm_19, if_neg hm_25] at h1
+  rw [Todd_161, if_neg hm_121, if_neg hm_161] at h2
+  rw [Todd_353, if_neg hm_265, if_neg hm_353] at h3
+  rw [Todd_391, if_pos hm_587, if_pos hm_391] at h4
+  rw [Todd_471, if_pos hm_707, if_pos hm_471] at h5
+  rw [Todd_481, if_neg hm_361, if_neg hm_481] at h6
+  rw [Todd_583, if_pos hm_875, if_pos hm_583] at h7
+  rw [Todd_663, if_pos hm_995, if_pos hm_663] at h8
+  rw [Todd_681, if_pos hm_511, if_neg hm_681] at h9
+  rw [Todd_683, if_neg hm_1025, if_pos hm_683] at h10
+  rw [Todd_711, if_pos hm_1067, if_pos hm_711] at h11
+  rw [Todd_779, if_neg hm_1169, if_pos hm_779] at h12
+  have t1 : (72 : ℚ) * ((β₁ + dot θ₁ (F 19)) - (β₀ + dot θ₀ (F 25))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h1
+  have t2 : (936 : ℚ) * ((β₀ + dot θ₀ (F 121)) - (β₀ + dot θ₀ (F 161))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h2
+  have t3 : (864 : ℚ) * ((β₀ + dot θ₀ (F 265)) - (β₀ + dot θ₀ (F 353))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h3
+  have t4 : (1107 : ℚ) * ((β₁ + dot θ₁ (F 587)) - (β₁ + dot θ₁ (F 391))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h4
+  have t5 : (1502 : ℚ) * ((β₁ + dot θ₁ (F 707)) - (β₁ + dot θ₁ (F 471))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h5
+  have t6 : (900 : ℚ) * ((β₀ + dot θ₀ (F 361)) - (β₀ + dot θ₀ (F 481))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h6
+  have t7 : (588 : ℚ) * ((β₁ + dot θ₁ (F 875)) - (β₁ + dot θ₁ (F 583))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h7
+  have t8 : (326 : ℚ) * ((β₁ + dot θ₁ (F 995)) - (β₁ + dot θ₁ (F 663))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h8
+  have t9 : (648 : ℚ) * ((β₁ + dot θ₁ (F 511)) - (β₀ + dot θ₀ (F 681))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h9
+  have t10 : (162 : ℚ) * ((β₀ + dot θ₀ (F 1025)) - (β₁ + dot θ₁ (F 683))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h10
+  have t11 : (163 : ℚ) * ((β₁ + dot θ₁ (F 1067)) - (β₁ + dot θ₁ (F 711))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h11
+  have t12 : (558 : ℚ) * ((β₀ + dot θ₀ (F 1169)) - (β₁ + dot θ₁ (F 779))) < 0 := mul_neg_of_pos_of_neg (by norm_num) h12
+  have hlt : (72 : ℚ) * ((β₁ + dot θ₁ (F 19)) - (β₀ + dot θ₀ (F 25)))
+      + (936 : ℚ) * ((β₀ + dot θ₀ (F 121)) - (β₀ + dot θ₀ (F 161)))
+      + (864 : ℚ) * ((β₀ + dot θ₀ (F 265)) - (β₀ + dot θ₀ (F 353)))
+      + (1107 : ℚ) * ((β₁ + dot θ₁ (F 587)) - (β₁ + dot θ₁ (F 391)))
+      + (1502 : ℚ) * ((β₁ + dot θ₁ (F 707)) - (β₁ + dot θ₁ (F 471)))
+      + (900 : ℚ) * ((β₀ + dot θ₀ (F 361)) - (β₀ + dot θ₀ (F 481)))
+      + (588 : ℚ) * ((β₁ + dot θ₁ (F 875)) - (β₁ + dot θ₁ (F 583)))
+      + (326 : ℚ) * ((β₁ + dot θ₁ (F 995)) - (β₁ + dot θ₁ (F 663)))
+      + (648 : ℚ) * ((β₁ + dot θ₁ (F 511)) - (β₀ + dot θ₀ (F 681)))
+      + (162 : ℚ) * ((β₀ + dot θ₀ (F 1025)) - (β₁ + dot θ₁ (F 683)))
+      + (163 : ℚ) * ((β₁ + dot θ₁ (F 1067)) - (β₁ + dot θ₁ (F 711)))
+      + (558 : ℚ) * ((β₀ + dot θ₀ (F 1169)) - (β₁ + dot θ₁ (F 779))) < 0 :=
+    addneg (addneg (addneg (addneg (addneg (addneg (addneg (addneg (addneg (addneg (addneg (t1) t2) t3) t4) t5) t6) t7) t8) t9) t10) t11) t12
+  have key : (72 : ℚ) * ((β₁ + dot θ₁ (F 19)) - (β₀ + dot θ₀ (F 25)))
+      + (936 : ℚ) * ((β₀ + dot θ₀ (F 121)) - (β₀ + dot θ₀ (F 161)))
+      + (864 : ℚ) * ((β₀ + dot θ₀ (F 265)) - (β₀ + dot θ₀ (F 353)))
+      + (1107 : ℚ) * ((β₁ + dot θ₁ (F 587)) - (β₁ + dot θ₁ (F 391)))
+      + (1502 : ℚ) * ((β₁ + dot θ₁ (F 707)) - (β₁ + dot θ₁ (F 471)))
+      + (900 : ℚ) * ((β₀ + dot θ₀ (F 361)) - (β₀ + dot θ₀ (F 481)))
+      + (588 : ℚ) * ((β₁ + dot θ₁ (F 875)) - (β₁ + dot θ₁ (F 583)))
+      + (326 : ℚ) * ((β₁ + dot θ₁ (F 995)) - (β₁ + dot θ₁ (F 663)))
+      + (648 : ℚ) * ((β₁ + dot θ₁ (F 511)) - (β₀ + dot θ₀ (F 681)))
+      + (162 : ℚ) * ((β₀ + dot θ₀ (F 1025)) - (β₁ + dot θ₁ (F 683)))
+      + (163 : ℚ) * ((β₁ + dot θ₁ (F 1067)) - (β₁ + dot θ₁ (F 711)))
+      + (558 : ℚ) * ((β₀ + dot θ₀ (F 1169)) - (β₁ + dot θ₁ (F 779)))
       = 36 * θ₀ 11 + 36 * θ₀ 15 + 36 * θ₀ 16 + 36 * θ₀ 17 + 94 * θ₁ 7 + 522 * θ₁ 8 + 527 * θ₁ 9 + 621 * θ₁ 12 := by
     rw [F_25, F_19, F_161, F_121, F_353, F_265, F_391, F_587, F_471, F_707, F_481, F_361, F_583, F_875, F_663, F_995, F_681, F_511, F_683, F_1025, F_711, F_1067, F_779, F_1169]
     simp only [dot]
