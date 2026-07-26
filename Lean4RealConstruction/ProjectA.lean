@@ -3,6 +3,7 @@
 
 三個具體有限狀態模板的精確 Farkas 矛盾證書。待辦見 docs/ROADMAP-A.md。
 -/
+import Lean4RealConstruction.ProjectA.Collatz_FST_SimpAttr
 import Lean4RealConstruction.ProjectA.Collatz_FST_Flow
 import Lean4RealConstruction.ProjectA.Collatz_FST_NoLinearRanking
 import Lean4RealConstruction.ProjectA.Collatz_FST_FlowDelta
