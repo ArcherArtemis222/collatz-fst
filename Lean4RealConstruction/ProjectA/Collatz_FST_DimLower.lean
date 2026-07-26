@@ -17,12 +17,18 @@ Mathlib rev c66c0c58（Lean v4.28.0-rc1）。承接 `Collatz_FST_DimUpper.lean`�
 這正是 `pick` 的複用：`pick_injective_on_Sol` 說那組座標在解空間上不丟資訊，
 所以「投影後仍獨立」不是巧合——`ΔF` 全落在 `Sol` 裡，投影是單射。
 
-## 一個值得記下的巧合
+## 那個 31 不是巧合（Cramer）
 
-那個 10×10 矩陣的行列式是 **31**，與 Farkas 憑證的 `Σλ·ΔF = 31·e₇`（見
-`Collatz_FST_NoLinearRanking.lean` §35）是同一個數字。兩者都出自同一個
-整數格結構，但本檔**不主張**它們有已證明的因果關係——僅記為觀察，
-留給 A-4 判斷值不值得追。
+10×10 矩陣的行列式是 **31**，與 Farkas 憑證的 `Σλ·ΔF = 31·e₇`（見
+`Collatz_FST_NoLinearRanking.lean` §35）是同一個 31，而且有原因：
+
+λ 垂直於 9 個「被湮滅」的座標列，故在相差尺度下唯一；由 Cramer，
+**λ = adj(A_free) 的第 2 列**（實測完全吻合 `[100, 64, 119, 51, 56, 183, 164, 18, 191, 78]`），
+而 `31 = det(A_free)`。該列 gcd = 1（本原），所以最小整數尺度必然就是 `|det| = 31`
+——這也回答了「為什麼 `t = 31` 剛好解回整數」。
+
+驗算與一般形式（含雙模式、gcd ≠ 1 的情形）見 `docs/ROADMAP-A.md` A-4 與
+`python3 tools/certificates.py --cramer`。注意 `Σλ = 1024` **不是**行列式。
 
 ## 主定理
 
