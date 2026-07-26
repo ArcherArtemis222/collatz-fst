@@ -41,3 +41,15 @@ jobs:
           else
             echo "依賴釘選未變動。"
           fi
+
+  certs:
+    # 把 Lean 裡寫死的憑證數字綁回獨立重算。< 1 秒，所以每次 push 都跑。
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy sympy
+      - name: 重算 Farkas 憑證並與 Lean 對帳
+        run: python3 tools/certificates.py

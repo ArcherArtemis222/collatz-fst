@@ -1,0 +1,7 @@
+# certificates.py（CI 會跑）只需要這兩個
+numpy>=1.26
+sympy>=1.12
+
+# search/ 底下的探索腳本才需要這兩個，CI 不裝
+scipy>=1.11
+z3-solver>=4.12
