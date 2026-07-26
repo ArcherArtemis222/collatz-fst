@@ -10,6 +10,9 @@ Mathlib rev c66c0c58（Lean v4.28.0-rc1）。承接 `Collatz_FST_2Mode_Recon.lea
 （模式觀測量 m(x) = F(x)[5]，即 K→S 出口的凝聚/碎裂二分）後，
 36 維（θ₀ ⊕ θ₁ 皆非負）的雙模式勢能**仍不能**在 W₁₂ 的每一步嚴格下降。
 
+`no_global_odd_2mode_potential`（全稱版，ROADMAP A-1）：同敘述對全體奇數 x > 1 成立——
+由 W₁₂ ⊆ 奇數 ∩ (1, ∞) a fortiori 得出，與 `LP.no_global_odd_ranking` 形式一致。
+
 ## 證明骨架
 
 * 12 條 `Todd_x`（v₂ = 2,2,2,1,1,2,1,1,2,1,1,1，`padicValNat_two_pow_mul`）。
@@ -264,6 +267,24 @@ theorem no_go_2mode_potential :
   have hge : (0 : ℚ) ≤ 36 * θ₀ 11 + 36 * θ₀ 15 + 36 * θ₀ 16 + 36 * θ₀ 17 + 94 * θ₁ 7 + 522 * θ₁ 8 + 527 * θ₁ 9 + 621 * θ₁ 12 :=
     add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (mul_nonneg (by norm_num) (hθ₀ 11)) (mul_nonneg (by norm_num) (hθ₀ 15))) (mul_nonneg (by norm_num) (hθ₀ 16))) (mul_nonneg (by norm_num) (hθ₀ 17))) (mul_nonneg (by norm_num) (hθ₁ 7))) (mul_nonneg (by norm_num) (hθ₁ 8))) (mul_nonneg (by norm_num) (hθ₁ 9))) (mul_nonneg (by norm_num) (hθ₁ 12))
   exact absurd hlt (not_lt.mpr hge)
+
+lemma W12_odd : ∀ x ∈ W12, x % 2 = 1 := by decide
+
+lemma W12_gt_one : ∀ x ∈ W12, 1 < x := by decide
+
+/-- **全稱版**（與 `LP.no_global_odd_ranking` 同形式；ROADMAP A-1）：不存在兩組非負權重
+使雙模式勢能對**每個奇數 `x > 1`** 的單次加速迭代皆嚴格下降——
+由 W₁₂ ⊆ 奇數 ∩ (1, ∞) a fortiori 得出。量詞排除 `x = 1` 對應 HandOver
+「非平凡量詞 (The Trivial Trap)」條款（`Todd 1 = 1` 使未排除版可被平凡見證）。 -/
+theorem no_global_odd_2mode_potential :
+    ¬ ∃ (θ₀ θ₁ : Fin 18 → ℚ),
+      (∀ i, 0 ≤ θ₀ i) ∧ (∀ i, 0 ≤ θ₁ i) ∧
+      ∀ x : ℕ, x % 2 = 1 → 1 < x →
+        (if (F (Todd x)).getD 5 0 = 1 then dot θ₁ (F (Todd x)) else dot θ₀ (F (Todd x)))
+          - (if (F x).getD 5 0 = 1 then dot θ₁ (F x) else dot θ₀ (F x)) < 0 := by
+  rintro ⟨θ₀, θ₁, hθ₀, hθ₁, h⟩
+  exact no_go_2mode_potential
+    ⟨θ₀, θ₁, hθ₀, hθ₁, fun x hx => h x (W12_odd x hx) (W12_gt_one x hx)⟩
 
 /-! ## §41 回歸驗證 -/
 
