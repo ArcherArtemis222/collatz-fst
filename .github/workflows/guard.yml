@@ -43,7 +43,7 @@ jobs:
           fi
 
   certs:
-    # 把 Lean 裡寫死的憑證數字綁回獨立重算。< 1 秒，所以每次 push 都跑。
+    # 把 Lean 裡寫死的數字綁回獨立重算。兩支都是秒級，所以每次 push 都跑。
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -53,3 +53,7 @@ jobs:
       - run: pip install numpy sympy
       - name: 重算 Farkas 憑證並與 Lean 對帳
         run: python3 tools/certificates.py
+      - name: 重算 A-3 泛函秩並與 Lean 邊表對帳
+        # ROADMAP A-3 寫進了具體秩數字（10 / 8 / 2 / 7 條秩 6 / 合併秩 8）。
+        # 沒有這一步，那些數字在 repo 裡沒有任何東西能重現——就是 W₁₂/W₂₀ 的失敗模式。
+        run: python3 tools/a3_functionals.py
