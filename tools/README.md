@@ -46,12 +46,15 @@ ROADMAP A-3 的上界問題「到底要證哪幾條泛函、夠不夠」。同�
 * 死狀態 2 條 + Kirchhoff 流守恆可用 7 條（秩 6）= 秩 8，**完備**。
 * `boundary_step_unique` 與 K 區交錯計數落在上述列空間內，是被蘊含的推論，
   **不需要另證**——這是對 ROADMAP 舊表的修正，詳見 `docs/ROADMAP-A.md` A-3。
-* **Lean↔Python 對帳（兩條錨）**：`LEAN_INEDGES` 是從 Lean `Flow.inEdges` 的 `#guard`
-  抄來的 16 邊關聯表；`LEAN_DELTA_RELATIONS` 是從 `FlowDelta` §53–54 的 9 條差分層
-  恆等式抄來的係數向量。本腳本用自己的 `step2` 重算後逐條比對，並確認那 9 條
-  在 ΔF 上恆為零、秩 = 8、且與「死狀態 + 可用流守恆」張出同一個空間。
+* **Lean↔Python 對帳（三條錨）**：`LEAN_INEDGES`（`Flow.inEdges` 的 16 邊關聯表）、
+  `LEAN_DELTA_RELATIONS`（`FlowDelta` §53–54 的 9 條差分層恆等式係數向量）、
+  `LEAN_FREE_IDX` + `LEAN_RECONSTRUCTION`（`DimUpper` §58 的 10 個自由座標，
+  與另外 8 個座標的重建公式）。本腳本用自己的 `step2` 重算後逐條比對，並確認：
+  那 9 條在 ΔF 上恆為零、秩 = 8、與「死狀態 + 可用流守恆」張出同一空間；
+  自由座標全零迫使整個向量為零（對應 `pick_injective_on_Sol`）；
+  重建公式與 9 條解出來的一致。
   與 `certificates.py` 的 `LEAN_DF10` 同一個模式——**沒有這些錨，腳本守的只是
-  數學結論**，Lean 的 `step2` 或那 9 條定理被改動時不會叫。
+  數學結論**，Lean 的 `step2`、那 9 條定理或自由座標選取被改動時不會叫。
 
 ROADMAP A-3 現在寫進了具體秩數字，這支腳本就是它們在 repo 裡的出處。
 沒有它，那些數字只是傳說——`W₁₂` / `W₂₀` 憑證當初就是這樣壞掉的。
