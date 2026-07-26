@@ -39,6 +39,7 @@ Mathlib rev c66c0c58（Lean v4.28.0-rc1）。承接 `Collatz_FST_Flow.lean`（§
 把這 9 條打包成係數向量並論證秩 = 8、下界的 10×10 行列式、
 以及維度定理本身（`dim span(ΔF) = 10`）。
 -/
+import Lean4RealConstruction.ProjectA.Collatz_FST_SimpAttr
 import Lean4RealConstruction.ProjectA.Collatz_FST_Flow
 import Lean4RealConstruction.ProjectA.Collatz_FST_NoLinearRanking
 
@@ -49,46 +50,52 @@ open CollatzFST
 /-! ## §52 座標橋：ΔF 的每一格就是端點 `occ2` 之差
 
 `LP.KEYS` 是閉項，故 `LP.F x` 化約成 18 元字面串列、`LP.ΔF x` 化約成逐格相減，
-每條橋都是 `rfl`。有了它們，§51 的 ℕ 等式與 ΔF 的 ℤ 座標可以直接交給 `omega`。 -/
+每條橋都是 `rfl`。有了它們，§51 的 ℕ 等式與 ΔF 的 ℤ 座標可以直接交給 `omega`。
+
+這 18 條掛在**具名** simp set `coord_bridge`（宣告見 `Collatz_FST_SimpAttr.lean`），
+**不參與全域 simp**：要展開時明確寫 `simp [coord_bridge]`，不想展開時
+`simp` / `norm_num` 碰不到它們。原本掛全域 `@[simp]` 的版本會讓任何用到 `simp`
+的證明突然多出 18 個 `occ2` 差的算式——`DimUpper` 與 `DimLower` 兩個 PR 都為此
+繞過 `simp`，第二次繞道就是該改的訊號。 -/
 
 /-- 端點特徵：`E x k = occ2 (1,K,0) (extIn x) k`（取 ℤ 值）。 -/
 def E (x : ℕ) (k : (ℕ × Phase × ℕ) × ℕ) : ℤ := (occ2 (1, Phase.K, 0) (extIn x) k : ℤ)
 
-@[simp] lemma dF_00 (x : ℕ) : (LP.ΔF x).getD 0 0
+@[coord_bridge] lemma dF_00 (x : ℕ) : (LP.ΔF x).getD 0 0
     = E (Todd x) (((0 : ℕ), Phase.K, (0 : ℕ)), 0) - E x (((0 : ℕ), Phase.K, (0 : ℕ)), 0) := rfl
-@[simp] lemma dF_01 (x : ℕ) : (LP.ΔF x).getD 1 0
+@[coord_bridge] lemma dF_01 (x : ℕ) : (LP.ΔF x).getD 1 0
     = E (Todd x) (((0 : ℕ), Phase.K, (0 : ℕ)), 1) - E x (((0 : ℕ), Phase.K, (0 : ℕ)), 1) := rfl
-@[simp] lemma dF_02 (x : ℕ) : (LP.ΔF x).getD 2 0
+@[coord_bridge] lemma dF_02 (x : ℕ) : (LP.ΔF x).getD 2 0
     = E (Todd x) (((1 : ℕ), Phase.K, (0 : ℕ)), 0) - E x (((1 : ℕ), Phase.K, (0 : ℕ)), 0) := rfl
-@[simp] lemma dF_03 (x : ℕ) : (LP.ΔF x).getD 3 0
+@[coord_bridge] lemma dF_03 (x : ℕ) : (LP.ΔF x).getD 3 0
     = E (Todd x) (((1 : ℕ), Phase.K, (0 : ℕ)), 1) - E x (((1 : ℕ), Phase.K, (0 : ℕ)), 1) := rfl
-@[simp] lemma dF_04 (x : ℕ) : (LP.ΔF x).getD 4 0
+@[coord_bridge] lemma dF_04 (x : ℕ) : (LP.ΔF x).getD 4 0
     = E (Todd x) (((2 : ℕ), Phase.K, (0 : ℕ)), 0) - E x (((2 : ℕ), Phase.K, (0 : ℕ)), 0) := rfl
-@[simp] lemma dF_05 (x : ℕ) : (LP.ΔF x).getD 5 0
+@[coord_bridge] lemma dF_05 (x : ℕ) : (LP.ΔF x).getD 5 0
     = E (Todd x) (((2 : ℕ), Phase.K, (0 : ℕ)), 1) - E x (((2 : ℕ), Phase.K, (0 : ℕ)), 1) := rfl
-@[simp] lemma dF_06 (x : ℕ) : (LP.ΔF x).getD 6 0
+@[coord_bridge] lemma dF_06 (x : ℕ) : (LP.ΔF x).getD 6 0
     = E (Todd x) (((0 : ℕ), Phase.S, (0 : ℕ)), 0) - E x (((0 : ℕ), Phase.S, (0 : ℕ)), 0) := rfl
-@[simp] lemma dF_07 (x : ℕ) : (LP.ΔF x).getD 7 0
+@[coord_bridge] lemma dF_07 (x : ℕ) : (LP.ΔF x).getD 7 0
     = E (Todd x) (((0 : ℕ), Phase.S, (0 : ℕ)), 1) - E x (((0 : ℕ), Phase.S, (0 : ℕ)), 1) := rfl
-@[simp] lemma dF_08 (x : ℕ) : (LP.ΔF x).getD 8 0
+@[coord_bridge] lemma dF_08 (x : ℕ) : (LP.ΔF x).getD 8 0
     = E (Todd x) (((0 : ℕ), Phase.S, (1 : ℕ)), 0) - E x (((0 : ℕ), Phase.S, (1 : ℕ)), 0) := rfl
-@[simp] lemma dF_09 (x : ℕ) : (LP.ΔF x).getD 9 0
+@[coord_bridge] lemma dF_09 (x : ℕ) : (LP.ΔF x).getD 9 0
     = E (Todd x) (((0 : ℕ), Phase.S, (1 : ℕ)), 1) - E x (((0 : ℕ), Phase.S, (1 : ℕ)), 1) := rfl
-@[simp] lemma dF_10 (x : ℕ) : (LP.ΔF x).getD 10 0
+@[coord_bridge] lemma dF_10 (x : ℕ) : (LP.ΔF x).getD 10 0
     = E (Todd x) (((1 : ℕ), Phase.S, (0 : ℕ)), 0) - E x (((1 : ℕ), Phase.S, (0 : ℕ)), 0) := rfl
-@[simp] lemma dF_11 (x : ℕ) : (LP.ΔF x).getD 11 0
+@[coord_bridge] lemma dF_11 (x : ℕ) : (LP.ΔF x).getD 11 0
     = E (Todd x) (((1 : ℕ), Phase.S, (0 : ℕ)), 1) - E x (((1 : ℕ), Phase.S, (0 : ℕ)), 1) := rfl
-@[simp] lemma dF_12 (x : ℕ) : (LP.ΔF x).getD 12 0
+@[coord_bridge] lemma dF_12 (x : ℕ) : (LP.ΔF x).getD 12 0
     = E (Todd x) (((1 : ℕ), Phase.S, (1 : ℕ)), 0) - E x (((1 : ℕ), Phase.S, (1 : ℕ)), 0) := rfl
-@[simp] lemma dF_13 (x : ℕ) : (LP.ΔF x).getD 13 0
+@[coord_bridge] lemma dF_13 (x : ℕ) : (LP.ΔF x).getD 13 0
     = E (Todd x) (((1 : ℕ), Phase.S, (1 : ℕ)), 1) - E x (((1 : ℕ), Phase.S, (1 : ℕ)), 1) := rfl
-@[simp] lemma dF_14 (x : ℕ) : (LP.ΔF x).getD 14 0
+@[coord_bridge] lemma dF_14 (x : ℕ) : (LP.ΔF x).getD 14 0
     = E (Todd x) (((2 : ℕ), Phase.S, (0 : ℕ)), 0) - E x (((2 : ℕ), Phase.S, (0 : ℕ)), 0) := rfl
-@[simp] lemma dF_15 (x : ℕ) : (LP.ΔF x).getD 15 0
+@[coord_bridge] lemma dF_15 (x : ℕ) : (LP.ΔF x).getD 15 0
     = E (Todd x) (((2 : ℕ), Phase.S, (0 : ℕ)), 1) - E x (((2 : ℕ), Phase.S, (0 : ℕ)), 1) := rfl
-@[simp] lemma dF_16 (x : ℕ) : (LP.ΔF x).getD 16 0
+@[coord_bridge] lemma dF_16 (x : ℕ) : (LP.ΔF x).getD 16 0
     = E (Todd x) (((2 : ℕ), Phase.S, (1 : ℕ)), 0) - E x (((2 : ℕ), Phase.S, (1 : ℕ)), 0) := rfl
-@[simp] lemma dF_17 (x : ℕ) : (LP.ΔF x).getD 17 0
+@[coord_bridge] lemma dF_17 (x : ℕ) : (LP.ΔF x).getD 17 0
     = E (Todd x) (((2 : ℕ), Phase.S, (1 : ℕ)), 1) - E x (((2 : ℕ), Phase.S, (1 : ℕ)), 1) := rfl
 
 /-! ## §53 死狀態的 2 條 -/
@@ -118,7 +125,7 @@ theorem dF_flow_1K0 (x : ℕ) : (LP.ΔF x).getD 4 0 = (LP.ΔF x).getD 2 0 + (LP.
   have hy := kirchhoff_occ2_extIn_clean (Todd x) ((1 : ℕ), Phase.K, (0 : ℕ)) (by decide) (by decide)
   simp only [show inEdges ((1 : ℕ), Phase.K, (0 : ℕ)) = [(((2 : ℕ), Phase.K, (0 : ℕ)), 0)] from rfl,
     List.map_cons, List.map_nil, List.sum_cons, List.sum_nil] at hx hy
-  simp only [dF_02, dF_03, dF_04, E]
+  simp only [coord_bridge, E]
   omega
 
 /-- 狀態 (2,K,0) 的流守恆。**這就是 ROADMAP 舊表的「K 區交錯 e₄ = e₅ + e₆」**
@@ -129,7 +136,7 @@ theorem dF_flow_2K0 (x : ℕ) : (LP.ΔF x).getD 3 0 = (LP.ΔF x).getD 4 0 + (LP.
   simp only [show inEdges ((2 : ℕ), Phase.K, (0 : ℕ)) = [(((1 : ℕ), Phase.K, (0 : ℕ)), 1)] from rfl,
     List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, if_neg (by decide : ¬
       (((1 : ℕ), Phase.K, (0 : ℕ)) = ((2 : ℕ), Phase.K, (0 : ℕ))))] at hx hy
-  simp only [dF_03, dF_04, dF_05, E]
+  simp only [coord_bridge, E]
   omega
 
 /-- 狀態 (1,S,0) 的流守恆。 -/
@@ -142,7 +149,7 @@ theorem dF_flow_1S0 (x : ℕ) :
       = [(((2 : ℕ), Phase.S, (0 : ℕ)), 0), (((2 : ℕ), Phase.S, (1 : ℕ)), 0)] from rfl,
     List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, if_neg (by decide : ¬
       (((1 : ℕ), Phase.K, (0 : ℕ)) = ((1 : ℕ), Phase.S, (0 : ℕ))))] at hx hy
-  simp only [dF_10, dF_11, dF_14, dF_16, E]
+  simp only [coord_bridge, E]
   omega
 
 /-- 狀態 (1,S,1) 的流守恆。 -/
@@ -155,7 +162,7 @@ theorem dF_flow_1S1 (x : ℕ) :
       = [(((0 : ℕ), Phase.S, (0 : ℕ)), 1), (((0 : ℕ), Phase.S, (1 : ℕ)), 1)] from rfl,
     List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, if_neg (by decide : ¬
       (((1 : ℕ), Phase.K, (0 : ℕ)) = ((1 : ℕ), Phase.S, (1 : ℕ))))] at hx hy
-  simp only [dF_07, dF_09, dF_12, dF_13, E]
+  simp only [coord_bridge, E]
   omega
 
 /-- 狀態 (2,S,0) 的流守恆。 -/
@@ -168,7 +175,7 @@ theorem dF_flow_2S0 (x : ℕ) :
       = [(((1 : ℕ), Phase.S, (0 : ℕ)), 1), (((1 : ℕ), Phase.S, (1 : ℕ)), 1)] from rfl,
     List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, if_neg (by decide : ¬
       (((1 : ℕ), Phase.K, (0 : ℕ)) = ((2 : ℕ), Phase.S, (0 : ℕ))))] at hx hy
-  simp only [dF_11, dF_13, dF_14, dF_15, E]
+  simp only [coord_bridge, E]
   omega
 
 /-- 狀態 (2,S,1) 的流守恆（自環使兩側各有一個 ΔF₁₇，已對消）。 -/
@@ -181,7 +188,7 @@ theorem dF_flow_2S1 (x : ℕ) :
          (((2 : ℕ), Phase.S, (1 : ℕ)), 1)] from rfl,
     List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, if_neg (by decide : ¬
       (((1 : ℕ), Phase.K, (0 : ℕ)) = ((2 : ℕ), Phase.S, (1 : ℕ))))] at hx hy
-  simp only [dF_05, dF_15, dF_16, E]
+  simp only [coord_bridge, E]
   omega
 
 /-- 兩個可能終末合併的流守恆（第 7 條）。ΔF₆、ΔF₈ 在兩側對消，
@@ -197,7 +204,7 @@ theorem dF_flow_terminal_merged (x : ℕ) :
       = [(((1 : ℕ), Phase.K, (0 : ℕ)), 0), (((1 : ℕ), Phase.S, (0 : ℕ)), 0),
          (((1 : ℕ), Phase.S, (1 : ℕ)), 0)] from rfl,
     List.map_cons, List.map_nil, List.sum_cons, List.sum_nil] at hx hy
-  simp only [dF_02, dF_07, dF_09, dF_10, dF_12, E]
+  simp only [coord_bridge, E]
   omega
 
 /-! ## §55 數值回歸（`#guard` 失敗即 build 紅）
