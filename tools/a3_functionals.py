@@ -105,6 +105,15 @@ LEAN_RECONSTRUCTION: dict[int, dict[int, int]] = {
     16: {15: 1, 2: -1},
 }
 
+# Lean `LP.W₁₀` 與 `Collatz_FST_NoLinearRanking.lean` §35 的 λ（同 certificates.py）。
+W10: list[int] = [231, 323, 403, 551, 681, 877, 983, 1079, 1305, 1511]
+LAM10: list[int] = [100, 64, 119, 51, 56, 183, 164, 18, 191, 78]
+
+# Lean `ProjectA/Collatz_FST_DimLower.lean` §61–63 的下界資料：見證集用 W₁₀，
+# 投影到自由座標的 10×10 矩陣行列式 = 31（≠ 0 ⇒ 10 條線性獨立 ⇒ 下界 10）。
+LEAN_LOWER_WITNESSES: list[int] = W10
+LEAN_LOWER_DET: int = 31
+
 
 def todd(x: int) -> int:
     n = 3 * x + 1
@@ -247,9 +256,31 @@ def check_upper_bound_data() -> None:
                   f"重建公式 a{i} = {expected if coeff else 0} 與解一致")
 
 
+def check_lower_bound_data() -> None:
+    """與 Lean `DimLower` 的下界資料對帳：W₁₀ 投影後的 10×10 矩陣可逆。"""
+    print("\n=== Lean↔Python 錨：下界的見證與行列式（DimLower §61–63）===")
+    check(LEAN_LOWER_WITNESSES == W10,
+          f"下界見證集 = W₁₀ = {W10}")
+    dF = {x: F(todd(x)) - F(x) for x in LEAN_LOWER_WITNESSES}
+    full = sp.Matrix([list(dF[x]) for x in LEAN_LOWER_WITNESSES])
+    check(full.rank() == 10, f"10 條 ΔF 在 18 維裡的秩 = {full.rank()}（需要 10）")
+    M = sp.Matrix([[int(dF[x][j]) for j in LEAN_FREE_IDX]
+                   for x in LEAN_LOWER_WITNESSES])
+    det = M.det()
+    check(det == LEAN_LOWER_DET,
+          f"投影到自由座標的 10×10 行列式 = {det}（Lean 檔頭記的是 {LEAN_LOWER_DET}）")
+    check(det != 0, "行列式 ≠ 0 ⇒ 投影後仍線性獨立 ⇒ 下界 10 成立")
+    # 觀察（非定理）：這個 31 與 Farkas 憑證的 Σλ·ΔF = 31·e₇ 是同一個數字
+    A = sp.Matrix([list(dF[x]) for x in W10])
+    comb = (sp.Matrix([LAM10]) * A).tolist()[0]
+    check(comb[6] == LEAN_LOWER_DET,
+          f"觀察：Farkas 組合的第 7 座標也是 {comb[6]}（與行列式同值，僅記錄不主張因果）")
+
+
 def main() -> int:
     check_lean_anchor()
     check_upper_bound_data()
+    check_lower_bound_data()
 
     odds = list(range(3, ODD_MAX, 2))
     D = sp.Matrix.vstack(*[F(todd(x)) - F(x) for x in odds])
