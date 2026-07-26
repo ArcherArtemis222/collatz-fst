@@ -46,14 +46,21 @@ theorem no_global_odd_ranking :
 
 ---
 
-## A-2 仿射截距 `β_m` ★★ 中
+## A-2 仿射截距 `β_m` ★★ 中 ——【已完成】
+
+**狀態（2026-07-26，分支 `a/affine-offsets`）。** 升級已落地：
+`CollatzFST.TwoMode.no_go_2mode_affine_potential` 與
+`CollatzFST.L3.no_go_level3_2mode_affine_potential`，`β₀ β₁` 皆不受非負限制。
+兩組雙模式憑證的 mode-flow balance `Σλ(e_{m(y)} − e_{m(x)}) = [0, 0]` 已由
+`tools/certificates.py` 重算驗證；一如下方驗收點的預期，收尾 `ring` 原封不動通過。
+原線性版定理保留未動。以下為原始工作描述，留作紀錄。
 
 **問題。** HandOver 宣稱定理「已直接升級」到 `V_m(x) = β_m + θ_mᵀ F(x)`，
 理由是雙模式 Farkas 憑證滿足 mode-flow balance：
 
 $$\sum_i \lambda_i\,(e_{m(y_i)} - e_{m(x_i)}) = 0$$
 
-但 Lean 裡三條主定理仍是純線性的 `dot θ (F x)`，**升級尚未發生**。
+但 Lean 裡三條主定理過去仍是純線性的 `dot θ (F x)`（本項已補齊）。
 
 **做法。** 以 2-mode 為例，敘述改成
 

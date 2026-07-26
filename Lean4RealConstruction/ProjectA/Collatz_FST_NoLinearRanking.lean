@@ -11,8 +11,9 @@ Mathlib rev c66c0c58（Lean v4.28.0-rc1）。承接 `Collatz_FST_Level2.lean`。
   ¬ ∃ θ : Fin 18 → ℚ, (∀ i, 0 ≤ θ i) ∧ ∀ x ∈ W₁₀, dot θ (ΔF x) < 0
 
 `no_global_odd_ranking`（標題句）：對本 Level 2 automaton occupation feature class，
-**不存在**對每個奇數 x 的單次加速迭代皆嚴格下降的非負線性勢能——
-由 W₁₀ ⊆ 奇數 a fortiori 得出。
+**不存在**對每個奇數 x > 1 的單次加速迭代皆嚴格下降的非負線性勢能——
+由 W₁₀ ⊆ 奇數 ∩ (1, ∞) a fortiori 得出。量詞排除 x = 1
+（HandOver「非平凡量詞」；Todd 1 = 1 ⇒ ΔF 1 = 0，未排除版可被平凡見證）。
 
 ## 證明骨架（Farkas 憑證內嵌於證明）
 
@@ -241,12 +242,20 @@ theorem no_nonneg_linear_ranking :
 
 lemma W₁₀_odd : ∀ x ∈ W₁₀, x % 2 = 1 := by decide
 
-/-- **標題句**：對此 Level 2 occupation feature class，不存在對**每個奇數**的
-單次加速迭代皆嚴格下降的非負線性 additive ranking function。 -/
+lemma W₁₀_gt_one : ∀ x ∈ W₁₀, 1 < x := by decide
+
+/-- **標題句**：對此 Level 2 occupation feature class，不存在對**每個奇數 `x > 1`**的
+單次加速迭代皆嚴格下降的非負線性 additive ranking function。
+
+量詞排除 `x = 1`（HandOver「非平凡量詞 (The Trivial Trap)」條款；ROADMAP A-1）：
+`Todd 1 = 1` ⇒ `ΔF 1 = 0`，未排除的敘述會被 `x = 1` 平凡見證
+（`dot θ 0 = 0 < 0` 恆假）。加上 `1 < x` 後被否定的存在敘述變弱，定理嚴格變強。 -/
 theorem no_global_odd_ranking :
-    ¬ ∃ θ : Fin 18 → ℚ, (∀ i, 0 ≤ θ i) ∧ ∀ x : ℕ, x % 2 = 1 → dot θ (ΔF x) < 0 := by
+    ¬ ∃ θ : Fin 18 → ℚ, (∀ i, 0 ≤ θ i) ∧
+      ∀ x : ℕ, x % 2 = 1 → 1 < x → dot θ (ΔF x) < 0 := by
   rintro ⟨θ, hθ, h⟩
-  exact no_nonneg_linear_ranking ⟨θ, hθ, fun x hx => h x (W₁₀_odd x hx)⟩
+  exact no_nonneg_linear_ranking
+    ⟨θ, hθ, fun x hx => h x (W₁₀_odd x hx) (W₁₀_gt_one x hx)⟩
 
 /-! ## §37 數據驗證（回歸；全部應輸出 `true`） -/
 
