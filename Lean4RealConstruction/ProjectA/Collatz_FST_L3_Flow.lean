@@ -34,10 +34,25 @@ Mathlib rev c66c0c58（Lean v4.28.0-rc1）。承接 `Collatz_FST_L3_2Mode_Recon.
   （入流用 28 條可達邊的關聯結構，由 `step3` 就地算出）。
 * `kirchhoff_occ3` / `kirchhoff_occ3_extIn`：特徵層的 Kirchhoff 關係。
 
+* `runCarry_digits_mem`（§70）：讀完 `Nat.digits 2 x` 後進位 ∈ {1,2}。
+* `run3_extIn_terminal`：終末狀態恆為 `(0,S,0,1)` 或 `(0,S,1,0)`（**2 個**）。
+* `kirchhoff_occ3_extIn_clean`（12 條）／`_merged`（1 條）：13 條可用關係。
+
+## 為什麼 Level 2 的收尾技巧在這裡失效
+
+Level 2 靠「終末進位 = 0 + `run2_mem_S8` + `decide`」就收掉，因為 `S8` 裡進位為 0
+的狀態只有兩個。Level 3 不行：`S14` 裡進位為 0 的有**四個**
+（`(0,S,0,0)`、`(0,S,0,1)`、`(0,S,1,0)`、`(0,S,1,1)`），而且 `(0,S,0,0)` 確實可達
+（只是不會當終末）。所以需要 §70 那條進位引理，把「讀完 digits 後進位 ∈ {1,2}」
+接上「兩個哨兵零把 (c, ·) 打成 (0, S, c%2, (c/2)%2)」。
+
+兩條路線都探針過：**靠「digits 最後一位 = 1」的路一次就過**；
+靠算術（進位 = (3x+1) >> len）那條在最後的 `omega` 卡住——`2^L · c` 是非線性項，
+還要對 `c` 分情況。故採前者。
+
 ## 不在本檔範圍
 
-終末狀態定理（需要「讀完 `Nat.digits 2 x` 後進位 ∈ {1,2}」這條新引理）、
-13 條可用關係、差分層、以及維度上下界。
+差分層、以及維度上下界。
 -/
 import Lean4RealConstruction.ProjectA.Collatz_FST_L3_2Mode_Recon
 import Lean4RealConstruction.ProjectA.Collatz_FST_Flow
@@ -194,6 +209,106 @@ theorem kirchhoff_occ3_extIn (x : ℕ) (g : ℕ × Phase × ℕ × ℕ) :
         + occ3 (1, Phase.K, 0, 0) (extIn x) (g, 1)
         + (if run3 (1, Phase.K, 0, 0) (extIn x) = g then 1 else 0) :=
   kirchhoff_occ3 g (by decide) (extIn_bits x)
+
+/-! ## §70 終末狀態 -/
+
+lemma run3_append : ∀ (u v : List ℕ) (s : ℕ × Phase × ℕ × ℕ),
+    run3 s (u ++ v) = run3 (run3 s u) v := by
+  intro u
+  induction u with
+  | nil => intro v s; rfl
+  | cons b bs ih => intro v s; rw [List.cons_append, run3_cons, run3_cons, ih]
+
+/-- Level 3 的進位分量就是 Level 1 的 `runCarry`（`run2_fst` 的類比）。 -/
+lemma run3_fst (c : ℕ) (P : Phase) (h₂ h₁ : ℕ) (w : List ℕ) :
+    (run3 (c, P, h₂, h₁) w).1 = runCarry w c := by
+  induction w generalizing c P h₂ h₁ with
+  | nil => rfl
+  | cons b bs ih => rw [run3_cons]; exact ih _ _ _ _
+
+/-- **讀完 `Nat.digits 2 x` 後進位 ∈ {1,2}**。
+
+`x ≠ 0` 時 digits 非空且最後一位（MSB）為 1，故最後一步是
+`nextCarry c 1 = (3 + c) / 2`，配合前段進位 `< 3` 得 1 或 2；
+`x = 0` 時 digits 為空，進位保持初始值 1。 -/
+lemma runCarry_digits_mem (x : ℕ) :
+    runCarry (Nat.digits 2 x) 1 = 1 ∨ runCarry (Nat.digits 2 x) 1 = 2 := by
+  rcases eq_or_ne x 0 with rfl | hx
+  · left; rfl
+  · have hne : Nat.digits 2 x ≠ [] := Nat.digits_ne_nil_iff_ne_zero.mpr hx
+    have hlast : (Nat.digits 2 x).getLast hne = 1 := by
+      have h0 := Nat.getLast_digit_ne_zero 2 hx
+      have hlt : (Nat.digits 2 x).getLast hne < 2 :=
+        Nat.digits_lt_base (by norm_num) (List.getLast_mem hne)
+      omega
+    have hsplit : Nat.digits 2 x = (Nat.digits 2 x).dropLast ++ [1] := by
+      rw [← hlast]; exact (List.dropLast_concat_getLast hne).symm
+    have hc : runCarry (Nat.digits 2 x).dropLast 1 < 3 :=
+      run_carry_lt_three (by norm_num) (fun b hb =>
+        Nat.digits_lt_base (by norm_num) (List.dropLast_subset _ hb))
+    rw [hsplit, t_append, t_single]
+    unfold nextCarry
+    omega
+
+/-- **終末狀態定理（Level 3）**：讀完 `extIn x` 後的狀態恆為
+`(0,S,0,1)` 或 `(0,S,1,0)`——**2 個**，不是 4 個。對**所有** x 成立（不需奇偶假設）。
+
+`(0,S,0,0)` 雖然可達，卻永遠不會是終末：那需要讀完 digits 後進位為 0，而 §70 說不可能。 -/
+theorem run3_extIn_terminal (x : ℕ) :
+    run3 (1, Phase.K, 0, 0) (extIn x) = ((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ))
+      ∨ run3 (1, Phase.K, 0, 0) (extIn x) = ((0 : ℕ), Phase.S, (1 : ℕ), (0 : ℕ)) := by
+  have hdig : ∀ b ∈ Nat.digits 2 x, b < 2 := fun b hb =>
+    Nat.digits_lt_base (by norm_num) hb
+  have hmem : run3 (1, Phase.K, 0, 0) (Nat.digits 2 x) ∈ S14 := run3_mem_S14 hdig
+  have hcar : (run3 (1, Phase.K, 0, 0) (Nat.digits 2 x)).1 = 1
+      ∨ (run3 (1, Phase.K, 0, 0) (Nat.digits 2 x)).1 = 2 := by
+    rw [run3_fst]; exact runCarry_digits_mem x
+  have key : ∀ s ∈ S14, (s.1 = 1 ∨ s.1 = 2) →
+      run3 s [0, 0] = ((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ))
+        ∨ run3 s [0, 0] = ((0 : ℕ), Phase.S, (1 : ℕ), (0 : ℕ)) := by decide
+  rw [show extIn x = Nat.digits 2 x ++ [0, 0] from rfl, run3_append]
+  exact key _ hmem hcar
+
+/-! ## §71 13 條可用關係（12 乾淨 + 1 合併） -/
+
+/-- 非終末狀態的**乾淨流守恆**（12 條）：終末指示恆為 0。 -/
+theorem kirchhoff_occ3_extIn_clean (x : ℕ) (g : ℕ × Phase × ℕ × ℕ)
+    (h0 : g ≠ ((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ)))
+    (h1 : g ≠ ((0 : ℕ), Phase.S, (1 : ℕ), (0 : ℕ))) :
+    ((inEdges3 g).map (fun e => occ3 (1, Phase.K, 0, 0) (extIn x) e)).sum
+        + (if ((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)) = g then 1 else 0)
+      = occ3 (1, Phase.K, 0, 0) (extIn x) (g, 0)
+        + occ3 (1, Phase.K, 0, 0) (extIn x) (g, 1) := by
+  have hne : run3 (1, Phase.K, 0, 0) (extIn x) ≠ g := by
+    rcases run3_extIn_terminal x with h | h <;> rw [h] <;> exact fun hh => by
+      first | exact h0 hh.symm | exact h1 hh.symm
+  rw [kirchhoff_occ3_extIn x g, if_neg hne, Nat.add_zero]
+
+/-- 兩個可能終末的**合併流守恆**（第 13 條）：兩個終末指示相加恆為 1。 -/
+theorem kirchhoff_occ3_extIn_merged (x : ℕ) :
+    ((inEdges3 ((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ))).map
+          (fun e => occ3 (1, Phase.K, 0, 0) (extIn x) e)).sum
+        + ((inEdges3 ((0 : ℕ), Phase.S, (1 : ℕ), (0 : ℕ))).map
+            (fun e => occ3 (1, Phase.K, 0, 0) (extIn x) e)).sum
+      = (occ3 (1, Phase.K, 0, 0) (extIn x) (((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ)), 0)
+          + occ3 (1, Phase.K, 0, 0) (extIn x) (((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ)), 1))
+        + (occ3 (1, Phase.K, 0, 0) (extIn x) (((0 : ℕ), Phase.S, (1 : ℕ), (0 : ℕ)), 0)
+            + occ3 (1, Phase.K, 0, 0) (extIn x) (((0 : ℕ), Phase.S, (1 : ℕ), (0 : ℕ)), 1))
+        + 1 := by
+  have e0 := kirchhoff_occ3_extIn x ((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ))
+  have e1 := kirchhoff_occ3_extIn x ((0 : ℕ), Phase.S, (1 : ℕ), (0 : ℕ))
+  have hi0 : ¬ (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ))
+      = ((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ))) := by decide
+  have hi1 : ¬ (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ))
+      = ((0 : ℕ), Phase.S, (1 : ℕ), (0 : ℕ))) := by decide
+  rw [if_neg hi0, Nat.add_zero] at e0
+  rw [if_neg hi1, Nat.add_zero] at e1
+  have hsum : (if run3 (1, Phase.K, 0, 0) (extIn x)
+        = ((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ)) then 1 else 0)
+      + (if run3 (1, Phase.K, 0, 0) (extIn x)
+        = ((0 : ℕ), Phase.S, (1 : ℕ), (0 : ℕ)) then 1 else 0) = 1 := by
+    rcases run3_extIn_terminal x with h | h <;> rw [h] <;> decide
+  omega
 
 /-! ## §72 模式位元恆等式的全稱版
 
