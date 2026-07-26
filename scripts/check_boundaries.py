@@ -48,7 +48,10 @@ def zone_of(module: str) -> str | None:
 
 def zone_of_path(path: Path) -> str:
     rel = path.relative_to(LIBDIR)
-    return rel.parts[0].removesuffix(".lean") if rel.parts else "_root_"
+    if not rel.parts:
+        return "_root_"
+    p = rel.parts[0]
+    return p[:-5] if p.endswith(".lean") else p
 
 
 def main() -> int:
