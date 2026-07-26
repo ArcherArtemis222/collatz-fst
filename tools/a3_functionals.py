@@ -90,6 +90,21 @@ LEAN_DELTA_RELATIONS: list[tuple[str, dict[int, int]]] = [
     ("dF_flow_terminal_merged", {2: 1, 10: 1, 12: 1, 7: -1, 9: -1}),
 ]
 
+# Lean `ProjectA/Collatz_FST_DimUpper.lean` §58 的 `freeIdx`：10 個自由座標。
+LEAN_FREE_IDX: list[int] = [2, 3, 6, 7, 8, 9, 10, 11, 15, 17]
+
+# 同檔檔頭那張表：另外 8 個座標由自由座標重建的公式（{來源座標: 係數}）。
+LEAN_RECONSTRUCTION: dict[int, dict[int, int]] = {
+    0:  {},
+    1:  {},
+    4:  {2: 1, 3: 1},
+    5:  {2: -1},
+    12: {7: 1, 9: 1, 10: -1, 2: -1},
+    13: {10: 1, 2: 1},
+    14: {10: 1, 11: 1, 2: 1, 15: -1},
+    16: {15: 1, 2: -1},
+}
+
 
 def todd(x: int) -> int:
     n = 3 * x + 1
@@ -201,8 +216,40 @@ def check_delta_relations(D: sp.Matrix) -> None:
           "Lean 的 9 條與『死狀態 + 可用流守恆』張出同一個空間")
 
 
+def check_upper_bound_data() -> None:
+    """與 Lean `DimUpper` 的自由座標集與重建公式對帳（上界 ≤ 10 的資料面）。"""
+    print("\n=== Lean↔Python 錨：上界的自由座標與重建公式（DimUpper §58）===")
+    free = LEAN_FREE_IDX
+    det = [i for i in range(18) if i not in free]
+    check(len(free) == 10 and len(set(free)) == 10 and all(0 <= i < 18 for i in free),
+          f"自由座標 {free}：10 個、互異、皆 < 18")
+    check(sorted(LEAN_RECONSTRUCTION) == det,
+          f"重建公式的座標集 = 被決定的 8 個 {det}")
+
+    a = sp.symbols('a0:18')
+    rels = [sum(c * a[i] for i, c in coeff.items())
+            for _, coeff in LEAN_DELTA_RELATIONS]
+
+    # 1. 自由座標全零 ⇒ 整個向量為零（即 Lean 的 pick_injective_on_Sol）
+    zeroed = [r.subs({a[i]: 0 for i in free}) for r in rels]
+    sol = sp.solve(zeroed, [a[i] for i in det], dict=True)
+    check(len(sol) == 1 and all(sp.simplify(sol[0].get(a[i], 0)) == 0 for i in det),
+          "自由座標全零 ⇒ 被決定的 8 個也全零（對應 pick_injective_on_Sol）")
+
+    # 2. 重建公式與 9 條解出來的一致
+    solved = sp.solve(rels, [a[i] for i in det], dict=True)
+    check(len(solved) == 1, "9 條可唯一解出那 8 個座標")
+    if solved:
+        s = solved[0]
+        for i, coeff in LEAN_RECONSTRUCTION.items():
+            expected = sum(c * a[j] for j, c in coeff.items())
+            check(sp.simplify(s[a[i]] - expected) == 0,
+                  f"重建公式 a{i} = {expected if coeff else 0} 與解一致")
+
+
 def main() -> int:
     check_lean_anchor()
+    check_upper_bound_data()
 
     odds = list(range(3, ODD_MAX, 2))
     D = sp.Matrix.vstack(*[F(todd(x)) - F(x) for x in odds])
