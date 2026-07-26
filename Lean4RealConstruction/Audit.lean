@@ -41,12 +41,11 @@ namespace Lean4RealConstruction.Audit
 /-! Level 3 × valuation-parity 雙模式，Σλ = 31746。 -/
 #print axioms CollatzFST.L3.no_go_level3_2mode_potential
 
-/-! ## 強制版樣板（見檔頭說明，確認實際輸出後取消註解）
+/-! Level 2 特徵差分空間恰為 **10 維**有理線性子空間-/
+#print axioms CollatzFST.Flow.finrank_span_dFQ_eq_ten
 
 /-- info: 'CollatzFST.LP.no_nonneg_linear_ranking' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms CollatzFST.LP.no_nonneg_linear_ranking
-
--/
 
 end Lean4RealConstruction.Audit
