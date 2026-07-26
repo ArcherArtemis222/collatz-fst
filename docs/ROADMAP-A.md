@@ -169,12 +169,21 @@ HandOver 主張兩件事，目前都只活在註解與 `#eval` 裡，還不是�
 這一半不需要新數學——9 條關係就已經蘊含它，本檔只是把它說出口。
 自由座標集與 8 條重建公式由 `tools/a3_functionals.py` 對帳（CI 每次 push 跑）。
 
-**還沒做的（下界才是剩下的真工作）：** 挑 10 個具體 `ΔF xᵢ` 證線性獨立。
-現成的 `W₁₀ = [231, 323, 403, 551, 681, 877, 983, 1079, 1305, 1511]` 就可以用
-（那 10 條的秩正好是 10，專案主人已驗），所以「挑哪些 x」不必再搜。
-有了下界即可收成 `dim span(ΔF) = 10`。
+**下界也完成了**（`ProjectA/Collatz_FST_DimLower.lean`）——Level 2 的維度精確化到此收尾：
 
-Level 3 的 31 維同理，但先要形式化「可達邊恰 28 條」（`S8_reachable` 的 Level 3 版本）。
+- `Flow.dFQ_231` … `dFQ_1511`：`W₁₀` 那 10 條 ΔF 的 ℚ 字面向量（由 §34 的 `LP.ΔF_xxx` 得出）
+- `Flow.dFW_linearIndependent`：10 條線性獨立。判準是投影到 §58 那 10 個自由座標，
+  該 10×10 矩陣的行列式 = **31** ≠ 0
+- `Flow.ten_le_finrank_span_dFQ`：`10 ≤ dim span(ΔF)`
+- **`Flow.finrank_span_dFQ_eq_ten`：`dim span(ΔF) = 10`** ← HandOver 第一條主張的形式化
+
+見證集直接用現成的 `W₁₀`（`no_nonneg_linear_ranking` 那組 Farkas 見證），不必另外搜。
+行列式 31 與 Farkas 憑證的 `Σλ·ΔF = 31·e₇` 同值——僅記為觀察，**未主張因果關係**；
+`tools/a3_functionals.py` 有對帳。
+
+**A-3 剩下的只有 Level 3 的 31 維**：同理，但先要形式化「可達邊恰 28 條」
+（`S8_reachable` 的 Level 3 版本）。Level 2 這條路走完後，方法已經定型：
+流守恆 → 差分層泛函 → 解空間上界 → 具體見證下界。
 
 ---
 
