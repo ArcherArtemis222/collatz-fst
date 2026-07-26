@@ -237,9 +237,23 @@ section Verification
     (microTrace2 (1, Phase.K, 0) (extIn x)).countP (fun t => t.1 == g)
       == occ2 (1, Phase.K, 0) (extIn x) (g, 0) + occ2 (1, Phase.K, 0) (extIn x) (g, 1)
 
--- 邊表結構：16 條邊、無重複、每條邊恰屬於一個狀態的入邊表
+-- 邊表結構：16 條邊、每條邊恰屬於一個狀態的入邊表
 #guard allEdges.length == 16
 #guard (S8.map fun g => (inEdges g).length).sum == 16
+
+/- **Lean↔Python 錨**：把 16 條邊的**實際內容**釘住（不只長度）。
+`tools/a3_functionals.py` 的 `LEAN_INEDGES` 存的是同一張表，兩邊對帳。
+有人改了 `Core` 的 `step2`，這條 `#guard` 會紅；Python 那邊也會紅。
+與 `certificates.py` 的 `LEAN_DF10` 同一個模式。 -/
+#guard (S8.map fun g => inEdges g) ==
+  [[((2, Phase.K, 0), 0)],
+   [((1, Phase.K, 0), 1)],
+   [((0, Phase.S, 0), 0), ((0, Phase.S, 1), 0)],
+   [((1, Phase.K, 0), 0), ((1, Phase.S, 0), 0), ((1, Phase.S, 1), 0)],
+   [((2, Phase.S, 0), 0), ((2, Phase.S, 1), 0)],
+   [((0, Phase.S, 0), 1), ((0, Phase.S, 1), 1)],
+   [((1, Phase.S, 0), 1), ((1, Phase.S, 1), 1)],
+   [((2, Phase.K, 0), 1), ((2, Phase.S, 0), 1), ((2, Phase.S, 1), 1)]]
 
 -- 入流分解：S8 全狀態 × x < 120
 #guard (List.range 120).all fun x =>
@@ -247,9 +261,10 @@ section Verification
     (microTrace2 (1, Phase.K, 0) (extIn x)).countP (fun t => step2 t.1 t.2 == g)
       == ((inEdges g).map fun e => occ2 (1, Phase.K, 0) (extIn x) e).sum
 
--- 終末狀態恆落在 {(0,S,0), (0,S,1)}（下一步合併那兩條流守恆的依據）
-#guard (List.range 120).all fun x =>
-  run2 (1, Phase.K, 0) (extIn (2 * x + 3)) ∈ [((0 : ℕ), Phase.S, (0 : ℕ)), (0, Phase.S, 1)]
+-- 終末狀態恆落在 {(0,S,0), (0,S,1)}（下一步合併那兩條流守恆的依據）。
+-- 對**所有** x 成立，含 x = 0、x = 1 與偶數——不要只掃奇數，免得誤以為 1 是特例。
+#guard (List.range 240).all fun x =>
+  run2 (1, Phase.K, 0) (extIn x) ∈ [((0 : ℕ), Phase.S, (0 : ℕ)), (0, Phase.S, 1)]
 
 end Verification
 
