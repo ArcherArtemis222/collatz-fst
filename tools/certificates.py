@@ -8,9 +8,13 @@
    所以這是對「特徵定義是否忠實」的有效檢查。
 2. **重算憑證**：不看答案，用精確有理算術（sympy，無浮點）
    從見證集合解出 Farkas 對偶權重 λ，並確認它就是 Lean 裡寫死的那組整數。
+3. **Cramer 結構**：λ 就是見證矩陣的極大子式向量，而憑證的整數值（31、36、347…）
+   就是對應的行列式。這解釋了「λ 在相差尺度下唯一、t = 31 剛好解回整數」。
+   詳見 `docs/ROADMAP-A.md` A-4。
 
     python3 tools/certificates.py            # 全部驗一遍
     python3 tools/certificates.py --level2   # 只驗 Level 2 單模式
+    python3 tools/certificates.py --cramer   # 只驗 Cramer 結構
 
 依賴：numpy、sympy。不需要 z3（z3 是用來「搜尋」的，這裡只做重算與驗證）。
 """
@@ -19,6 +23,8 @@ from __future__ import annotations
 
 import argparse
 import sys
+from functools import reduce
+from math import gcd
 
 import numpy as np
 import sympy as sp
@@ -192,13 +198,72 @@ def run_two_mode(title: str, W, LAM, feat, mode_idx: int, n: int,
           "  ← 這決定 ROADMAP A-2 的仿射升級是否成立")
 
 
+# ────────────────────────────────────────────────────────────────────
+# Cramer 結構：λ 是極大子式向量，憑證的整數值就是子式
+# ────────────────────────────────────────────────────────────────────
+
+def _delta_matrix(W, feat, mode_idx: int, n: int, two_mode: bool) -> sp.Matrix:
+    if two_mode:
+        return sp.Matrix([two_mode_delta(x, feat, mode_idx, n).tolist() for x in W])
+    return sp.Matrix([(feat(todd(x)) - feat(x)).tolist() for x in W])
+
+
+def run_cramer(title: str, W, LAM, feat, mode_idx: int, n: int, two_mode: bool) -> None:
+    """λ = ±(被湮滅列的極大子式)/gcd，且組合值 S_j = ±det[被湮滅列 | 第 j 列]/gcd。
+
+    這解釋了 Level 2 單模式那個「λ 在相差正純量下唯一、t = 31 時解回整數」的觀察：
+    **31 不是湊出來的，它就是 10×10 見證矩陣的行列式**（Cramer 法則）。
+    """
+    print(f"\n=== {title}：Cramer 結構 ===")
+    m = len(W)
+    D = _delta_matrix(W, feat, mode_idx, n, two_mode)
+    S = (sp.Matrix([LAM]) * D).tolist()[0]
+    Z = [j for j in range(D.cols) if S[j] == 0]
+    NZ = [j for j in range(D.cols) if S[j] != 0]
+
+    # λ 垂直於「被湮滅」的那些列；取 m−1 個獨立列即可決定 λ（相差尺度）
+    basisZ = [Z[i] for i in D[:, Z].rref()[1]]
+    if not check(len(basisZ) == m - 1,
+                 f"被湮滅列的秩 = {len(basisZ)}（需要 {m - 1}，λ 才在相差尺度下唯一）"):
+        return
+    B = D[:, basisZ]
+
+    # 極大子式（刪掉第 i 個見證，帶交錯符號）
+    minors = [(-1) ** i * sp.Matrix([B.row(k) for k in range(m) if k != i]).det()
+              for i in range(m)]
+    g = reduce(gcd, [abs(int(t)) for t in minors])
+    prim = [int(t) // g for t in minors]
+    sign = 1 if prim == list(LAM) else (-1 if [-t for t in prim] == list(LAM) else 0)
+    check(sign != 0,
+          f"λ = (極大子式)/gcd，gcd = {g}，符號 {sign:+d} ⇒ λ 就是 Cramer 的餘因子向量")
+
+    # 憑證的每個整數值都是一個 m×m 子式（除以同一個 gcd）。
+    # 全域符號 ε 是列擺放位置與交錯符號的約定，由第一個座標定出後必須對所有座標一致。
+    dets = {j: D[:, basisZ + [j]].det() for j in NZ}
+    j0 = NZ[0]
+    eps = 1 if sp.Rational(dets[j0], g) == S[j0] else -1
+    bad = [(j, S[j], eps * sp.Rational(dets[j], g))
+           for j in NZ if eps * sp.Rational(dets[j], g) != S[j]]
+    check(not bad,
+          f"組合的 {len(NZ)} 個非零值全部 = det[被湮滅列 | 該列]/gcd"
+          f"（全域符號 ε = {eps:+d}，由座標 {j0} 定出後對所有座標一致）")
+    for j, sj, dj in bad[:3]:
+        print(f"        座標 {j}: S_j = {sj} vs ε·det/gcd = {dj}")
+    print(f"        例：座標 {j0} 的值 {S[j0]} = {eps:+d} × det {dets[j0]} / gcd {g}")
+
+    check(sum(LAM) not in [abs(v) for v in dets.values()],
+          f"Σλ = {sum(LAM)} **不是**上述任何行列式——Σλ 只是規一化尺度，"
+          "不是 Cramer 量（單模式即 Σλ = 1024 而 det = 31）")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--level2", action="store_true")
     ap.add_argument("--twomode", action="store_true")
     ap.add_argument("--level3", action="store_true")
+    ap.add_argument("--cramer", action="store_true")
     a = ap.parse_args()
-    everything = not (a.level2 or a.twomode or a.level3)
+    everything = not (a.level2 or a.twomode or a.level3 or a.cramer)
 
     if everything or a.level2:
         run_level2()
@@ -208,6 +273,10 @@ def main() -> int:
     if everything or a.level3:
         run_two_mode("Level 3 雙模式：W20 / no_go_level3_2mode_potential",
                      W20, LAM20, F3, MODE_IDX_L3, 48, 31746, 27)
+    if everything or a.cramer:
+        run_cramer("Level 2 單模式 W₁₀", W10, LAM10, F2, MODE_IDX_L2, 18, False)
+        run_cramer("Level 2 雙模式 W₁₂", W12, LAM12, F2, MODE_IDX_L2, 18, True)
+        run_cramer("Level 3 雙模式 W₂₀", W20, LAM20, F3, MODE_IDX_L3, 48, True)
 
     print()
     if _failures:
