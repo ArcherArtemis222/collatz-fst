@@ -13,6 +13,8 @@ Mathlib rev c66c0c58（Lean v4.28.0-rc1）。承接 `Collatz_FST_L3_2Mode_Recon.
 `no_go_level3_2mode_affine_potential`（仿射版，ROADMAP A-2）：勢能升級為
 V_m(x) = β_m + θ_mᵀ F3(x)（β₀ β₁ 不受非負限制）仍不可行——
 憑證滿足模式流量平衡，β 項在 Farkas 組合中自動抵消，同一組 λ 直接收掉。
+`no_global_odd_level3_2mode_potential`（全稱版，ROADMAP A-1）：同敘述對全體奇數
+x > 1 成立——由 W₂₀ ⊆ 奇數 ∩ (1, ∞) a fortiori 得出，三條主定理形式一致。
 
 ## 憑證（我方精確整數版，對方已採用）
 
@@ -681,6 +683,23 @@ theorem no_go_level3_2mode_affine_potential :
         + 155 * θ₁ 46 :=
     add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (add_nonneg (mul_nonneg (by norm_num) (hθ₀ 10)) (mul_nonneg (by norm_num) (hθ₀ 11))) (mul_nonneg (by norm_num) (hθ₀ 13))) (mul_nonneg (by norm_num) (hθ₀ 14))) (mul_nonneg (by norm_num) (hθ₀ 24))) (mul_nonneg (by norm_num) (hθ₀ 26))) (mul_nonneg (by norm_num) (hθ₀ 27))) (mul_nonneg (by norm_num) (hθ₀ 29))) (mul_nonneg (by norm_num) (hθ₀ 30))) (mul_nonneg (by norm_num) (hθ₀ 40))) (mul_nonneg (by norm_num) (hθ₀ 42))) (mul_nonneg (by norm_num) (hθ₀ 43))) (mul_nonneg (by norm_num) (hθ₀ 44))) (mul_nonneg (by norm_num) (hθ₀ 45))) (mul_nonneg (by norm_num) (hθ₀ 46))) (mul_nonneg (by norm_num) (hθ₁ 8))) (mul_nonneg (by norm_num) (hθ₁ 10))) (mul_nonneg (by norm_num) (hθ₁ 13))) (mul_nonneg (by norm_num) (hθ₁ 17))) (mul_nonneg (by norm_num) (hθ₁ 24))) (mul_nonneg (by norm_num) (hθ₁ 27))) (mul_nonneg (by norm_num) (hθ₁ 29))) (mul_nonneg (by norm_num) (hθ₁ 32))) (mul_nonneg (by norm_num) (hθ₁ 40))) (mul_nonneg (by norm_num) (hθ₁ 43))) (mul_nonneg (by norm_num) (hθ₁ 45))) (mul_nonneg (by norm_num) (hθ₁ 46))
   exact absurd hlt (not_lt.mpr hge)
+lemma W20_odd : ∀ x ∈ W20, x % 2 = 1 := by decide
+
+lemma W20_gt_one : ∀ x ∈ W20, 1 < x := by decide
+
+/-- **全稱版**（與 `LP.no_global_odd_ranking`、`TwoMode.no_global_odd_2mode_potential`
+同形式；ROADMAP A-1）：不存在兩組非負權重使 Level 3 雙模式勢能對**每個奇數 `x > 1`**
+的單次加速迭代皆嚴格下降——由 W₂₀ ⊆ 奇數 ∩ (1, ∞) a fortiori 得出。
+量詞排除 `x = 1` 對應 HandOver「非平凡量詞 (The Trivial Trap)」條款。 -/
+theorem no_global_odd_level3_2mode_potential :
+    ¬ ∃ (θ₀ θ₁ : Fin 48 → ℚ),
+      (∀ i, 0 ≤ θ₀ i) ∧ (∀ i, 0 ≤ θ₁ i) ∧
+      ∀ x : ℕ, x % 2 = 1 → 1 < x →
+        (if (F3 (Todd x)).getD 33 0 = 1 then dot48 θ₁ (F3 (Todd x)) else dot48 θ₀ (F3 (Todd x)))
+          - (if (F3 x).getD 33 0 = 1 then dot48 θ₁ (F3 x) else dot48 θ₀ (F3 x)) < 0 := by
+  rintro ⟨θ₀, θ₁, hθ₀, hθ₁, h⟩
+  exact no_go_level3_2mode_potential
+    ⟨θ₀, θ₁, hθ₀, hθ₁, fun x hx => h x (W20_odd x hx) (W20_gt_one x hx)⟩
 
 /-! ## §48 回歸驗證 -/
 
