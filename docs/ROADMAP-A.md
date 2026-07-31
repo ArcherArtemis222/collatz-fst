@@ -212,6 +212,32 @@ Lean 那條目前只 `decide` 了 40 個端點，**需要推廣成全稱版**。
 「對所有 x」寫法可以照抄。
 
 方法本身沿用 Level 2：流守恆 → 差分層泛函 → 解空間上界 → 具體見證下界。
+
+### Level 3 進度（2026-07-26 更新）
+
+**已完成**（`ProjectA/Collatz_FST_L3_Flow.lean` §65–72、`…_L3_Delta.lean` §73–78、
+`…_L3_DimUpper.lean` §79–81）：
+
+- 流守恆基礎：`S14`、`microTrace3_flow_conservation`、出入流接特徵、28 邊關聯結構
+- 終末狀態定理 `run3_extIn_terminal`（2 個終末）＋ 13 條可用關係
+- 模式位元恆等式全稱版 `occ3_mode_bit_sum`
+- 差分層 65 條：`dF96_dead`（40）、`dF96_flow_clean`（22）、區塊死 2、`dF96_fstart`
+- **上界：`finrank_span_dFQ96_le : dim span(dF96) ≤ 31`**
+  （`Sol96 = ker (pi phi65)` + `pick96` 31 自由座標單射；檔案由
+  `tools/gen_l3dim.py` 機械生成，錨資料同 `l3_recon.py` ⑦，逐位可重現）
+
+**待做（唯一剩餘）——下界 `31 ≤`，然後 `le_antisymm` 收 `dim = 31`：**
+
+1. 見證：`LEAN_L3_WITNESSES`（31 個，投影行列式 = 1）已錨在 `l3_recon.py`。
+2. 係數：`LEAN_L3_WITNESS_INV`（么模逆 `B`，max|B| = 3）已錨。**不要餵 `linarith`**
+   （31 元 31 式會撞牆）：`g i = Σⱼ B[j][i]·hⱼ` 一行 `linear_combination`。
+3. 需要 31 條見證值引理 `dFQ96 wᵢ (freeIdx96 j)` 的字面值（`occ3` 於具體
+   `extIn wᵢ` 的 kernel 求值，仿 `LP.ΔF_231` 那批，`decide`／`norm_num` 可處理；
+   **先探針一條**再鋪開）。
+4. `Fin 31` 求和展開需要 `sum_fin_31`（仿 Level 2 `sum_fin_ten`——
+   `Fin.sum_univ_succ` 會留下 `Fin.succ` 形式讓 `linarith`/`linear_combination`
+   認不得原子）。
+5. 全部擴充在 `tools/gen_l3dim.py`（生成器檔頭有擴充點與踩坑清單）。
 第一步是可達性閉包（`S8` / `S8_closed` / `run2_mem_S8` 的 Level 3 版）——
 `step3` / `occ3` / `KEYS3` / `F3` 都已在 `ProjectA/Collatz_FST_L3_2Mode_Recon.lean`，
 **不需要動 `Core/`**。
