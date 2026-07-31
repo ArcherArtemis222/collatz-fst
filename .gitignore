@@ -16,3 +16,7 @@
 /scratch/
 /tmp/
 *.log
+
+# Python 快取（tools/ 腳本被 import 時產生）
+__pycache__/
+*.pyc
