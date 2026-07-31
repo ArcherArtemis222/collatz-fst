@@ -60,3 +60,11 @@ jobs:
       - name: Level 3 偵察數字（14 狀態 / 28 邊 / 終末 2 個 / 31 維 / 缺 1 條）
         # 這批數字在寫 Lean 之前就先釘住。約 15 秒（秩計算為主）。
         run: python3 tools/l3_recon.py
+      - name: Level 3 Dim 檔的再生性（生成器輸出必須與 repo 逐位一致）
+        # DimUpper / DimLower 是機械生成的（改生成器不改手寫）。這一步保證
+        # repo 裡的 Lean 檔真的能由錨資料重現，而不只是檔頭的宣稱。
+        run: |
+          python3 tools/gen_l3dim.py
+          git diff --exit-code -- \
+            Lean4RealConstruction/ProjectA/Collatz_FST_L3_DimUpper.lean \
+            Lean4RealConstruction/ProjectA/Collatz_FST_L3_DimLower.lean
