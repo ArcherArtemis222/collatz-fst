@@ -1,4 +1,39 @@
-"""從 l3_recon.py 的錨資料生成 Collatz_FST_L3_DimUpper.lean（上界 ≤ 31）。"""
+"""從 l3_recon.py 的錨資料生成 Collatz_FST_L3_DimUpper.lean（上界 ≤ 31）。
+
+用法：python3 tools/gen_l3dim.py   （路徑相對 __file__，任何 checkout 可跑；
+輸出應與 repo 中的 Lean 檔逐位一致——這是審查時的再生性測試）
+
+## 踩過的坑（改生成器前先讀）
+
+1. **裸 `LinearMap.proj j` 不能用**：索引型別會被推成 ℕ，typeclass 卡死
+   （`(i : ℕ) → Module ?m (?m i)`）。解法：完全定型的
+   `private abbrev pr (j : Fin 96) : (Fin 96 → ℚ) →ₗ[ℚ] ℚ := LinearMap.proj j`。
+2. **`Matrix.cons_val'` 在本版 Mathlib 不存在**；且對 65/96 深的 `![...]`
+   字面值做 simp 索引化簡效能極差。解法：完全不用 simp——
+   membership 65 個目標用 `show`-defeq 落到 dF96 原子層（vecCons 在字面索引上
+   是 rfl 級化約，LinearMap 的 +/− application 也是）。
+3. **單射證明要走「全數字原子」模式**（Level 2 DimUpper 的教訓）：
+   先把 hR/hz 轉成數字索引的 have（`have c9 : v 9 = 0 := …` 由 defeq 接受），
+   linarith 只見一致的數字原子；最後 `fin_cases j` 96 個 `exact`。
+   混用 `⟨j,⋯⟩` 與數字形式會讓 linarith 把同一座標當不同原子。
+4. **heartbeats**：單射那條要 `set_option maxHeartbeats 3200000`
+   （成本在深索引 defeq 的 whnf/isDefEq，不在 linarith 搜尋；單檔 ~19s）。
+5. 每個 linarith 的提示集要含全部 24 條流關係 + 相關座標零事實
+   （rel_coords ∩ known 的交集裁剪）。
+
+## 下界擴充點（收官下半，還沒寫）
+
+- 資料全在 l3_recon.py：`LEAN_L3_WITNESSES`（31 見證）、`LEAN_L3_WITNESS_INV`
+  （么模逆 B，max|B|=3）、`LEAN_L3_FREE_IDX`。
+- 生成物：`dFW96 i := dFQ96 (witness i)`；31 條見證值引理（`occ3` 具體求值，
+  仿 LP.ΔF_231，**先探針一條** decide vs norm_num）；`sum_fin_31`
+  （仿 Level 2 sum_fin_ten，Fin.sum_univ_succ 會留 Fin.succ 原子）；
+  線性獨立經 `Fintype.linearIndependent_iff`，31 條方程 hⱼ 取自由座標
+  evaluation，**每個 `g i = 0` 用 `linear_combination Σⱼ B[j][i]·hⱼ`
+  （orientation：g·Mw = 0 ⇒ g = (g·Mw)·B），不要 linarith**；
+  收尾 `finrank_span_eq_card` + `Submodule.finrank_mono` + `le_antisymm`，
+  照抄 Level 2 DimLower 的骨架。
+"""
 import importlib.util
 from pathlib import Path
 _HERE = Path(__file__).resolve().parent          # tools/
