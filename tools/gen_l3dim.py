@@ -1,7 +1,8 @@
 """從 l3_recon.py 的錨資料生成 Collatz_FST_L3_DimUpper.lean（上界 ≤ 31）。"""
 import importlib.util
-spec = importlib.util.spec_from_file_location("l3",
-    "/Users/samuel222/Documents/Python專案/collatz-fst-a-l3-dim/tools/l3_recon.py")
+from pathlib import Path
+_HERE = Path(__file__).resolve().parent          # tools/
+spec = importlib.util.spec_from_file_location("l3", str(_HERE / "l3_recon.py"))
 m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 R = m.reachable(); TERM = m.LEAN_L3_TERMINALS
 FREE = m.LEAN_L3_FREE_IDX; RECON = m.LEAN_L3_RECONSTRUCTION
@@ -207,6 +208,6 @@ theorem finrank_span_dFQ96_le :
 
 end CollatzFST.L3
 """
-out = "/Users/samuel222/Documents/Python專案/collatz-fst-a-l3-dim/Lean4RealConstruction/ProjectA/Collatz_FST_L3_DimUpper.lean"
-open(out, "w").write(lean)
+out = _HERE.parent / "Lean4RealConstruction" / "ProjectA" / "Collatz_FST_L3_DimUpper.lean"
+out.write_text(lean, encoding="utf-8")
 print("生成", out, f"（{lean.count(chr(10))} 行）")
