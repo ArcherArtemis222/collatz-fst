@@ -88,9 +88,13 @@ Level 3 同理，模式判準是 `(F3 x).getD 33 0 = 1`。
 
 ---
 
-## A-3 維度精確化 ★★★ 大（真正的數學工作）
+## A-3 維度精確化 ★★★ 大（真正的數學工作）——【已完成】
 
-HandOver 主張兩件事，目前都只活在註解與 `#eval` 裡，還不是定理：
+**狀態（2026-07-31，分支 `a/l3-dim-lower`）。** 兩條主張都已是定理：
+Level 2 `Flow.finrank_span_dFQ_eq_ten`（= 10）、
+Level 3 `L3.finrank_span_dFQ96_eq_31`（= 31）。以下為原始工作紀錄。
+
+HandOver 主張兩件事，過去都只活在註解與 `#eval` 裡，還不是定理：
 
 1. **Level 2 差分空間 = 精確的 10 維有理線性子空間**，且 `span(ΔF) = ker B ⊕ ℚ·t`
    （9 維循環 + 1 維邊界）。
@@ -213,9 +217,9 @@ Lean 那條目前只 `decide` 了 40 個端點，**需要推廣成全稱版**。
 
 方法本身沿用 Level 2：流守恆 → 差分層泛函 → 解空間上界 → 具體見證下界。
 
-### Level 3 進度（2026-07-26 更新）
+### Level 3 進度（2026-07-31 更新）——全部完成
 
-**已完成**（`ProjectA/Collatz_FST_L3_Flow.lean` §65–72、`…_L3_Delta.lean` §73–78、
+**前半**（`ProjectA/Collatz_FST_L3_Flow.lean` §65–72、`…_L3_Delta.lean` §73–78、
 `…_L3_DimUpper.lean` §79–81）：
 
 - 流守恆基礎：`S14`、`microTrace3_flow_conservation`、出入流接特徵、28 邊關聯結構
@@ -226,21 +230,23 @@ Lean 那條目前只 `decide` 了 40 個端點，**需要推廣成全稱版**。
   （`Sol96 = ker (pi phi65)` + `pick96` 31 自由座標單射；檔案由
   `tools/gen_l3dim.py` 機械生成，錨資料同 `l3_recon.py` ⑦，逐位可重現）
 
-**待做（唯一剩餘）——下界 `31 ≤`，然後 `le_antisymm` 收 `dim = 31`：**
+**下界與收官**（`…_L3_DimLower.lean` §82–88，同樣由 `tools/gen_l3dim.py` 生成）：
 
-1. 見證：`LEAN_L3_WITNESSES`（31 個，投影行列式 = 1）已錨在 `l3_recon.py`。
-2. 係數：`LEAN_L3_WITNESS_INV`（么模逆 `B`，max|B| = 3）已錨。**不要餵 `linarith`**
-   （31 元 31 式會撞牆）：`g i = Σⱼ B[j][i]·hⱼ` 一行 `linear_combination`。
-3. 需要 31 條見證值引理 `dFQ96 wᵢ (freeIdx96 j)` 的字面值（`occ3` 於具體
-   `extIn wᵢ` 的 kernel 求值，仿 `LP.ΔF_231` 那批，`decide`／`norm_num` 可處理；
-   **先探針一條**再鋪開）。
-4. `Fin 31` 求和展開需要 `sum_fin_31`（仿 Level 2 `sum_fin_ten`——
-   `Fin.sum_univ_succ` 會留下 `Fin.succ` 形式讓 `linarith`/`linear_combination`
-   認不得原子）。
-5. 全部擴充在 `tools/gen_l3dim.py`（生成器檔頭有擴充點與踩坑清單）。
-第一步是可達性閉包（`S8` / `S8_closed` / `run2_mem_S8` 的 Level 3 版）——
-`step3` / `occ3` / `KEYS3` / `F3` 都已在 `ProjectA/Collatz_FST_L3_2Mode_Recon.lean`，
-**不需要動 `Core/`**。
+- 31 條 `Todd_w`（padicValNat 模式）＋ 31 條見證值 row 引理。當初計畫寫
+  「`decide`／`norm_num` 可處理，先探針一條」——探針結果是**兩者原樣都不行**：
+  elaborator 端的化約會卡在 Mathlib 的 ℚ 實例鏈（`Rat.sub` 的結構投影打不開），
+  正解是 **`simp only [展開＋Todd 改寫] ; decide +kernel`**（kernel 不吃
+  `irreducible` 且 `Nat.gcd` 有內建加速，一條 1 秒內）。已記進
+  `gen_l3dim.py` 檔頭坑 6／7。
+- 純量讀出 `v_t_i` 由 row 引理 defeq 取得（`freeIdx96 t`、`![...] t` 都是
+  whnf 級化約），`rw` 之後 31 條方程全是字面原子。
+- 線性獨立照原計畫：`g i = Σₜ B[t][i]·hₜ` 一行 `linear_combination`，
+  未餵 `linarith`。`Mw·B = B·Mw = I` 由生成器以純整數再驗一次（獨立於
+  `l3_recon.py` ⑦ 的 sympy 對帳）。
+- **`finrank_span_dFQ96_eq_31 : dim span(dF96) = 31`**
+  ← HandOver 第二條主張的形式化；A-3 至此收官。
+- CI（guard.yml certs job）新增再生性檢查：重跑 `gen_l3dim.py` 後
+  兩個 Dim 檔 `git diff --exit-code`——「逐位可重現」從宣稱變成強制。
 
 ---
 
