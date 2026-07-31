@@ -15,4 +15,5 @@ import Lean4RealConstruction.ProjectA.Collatz_FST_L3_2Mode_Recon
 import Lean4RealConstruction.ProjectA.Collatz_FST_L3_Flow
 import Lean4RealConstruction.ProjectA.Collatz_FST_L3_Delta
 import Lean4RealConstruction.ProjectA.Collatz_FST_L3_DimUpper
+import Lean4RealConstruction.ProjectA.Collatz_FST_L3_DimLower
 import Lean4RealConstruction.ProjectA.Collatz_FST_L3_2Mode_NoGo
