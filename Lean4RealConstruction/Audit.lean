@@ -44,6 +44,9 @@ namespace Lean4RealConstruction.Audit
 /-! Level 2 特徵差分空間恰為 **10 維**有理線性子空間-/
 #print axioms CollatzFST.Flow.finrank_span_dFQ_eq_ten
 
+/-!**維度定理**：Level 3 雙模式有效差分生成空間恰為 **31 維**（96 維中）。-/
+#print axioms CollatzFST.L3.finrank_span_dFQ96_eq_31
+
 /-- info: 'CollatzFST.LP.no_nonneg_linear_ranking' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms CollatzFST.LP.no_nonneg_linear_ranking
