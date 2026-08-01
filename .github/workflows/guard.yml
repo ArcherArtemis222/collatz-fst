@@ -68,3 +68,19 @@ jobs:
           git diff --exit-code -- \
             Lean4RealConstruction/ProjectA/Collatz_FST_L3_DimUpper.lean \
             Lean4RealConstruction/ProjectA/Collatz_FST_L3_DimLower.lean
+      - name: Paper registry 的再生性（PaperIndex / theorem-index 必須與 repo 逐位一致）
+        # PaperIndex.lean 的型別快照住在 paper/registry.yaml（人工輸入、diff 可審），
+        # 生成器只搬運不抽取；快照與原定理的相容性由 lake build 的 kernel 檢查承擔。
+        # 此 .github 變更經專案主人具名授權（A-4 PR-0）。
+        run: |
+          pip install pyyaml
+          python3 tools/gen_paper_index.py
+          git diff --exit-code -- \
+            Lean4RealConstruction/ProjectA/PaperIndex.lean \
+            paper/theorem-index.tex
+      - name: 論文引用一致性（\leanref ↔ registry 雙向）
+        # 每個 \leanref{ID} 都要在 registry；每條 registry 都要被引用或標
+        # unreferenced_ok（paper/ 尚無非生成 .tex 原始檔時此方向跳過並印明原因）。
+        run: |
+          pip install pyyaml
+          python3 tools/check_paper_refs.py

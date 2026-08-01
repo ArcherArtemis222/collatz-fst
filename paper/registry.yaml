@@ -1,0 +1,400 @@
+# 論文定理註冊表（A-4 PR-0）
+#
+# 每條 entry 是論文會指名引用的一條 Lean 定理。`lean_type` 是**人工輸入**的
+# 型別快照：逐字取自原始檔的定理敘述（binder 在冒號前者改寫為前置 ∀/{}，
+# 其餘不動），僅按 PaperIndex.lean 的 elaboration 環境（`open CollatzFST`）
+# 補上相對命名空間前綴（`LP.`／`TwoMode.`／`L3.`／`Flow.`）。
+#
+# ⚠ 快照**不得**改為從原始檔自動抽取——自動抽取會讓重新生成靜默刷新快照，
+#   「敘述未變」的強制就死了。原定理改到與快照不相容時 PaperIndex 編譯失敗，
+#   唯一修法是改本檔，且該 PR 必須標【敘述變更】（AGENTS §2.6 [statement change]）。
+#
+# 生成器：tools/gen_paper_index.py（依 id 排序，決定性輸出
+# Lean4RealConstruction/ProjectA/PaperIndex.lean 與 paper/theorem-index.tex）。
+# 引用一致性：tools/check_paper_refs.py（\leanref ↔ registry 雙向）。
+#
+# 欄位：id（kebab-case，論文引用的穩定 ID）／lean（Lean 全名）／file（原始檔）／
+# lean_type（型別快照）／latex（論文敘述，寫作 PR 填）／unreferenced_ok／
+# reviewed（人工審核七欄，寫作 PR 填「姓名/日期」）。
+
+- id: boundary-step-unique
+  lean: CollatzFST.boundary_step_unique
+  file: Lean4RealConstruction/Core/Collatz_FST_Level2.lean
+  lean_type: |
+    ∀ (x : ℕ),
+      (microTrace2 (1, Phase.K, 0) (extIn x)).countP
+          (fun t => t.1.2.1 == Phase.K && outBit t.1.1 t.2 == 1) = 1
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: dim-l2-eq-10
+  lean: CollatzFST.Flow.finrank_span_dFQ_eq_ten
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_DimLower.lean
+  lean_type: |
+    Module.finrank ℚ (Submodule.span ℚ (Set.range Flow.dFQ)) = 10
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: dim-l3-eq-31
+  lean: CollatzFST.L3.finrank_span_dFQ96_eq_31
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_L3_DimLower.lean
+  lean_type: |
+    Module.finrank ℚ (Submodule.span ℚ (Set.range L3.dFQ96)) = 31
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: flow-2k0-alternating
+  lean: CollatzFST.Flow.dF_flow_2K0
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_FlowDelta.lean
+  lean_type: |
+    ∀ (x : ℕ), (LP.ΔF x).getD 3 0 = (LP.ΔF x).getD 4 0 + (LP.ΔF x).getD 5 0
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: flow-kirchhoff-l2
+  lean: CollatzFST.Flow.kirchhoff_occ2
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_Flow.lean
+  lean_type: |
+    ∀ (g : ℕ × Phase × ℕ) {s : ℕ × Phase × ℕ} (hs : s ∈ S8)
+        {w : List ℕ} (hw : ∀ b ∈ w, b < 2),
+      ((Flow.inEdges g).map (fun e => occ2 s w e)).sum + (if s = g then 1 else 0)
+        = occ2 s w (g, 0) + occ2 s w (g, 1) + (if run2 s w = g then 1 else 0)
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: fstart-l3-crossblock
+  lean: CollatzFST.L3.dF96_fstart
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_L3_Delta.lean
+  lean_type: |
+    ∀ (x : ℕ),
+      (L3.dF96 x 0 (((2 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
+          - L3.dF96 x 0 (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
+          - L3.dF96 x 0 (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 1))
+        + (L3.dF96 x 1 (((2 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
+          - L3.dF96 x 1 (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
+          - L3.dF96 x 1 (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 1)) = 0
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: mode-bit-sum-l3
+  lean: CollatzFST.L3.occ3_mode_bit_sum
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_L3_Flow.lean
+  lean_type: |
+    ∀ (x : ℕ),
+      L3.occ3 (1, Phase.K, 0, 0) (extIn x) (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
+        + L3.occ3 (1, Phase.K, 0, 0) (extIn x) (((2 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 1) = 1
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: nogo-l2-2mode-affine
+  lean: CollatzFST.TwoMode.no_go_2mode_affine_potential
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_2Mode_NoGo.lean
+  lean_type: |
+    ¬ ∃ (β₀ β₁ : ℚ) (θ₀ θ₁ : Fin 18 → ℚ),
+      (∀ i, 0 ≤ θ₀ i) ∧ (∀ i, 0 ≤ θ₁ i) ∧
+      ∀ x ∈ TwoMode.W12,
+        (if (TwoMode.F (Todd x)).getD 5 0 = 1 then β₁ + LP.dot θ₁ (TwoMode.F (Todd x))
+                                       else β₀ + LP.dot θ₀ (TwoMode.F (Todd x)))
+          - (if (TwoMode.F x).getD 5 0 = 1 then β₁ + LP.dot θ₁ (TwoMode.F x) else β₀ + LP.dot θ₀ (TwoMode.F x)) < 0
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: nogo-l2-2mode-universal
+  lean: CollatzFST.TwoMode.no_global_odd_2mode_potential
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_2Mode_NoGo.lean
+  lean_type: |
+    ¬ ∃ (θ₀ θ₁ : Fin 18 → ℚ),
+      (∀ i, 0 ≤ θ₀ i) ∧ (∀ i, 0 ≤ θ₁ i) ∧
+      ∀ x : ℕ, x % 2 = 1 → 1 < x →
+        (if (TwoMode.F (Todd x)).getD 5 0 = 1 then LP.dot θ₁ (TwoMode.F (Todd x)) else LP.dot θ₀ (TwoMode.F (Todd x)))
+          - (if (TwoMode.F x).getD 5 0 = 1 then LP.dot θ₁ (TwoMode.F x) else LP.dot θ₀ (TwoMode.F x)) < 0
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: nogo-l2-2mode-witness
+  lean: CollatzFST.TwoMode.no_go_2mode_potential
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_2Mode_NoGo.lean
+  lean_type: |
+    ¬ ∃ (θ₀ θ₁ : Fin 18 → ℚ),
+      (∀ i, 0 ≤ θ₀ i) ∧ (∀ i, 0 ≤ θ₁ i) ∧
+      ∀ x ∈ TwoMode.W12,
+        (if (TwoMode.F (Todd x)).getD 5 0 = 1 then LP.dot θ₁ (TwoMode.F (Todd x)) else LP.dot θ₀ (TwoMode.F (Todd x)))
+          - (if (TwoMode.F x).getD 5 0 = 1 then LP.dot θ₁ (TwoMode.F x) else LP.dot θ₀ (TwoMode.F x)) < 0
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: nogo-l2-single-universal
+  lean: CollatzFST.LP.no_global_odd_ranking
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_NoLinearRanking.lean
+  lean_type: |
+    ¬ ∃ θ : Fin 18 → ℚ, (∀ i, 0 ≤ θ i) ∧
+      ∀ x : ℕ, x % 2 = 1 → 1 < x → LP.dot θ (LP.ΔF x) < 0
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: nogo-l2-single-witness
+  lean: CollatzFST.LP.no_nonneg_linear_ranking
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_NoLinearRanking.lean
+  lean_type: |
+    ¬ ∃ θ : Fin 18 → ℚ, (∀ i, 0 ≤ θ i) ∧ ∀ x ∈ LP.W₁₀, LP.dot θ (LP.ΔF x) < 0
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: nogo-l3-2mode-affine
+  lean: CollatzFST.L3.no_go_level3_2mode_affine_potential
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_L3_2Mode_NoGo.lean
+  lean_type: |
+    ¬ ∃ (β₀ β₁ : ℚ) (θ₀ θ₁ : Fin 48 → ℚ),
+      (∀ i, 0 ≤ θ₀ i) ∧ (∀ i, 0 ≤ θ₁ i) ∧
+      ∀ x ∈ L3.W20,
+        (if (L3.F3 (Todd x)).getD 33 0 = 1 then β₁ + L3.dot48 θ₁ (L3.F3 (Todd x))
+                                        else β₀ + L3.dot48 θ₀ (L3.F3 (Todd x)))
+          - (if (L3.F3 x).getD 33 0 = 1 then β₁ + L3.dot48 θ₁ (L3.F3 x) else β₀ + L3.dot48 θ₀ (L3.F3 x)) < 0
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: nogo-l3-2mode-universal
+  lean: CollatzFST.L3.no_global_odd_level3_2mode_potential
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_L3_2Mode_NoGo.lean
+  lean_type: |
+    ¬ ∃ (θ₀ θ₁ : Fin 48 → ℚ),
+      (∀ i, 0 ≤ θ₀ i) ∧ (∀ i, 0 ≤ θ₁ i) ∧
+      ∀ x : ℕ, x % 2 = 1 → 1 < x →
+        (if (L3.F3 (Todd x)).getD 33 0 = 1 then L3.dot48 θ₁ (L3.F3 (Todd x)) else L3.dot48 θ₀ (L3.F3 (Todd x)))
+          - (if (L3.F3 x).getD 33 0 = 1 then L3.dot48 θ₁ (L3.F3 x) else L3.dot48 θ₀ (L3.F3 x)) < 0
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: nogo-l3-2mode-witness
+  lean: CollatzFST.L3.no_go_level3_2mode_potential
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_L3_2Mode_NoGo.lean
+  lean_type: |
+    ¬ ∃ (θ₀ θ₁ : Fin 48 → ℚ),
+      (∀ i, 0 ≤ θ₀ i) ∧ (∀ i, 0 ≤ θ₁ i) ∧
+      ∀ x ∈ L3.W20,
+        (if (L3.F3 (Todd x)).getD 33 0 = 1 then L3.dot48 θ₁ (L3.F3 (Todd x)) else L3.dot48 θ₀ (L3.F3 (Todd x)))
+          - (if (L3.F3 x).getD 33 0 = 1 then L3.dot48 θ₁ (L3.F3 x) else L3.dot48 θ₀ (L3.F3 x)) < 0
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: terminal-l2
+  lean: CollatzFST.Flow.run2_extIn_terminal
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_Flow.lean
+  lean_type: |
+    ∀ (x : ℕ),
+      run2 (1, Phase.K, 0) (extIn x) = ((0 : ℕ), Phase.S, (0 : ℕ))
+        ∨ run2 (1, Phase.K, 0) (extIn x) = ((0 : ℕ), Phase.S, (1 : ℕ))
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: terminal-l3
+  lean: CollatzFST.L3.run3_extIn_terminal
+  file: Lean4RealConstruction/ProjectA/Collatz_FST_L3_Flow.lean
+  lean_type: |
+    ∀ (x : ℕ),
+      L3.run3 (1, Phase.K, 0, 0) (extIn x) = ((0 : ℕ), Phase.S, (0 : ℕ), (1 : ℕ))
+        ∨ L3.run3 (1, Phase.K, 0, 0) (extIn x) = ((0 : ℕ), Phase.S, (1 : ℕ), (0 : ℕ))
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: todd-eq-dropwhile
+  lean: CollatzFST.Todd_eq_dropWhile
+  file: Lean4RealConstruction/Core/Collatz_FST_Statements.lean
+  lean_type: |
+    ∀ (x : ℕ), Nat.ofDigits 2 ((transduce x).dropWhile (· = 0)) = Todd x
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: transducer-soundness
+  lean: CollatzFST.ofDigits_transduce
+  file: Lean4RealConstruction/Core/Collatz_FST_Statements.lean
+  lean_type: |
+    ∀ (x : ℕ), Nat.ofDigits 2 (transduce x) = 3 * x + 1
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: transducer-split
+  lean: CollatzFST.transduce_split
+  file: Lean4RealConstruction/Core/Collatz_FST_Statements.lean
+  lean_type: |
+    ∀ (x : ℕ),
+      transduce x
+        = List.replicate (padicValNat 2 (3 * x + 1)) 0 ++ (transduce x).dropWhile (· = 0)
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
+
+- id: valuation-alt-prefix
+  lean: CollatzFST.padicValNat_eq_altPrefixLen
+  file: Lean4RealConstruction/Core/Collatz_FST_Ext.lean
+  lean_type: |
+    ∀ (x : ℕ), padicValNat 2 (3 * x + 1) = altPrefixLen x
+  latex: 【待撰】
+  unreferenced_ok: false
+  reviewed:
+    strictness: null
+    coefficients: null
+    scope: null
+    feature_level: null
+    mode_definition: null
+    witness_vs_universal: null
+    model_class: null
