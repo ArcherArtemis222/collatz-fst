@@ -86,21 +86,11 @@ gh pr create --fill
 
 ---
 
-## 5. 這個專案的數學狀態（別重新發明）
+## 5. 這個專案的數學狀態
 
-已證畢、且**不需要**再驗證的東西，見 `docs/HANDOVER.md`。
-Project A 尚未完成的部分，見 `docs/ROADMAP-A.md`。
-
-特別提醒兩件事，因為它們在程式碼裡和文件裡目前**不一致**：
-
-1. `CollatzFST.LP.no_global_odd_ranking` 的量詞是 `∀ x, x % 2 = 1`，
-   **沒有排除 `x = 1`**。HandOver 明確要求排除（`Todd(1) = 1` ⇒ `ΔF 1 = 0`，
-   會讓敘述被平凡見證）。這是 ROADMAP A-1。
-2. 三條主定理目前都是**純線性** `dot θ (F x)`，尚未升級成含截距的仿射形式
-   `β_m + θ_mᵀ F(x)`。HandOver 說憑證已滿足 mode-flow balance 故可升級，
-   但 Lean 裡還沒做。這是 ROADMAP A-2。
-
-不要在沒讀 ROADMAP 的情況下「順手修正」這兩點——它們各自是一個 PR。
+唯一真相來源是 docs/STATUS.md（定理索引）。
+Project A 殘項見 docs/ROADMAP-A.md；Project B 見 docs/ROADMAP-B.md。
+不要在沒讀這三份文件的情況下「順手修正」任何東西。
 
 ---
 
