@@ -5,7 +5,7 @@
 讓多方協作時任何人（含 AI）都能一眼看出信任基底有沒有被動過。
 
 期望輸出：每條都只依賴 `propext` / `Classical.choice` / `Quot.sound`。
-若出現 `sorryAx`，代表有人在依賴鏈上留了洞——CI 的 `nanoda` 步驟會直接擋下 PR。
+若出現 `sorryAx`，代表有人在依賴鏈上留了洞——CI 的 build job 會從 build.log 攔下（sorry 閘門），且下方 #guard_msgs 會使編譯直接失敗。
 
 ## 想把它從「可見」升級成「強制」
 
@@ -32,7 +32,7 @@ namespace Lean4RealConstruction.Audit
 /-! Level 2 單模式（10 維差分子空間）。 -/
 #print axioms CollatzFST.LP.no_nonneg_linear_ranking
 
-/-! Level 2 單模式，全體奇數版。⚠ 目前量詞尚未排除 `x = 1`，見 docs/ROADMAP-A.md A-1。 -/
+/-! Level 2 單模式，全體奇數版。量詞已含 1 < x（PR #1，ROADMAP A-1 完成）。 -/
 #print axioms CollatzFST.LP.no_global_odd_ranking
 
 /-! Level 2 雙模式（valuation-parity），Σλ = 7826。 -/
