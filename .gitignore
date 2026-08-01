@@ -20,3 +20,11 @@
 # Python 快取（tools/ 腳本被 import 時產生）
 __pycache__/
 *.pyc
+
+# LaTeX 編譯產物（paper/；PDF 不進 git，要看就本機 latexmk）
+paper/*.aux
+paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.toc
+paper/*.pdf
