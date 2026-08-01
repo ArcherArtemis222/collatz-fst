@@ -1,3 +1,7 @@
+> **歷史快照（2026-07）**：本文件保留原始交接內容供溯源。
+> 定理現況見 docs/STATUS.md；Project A 殘項見 docs/ROADMAP-A.md；
+> Project B 戰略已由 docs/ROADMAP-B.md 全面取代本文件的對應段落。
+
 # [Handover Document] Collatz 有限狀態平攤勢能：模板極限定理與一般化猜想
 **Document Purpose:** 供新加入之 AI 協作者快速掌握專案歷史、當前數學邊界，以及兩大專案分流之定位。
 **Date:** 2026-07
