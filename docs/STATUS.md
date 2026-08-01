@@ -131,6 +131,7 @@ Kirchhoff 鏈：trace 層流守恆 → 特徵層泛函 → 差分層 9 條（秩
 ## 進行中
 
 - **A-4 論文化**（[ROADMAP-A.md](ROADMAP-A.md)）——A-0～A-3 已全部完成，這是 Project A 唯一殘項。
-- **外部文獻審計** `docs/audit/2506-21728.md`（Phase 0 PR-2，進行中）。
+- **外部文獻審計** `docs/audit/2506-21728.md` 已定稿（2026-08-01，PR-2；
+  重現腳本 `tools/audit_falsifiers.py`）——僅低頻追蹤 arXiv 2506.21728 後續版本。
 - **Project B**：戰略見 ROADMAP-B.md（Phase 0 PR-3 落地；HANDOVER 的
   Project B 段由其取代）。

@@ -326,7 +326,7 @@ def main() -> int:
     print(f"\n=== ⑥ 缺的那 1 條 = 模式位元恆等式提升到差分層（不是新數學）===")
     check(all(F3(x)[EXIT_IDX] + F3(x)[MODE_IDX] == 1 for x in range(SCAN_TERMINAL)),
           f"F3[{EXIT_IDX}] + F3[{MODE_IDX}] = 1 對所有 0 ≤ x < {SCAN_TERMINAL}"
-          "（Lean 的 mode_bit_endpoints3 只 decide 了 40 個端點，需推廣成全稱）")
+          "（Lean 全稱版為 occ3_mode_bit_sum，L3_Flow §72；mode_bit_endpoints3 是其 40 端點前身）")
     missing = [0] * 96
     missing[EXIT_IDX] = 1          # θ₀[16]
     missing[48 + MODE_IDX] = 1     # θ₁[33]
