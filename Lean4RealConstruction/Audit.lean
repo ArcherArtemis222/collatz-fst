@@ -9,8 +9,7 @@
 
 ## 想把它從「可見」升級成「強制」
 
-先在本機跑一次 `lake build Lean4RealConstruction.Audit`，把實際輸出抄進下面的
-`#guard_msgs` 註解，再取消註解。之後只要信任基底有任何變動，編譯就會失敗。
+只要信任基底有任何變動，編譯就會失敗。
 （若某條定理的公理更少，是好事，照抄即可。）
 -/
 import Lean4RealConstruction.Core
