@@ -1,0 +1,311 @@
+% =========================================================================
+% A-4 PR-1: paper skeleton. Eight sections per drafts/paper-outline.md.
+% Section bodies are paragraph-level outlines with \tbd markers — NO prose
+% is written at this stage except (i) the two related-work paragraphs
+% (material fixed by the outline / docs/audit/2506-21728.md) and (ii) the
+% model-scoping sentences (fixed verbatim by docs/ROADMAP-B.md §0).
+% Rules in force (ROADMAP-B B1, paper-outline):
+%   - no theorem claim outside paper/registry.yaml (checked by
+%     tools/check_paper_refs.py);
+%   - "forthcoming" must not support the strength of any main theorem;
+%     bounded-below / gauge normalization appears only as discussion.
+% =========================================================================
+\documentclass[11pt]{article}
+
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{etoolbox}
+\usepackage{hyperref}
+
+% ---- Registry-generated Lean-name map + appendix table (PREAMBLE input) ----
+% theorem-index.tex is AUTO-GENERATED from paper/registry.yaml by
+% tools/gen_paper_index.py; it defines one \leanname@<id> macro per registry
+% entry and the \TheoremIndexTable macro used in the appendix.
+\input{theorem-index}
+
+% ---- \leanref: cite a registry entry by its stable paper id ----
+% Typesets the Lean full name and points (dagger link) to the theorem index
+% in Appendix A. Unknown ids raise a hard TeX error — a second safety layer
+% on top of tools/check_paper_refs.py.
+\newcommand{\leanref}[1]{%
+  \ifcsname leanname@#1\endcsname
+    \texttt{\csname leanname@#1\endcsname}%
+    \textsuperscript{\hyperref[app:theorem-index]{$\dagger$}}%
+  \else
+    \errmessage{leanref: unknown registry id '#1'}%
+  \fi}
+
+% ---- skeleton-stage marker for text to be written in later PRs ----
+\newcommand{\tbd}[1]{\emph{[TO WRITE: #1]}}
+
+\title{Machine-Checked Expressivity No-Go Theorems for Finite-State
+  Additive Ranking Templates in Accelerated Collatz Dynamics%
+  \thanks{\tbd{funding / artifact DOI footnote}}}
+\author{\tbd{author list}}
+\date{\tbd{date}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\tbd{abstract; positioning sentence fixed by the outline: machine-checked
+expressivity no-go theorems for finite-state additive ranking templates in
+accelerated Collatz dynamics. Summarize the four contributions of
+Section~\ref{sec:intro} and the explicit non-claims.}
+\end{abstract}
+
+% =========================================================================
+\section{Introduction}\label{sec:intro}
+% =========================================================================
+
+% Outline (four contributions, in this order):
+%   (1) a formalized binary carry transducer implementing the accelerated
+%       Collatz map exactly (Section 2);
+%   (2) a flow-geometric interpretation: occupation vectors are path flows
+%       on a finite graph, and Kirchhoff conservation unifies the local
+%       counting relations (Section 3);
+%   (3) exact dimension theorems: the difference-feature spaces have
+%       dimension exactly 10 (Level 2) and exactly 31 (Level 3 two-mode)
+%       (Section 4);
+%   (4) machine-checked Farkas no-go certificates for three template
+%       classes, with universal quantification (x > 1) and affine
+%       strengthening (Section 5).
+\tbd{contribution paragraphs (1)--(4)}
+
+% Explicit non-claims — fixed by the outline; keep both:
+%   - this paper does NOT prove the Collatz conjecture, and
+%   - it does NOT establish the impossibility of all finite-state methods;
+%     the scope boundary is made precise in Section 6.
+\tbd{non-claims paragraph}
+
+\paragraph{Terminology.}
+% Glossary fixed at skeleton stage (paper-outline.md); definitions locked,
+% wording of surrounding prose free in later PRs.
+\begin{itemize}
+  \item \textbf{occupation vector} --- the vector of per-edge visit counts
+    accumulated by one run of the transducer over an input word.
+  \item \textbf{valuation-parity mode} --- the binary mode
+    $m(x)$ read off the occupation feature that records the parity-relevant
+    exit of the K region; the mode splits the two-register templates.
+  \item \textbf{additive ranking template} --- a potential of the form
+    $V(x) = \theta^{\mathsf T} F(x)$ (single mode) or
+    $V(x) = \beta_{m(x)} + \theta_{m(x)}^{\mathsf T} F(x)$ (two-mode
+    affine), evaluated on occupation features $F$.
+  \item \textbf{accelerated Collatz map} --- $T_{\mathrm{odd}}(x) =
+    (3x+1)/2^{\nu_2(3x+1)}$ on odd $x$.
+  \item \textbf{Farkas certificate} --- a nonnegative rational combination
+    $\lambda$ of witness rows whose aggregate annihilates all admissible
+    descent directions, refuting strict descent.
+  \item \textbf{mode-flow balance} --- the certificate identity
+    $\sum_i \lambda_i (e_{m(y_i)} - e_{m(x_i)}) = 0$, which makes the
+    per-mode intercepts $\beta_m$ free in the affine strengthening.
+  \item \textbf{trimmed product} --- the useful part (reachable and
+    co-reachable) of a product of a cost automaton with a language
+    acceptor; used only in the discussion of Section~\ref{sec:scoping}.
+\end{itemize}
+
+% =========================================================================
+\section{Transducer Semantics}\label{sec:transducer}
+% =========================================================================
+
+% Outline: the binary carry transducer realizes the accelerated map
+% exactly; soundness is the registry pair
+%   - \leanref of transducer-soundness : ofDigits 2 (transduce x) = 3x + 1
+%   - \leanref of transducer-split     : output = v2(3x+1) zeros ++ trimmed
+% plus the two semantic completions:
+%   - \leanref of todd-eq-dropwhile    : trimmed value = T_odd(x)
+%   - \leanref of valuation-alt-prefix : v2(3x+1) = alternating prefix len
+\tbd{transducer construction paragraph}
+
+\tbd{soundness statement paragraph, citing
+\leanref{transducer-soundness} and \leanref{transducer-split}}
+
+\tbd{accelerated-map semantics paragraph, citing
+\leanref{todd-eq-dropwhile} and \leanref{valuation-alt-prefix}}
+
+% =========================================================================
+\section{Flow Conservation}\label{sec:flow}
+% =========================================================================
+
+% Outline: occupation vectors are path flows on a finite graph; Kirchhoff
+% conservation unifies the local counting relations.
+%   - conservation functional (feature layer): \leanref of flow-kirchhoff-l2
+%   - terminal-state theorems: \leanref of terminal-l2, terminal-l3
+\tbd{path-flow interpretation paragraph, citing \leanref{flow-kirchhoff-l2}}
+
+\tbd{terminal-state paragraph, citing \leanref{terminal-l2} and
+\leanref{terminal-l3}}
+
+% MANDATORY (outline): the two structural identifications.
+%   (i) the K-region alternating count e4 = e5 + e6 IS the Kirchhoff
+%       conservation law at state (2,K,0) — not an independent lemma:
+%       \leanref of flow-2k0-alternating;
+%  (ii) boundary-step uniqueness is absorbed by the conservation row
+%       space — the negative conclusion ("no separate proof needed")
+%       upgraded to a positive provenance (named law, named state):
+%       \leanref of boundary-step-unique.
+\tbd{structural identification (i), citing \leanref{flow-2k0-alternating}}
+
+\tbd{structural identification (ii), citing \leanref{boundary-step-unique}}
+
+% =========================================================================
+\section{Exact Geometry}\label{sec:geometry}
+% =========================================================================
+
+% Outline: exact dimensions of the difference-feature spans.
+%   - Level 2: dim = 10 (in 18): \leanref of dim-l2-eq-10
+%   - Level 3 two-mode: dim = 31 (in 96): \leanref of dim-l3-eq-31
+\tbd{dimension theorems paragraph, citing \leanref{dim-l2-eq-10} and
+\leanref{dim-l3-eq-31}}
+
+% Cramer law (MUST be labeled a tools-layer computational result, verified
+% by tools/certificates.py --cramer in CI; it is NOT a Lean theorem):
+%   lambda = adjugate row of the annihilated witness submatrix / gcd;
+%   certificate integers = maximal minors; in the single-mode case the
+%   scale 31 IS det(A_free) — the same 31 as the lower-bound determinant.
+%   Guard against the known mis-inference: sum(lambda) (1024 / 7826 / 31746)
+%   is NOT any of these determinants.
+\tbd{Cramer-law paragraph (tools-layer labeling as above)}
+
+% Mode splitting breaks absorption — the three-row table (fixed by
+% STATUS.md / outline):
+%   single mode (48-dim): [16]+[33] holds but is absorbed by the family;
+%   two-mode same-block: not even a relation (residue +-1 on mode flips);
+%   two-mode cross-block: holds and is the UNIQUE gap (65th functional).
+% Registry anchors: \leanref of mode-bit-sum-l3 (source identity),
+% \leanref of fstart-l3-crossblock (the 65th functional as landed in Lean).
+\tbd{mode-splitting three-row table and discussion, citing
+\leanref{mode-bit-sum-l3} and \leanref{fstart-l3-crossblock}}
+
+% =========================================================================
+\section{No-Go Certificates}\label{sec:nogo}
+% =========================================================================
+
+% Outline: three templates, each as (finite-witness version, universal
+% version over odd x > 1); affine strengthening for the two-mode templates.
+%   L2 single:  \leanref of nogo-l2-single-witness / nogo-l2-single-universal
+%   L2 two-mode: \leanref of nogo-l2-2mode-witness / nogo-l2-2mode-universal
+%                / nogo-l2-2mode-affine
+%   L3 two-mode: \leanref of nogo-l3-2mode-witness / nogo-l3-2mode-universal
+%                / nogo-l3-2mode-affine
+\tbd{Level 2 single-mode paragraph, citing \leanref{nogo-l2-single-witness}
+and \leanref{nogo-l2-single-universal}; the universal quantifier excludes
+the trivial witness $x = 1$}
+
+\tbd{Level 2 two-mode paragraph, citing \leanref{nogo-l2-2mode-witness},
+\leanref{nogo-l2-2mode-universal}, and the affine strengthening
+\leanref{nogo-l2-2mode-affine}}
+
+\tbd{Level 3 two-mode paragraph, citing \leanref{nogo-l3-2mode-witness},
+\leanref{nogo-l3-2mode-universal}, and \leanref{nogo-l3-2mode-affine}}
+
+% Mode-flow balance makes the intercepts beta_m free: the certificate
+% identity sum lambda (e_m(y) - e_m(x)) = 0 (verified by
+% tools/certificates.py in CI) cancels the beta contributions in the
+% Farkas aggregate, so the affine class is refuted by the SAME lambda.
+\tbd{mode-flow balance paragraph}
+
+% Certificate methodology (outline): search in floating point -> exact
+% rational reconstruction -> Lean decide/ring closure; anchors and CI
+% enforcement (three anchor scripts + generator reproducibility).
+\tbd{methodology paragraph}
+
+% =========================================================================
+\section{Model Scoping}\label{sec:scoping}
+% =========================================================================
+
+% The following classification sentences are fixed VERBATIM (English
+% rendering of docs/ROADMAP-B.md §0); later PRs may add surrounding prose
+% but must not weaken or restate these claims:
+The single-mode no-go theorems fall in \textbf{Class A} (single-accumulator
+additive rankings): $V(w) = \alpha(q_0) + \sum_i \omega(q_i, b_i) +
+\beta(q_f)$.
+
+The two-mode no-go theorems are \emph{not} Class A: in the template
+$V(x) = \theta_{m(x)}^{\mathsf T} F(x)$, the K-region prefix weights depend
+on the not-yet-determined mode, so the template is not any one-accumulator
+edge cost. The correct classification is a \textbf{2-register copyless CRA
+with final selection}: two accumulators run $\theta_0^{\mathsf T} F$ and
+$\theta_1^{\mathsf T} F$ in parallel, and the mode-identifying bit selects
+one of them at the final state --- the minimal edge of Class B.
+
+Consequently, even if the universal Class-A conjecture holds, the
+conclusion is the impossibility of one-accumulator additive rankings only
+--- not of finite-state methods as a whole.
+
+% Discussion-only outlook (rule: no "forthcoming" supporting main-theorem
+% strength; bounded-below / gauge normalization is future work, stated as
+% such). Evidence for the boundary refinement may cite the B1.5 data
+% points WITH trust labels:
+%   - terminal-flow imbalance of the existing certificates:
+%     +-428 (Level 2, W12) and +-753 (Level 3, W20) — exact integer
+%     recomputation (tools/b15_terminal_balance.py); label: [exact integer];
+%   - two-balance Farkas probe (mode balance + terminal balance
+%     simultaneously): feasible at both levels — floating-point LP probe
+%     (HiGHS, odd x in 3..3999); label: [floating-point probe].
+\tbd{discussion paragraph on gauge normalization as future work, citing the
+B1.5 data points with the two trust labels above}
+
+% =========================================================================
+\section{Related Work}\label{sec:related}
+% =========================================================================
+
+% Paragraph (a) — material fixed by the outline.
+Yolcu, Aaronson, and Heule (arXiv:2105.14697) establish representational
+boundaries for rewriting-based matrix interpretations applied to
+Collatz-like systems; the present paper establishes boundaries for
+occupation-vector additive templates over a carry transducer. The two
+settings differ in both certificate type and representation, but carry the
+same message: for automated approaches to Collatz-style termination, the
+choice of certificate class and representation imposes substantive
+expressivity limits.
+\tbd{one connecting sentence positioning our certificate class relative to
+matrix interpretations, once Section~\ref{sec:nogo} prose is fixed}
+
+% Paragraph (b) — VERBATIM English translation of the neutral wording in
+% docs/audit/2506-21728.md («與本專案的關係» block); per the outline: no
+% expansion, no point-by-point rebuttal.
+That work (arXiv:2506.21728) proposes a finite-state symbolic encoding
+together with a block drift; however, in its publicly available version,
+the local absorption argument and the pointwise descent claim do not yet
+suffice to establish the claimed global convergence; moreover, its
+potential involves $\log n$ and blockwise global quantities, and thus does
+not belong to the rational finite-state additive class studied in this
+paper.
+
+% =========================================================================
+\section{Artifact}\label{sec:artifact}
+% =========================================================================
+
+% Outline: the artifact story — each item one short paragraph or a table:
+%   - pinned toolchain (leanprover/lean4:v4.28.0-rc1) and pinned mathlib
+%     revision; CI guard forbids unauthorized pin changes;
+%   - zero sorry / no native_decide / no axiom beyond the kernel trio;
+%     trust base of the audited theorems: propext, Classical.choice,
+%     Quot.sound (Audit.lean, #print axioms);
+%   - import-boundary enforcement (scripts/check_boundaries.py in CI);
+%   - three anchor scripts (certificates.py, a3_functionals.py,
+%     l3_recon.py) recompute every hard-coded number on every push;
+%     generator reproducibility: gen_l3dim.py and gen_paper_index.py
+%     outputs must match the repository byte-for-byte;
+%   - the registry/PaperIndex mechanism itself: paper citations resolve
+%     through paper/registry.yaml; each cited statement is restated in
+%     PaperIndex.lean and kernel-checked against the original theorem, so
+%     a drifting statement fails the build, and \leanref consistency is
+%     enforced by tools/check_paper_refs.py. The paper thus documents its
+%     own anti-drift mechanism as part of the artifact.
+\tbd{artifact section body per the itemized outline above}
+
+% =========================================================================
+\appendix
+\section{Theorem Index}\label{app:theorem-index}
+% =========================================================================
+
+Each \texttt{Paper.<id>} restatement is kernel-checked against the original
+theorem; the table below is generated from \texttt{paper/registry.yaml}.
+
+\TheoremIndexTable
+
+\end{document}
