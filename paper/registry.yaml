@@ -338,32 +338,34 @@
   file: Lean4RealConstruction/Core/Collatz_FST_Statements.lean
   lean_type: |
     ∀ (x : ℕ), Nat.ofDigits 2 ((transduce x).dropWhile (· = 0)) = Todd x
-  latex: 【待撰】
+  latex: |
+    For every $x \in \Nat$, $\ofDigitsTwo(\dropZeros(\transduce(x))) = \Todd(x)$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-03
+    coefficients: n/a — 語義層等式，無此概念
+    scope: approved/2026-08-03
+    feature_level: n/a — 語義層等式，無此概念
+    mode_definition: n/a — 語義層等式，無此概念
+    witness_vs_universal: approved/2026-08-03
+    model_class: n/a — 語義層等式，無此概念
 
 - id: transducer-soundness
   lean: CollatzFST.ofDigits_transduce
   file: Lean4RealConstruction/Core/Collatz_FST_Statements.lean
   lean_type: |
     ∀ (x : ℕ), Nat.ofDigits 2 (transduce x) = 3 * x + 1
-  latex: 【待撰】
+  latex: |
+    For every $x \in \Nat$, $\ofDigitsTwo(\transduce(x)) = 3x + 1$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-03
+    coefficients: n/a — 語義層等式，無此概念
+    scope: approved/2026-08-03
+    feature_level: n/a — 語義層等式，無此概念
+    mode_definition: n/a — 語義層等式，無此概念
+    witness_vs_universal: approved/2026-08-03
+    model_class: n/a — 語義層等式，無此概念
 
 - id: transducer-split
   lean: CollatzFST.transduce_split
@@ -372,29 +374,32 @@
     ∀ (x : ℕ),
       transduce x
         = List.replicate (padicValNat 2 (3 * x + 1)) 0 ++ (transduce x).dropWhile (· = 0)
-  latex: 【待撰】
+  latex: |
+    For every $x \in \Nat$,
+    $\transduce(x) = \zeros{\vtwo(3x+1)} \listcat \dropZeros(\transduce(x))$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-03
+    coefficients: n/a — 語義層等式，無此概念
+    scope: approved/2026-08-03
+    feature_level: n/a — 語義層等式，無此概念
+    mode_definition: n/a — 語義層等式，無此概念
+    witness_vs_universal: approved/2026-08-03
+    model_class: n/a — 語義層等式，無此概念
 
 - id: valuation-alt-prefix
   lean: CollatzFST.padicValNat_eq_altPrefixLen
   file: Lean4RealConstruction/Core/Collatz_FST_Ext.lean
   lean_type: |
     ∀ (x : ℕ), padicValNat 2 (3 * x + 1) = altPrefixLen x
-  latex: 【待撰】
+  latex: |
+    For every $x \in \Nat$, $\vtwo(3x + 1) = \altPrefixLen(x)$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-03
+    coefficients: n/a — 語義層等式，無此概念
+    scope: approved/2026-08-03
+    feature_level: n/a — 語義層等式，無此概念
+    mode_definition: n/a — 語義層等式，無此概念
+    witness_vs_universal: approved/2026-08-03
+    model_class: n/a — 語義層等式，無此概念

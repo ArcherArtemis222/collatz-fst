@@ -9,6 +9,7 @@
 %     tools/check_paper_refs.py);
 %   - "forthcoming" must not support the strength of any main theorem;
 %     bounded-below / gauge normalization appears only as discussion.
+% W1 (a/paper-s2): \paperthm statement mechanism + Section 2 prose.
 % =========================================================================
 \documentclass[11pt]{article}
 
@@ -36,6 +37,41 @@
   \else
     \errmessage{leanref: unknown registry id '#1'}%
   \fi}
+
+% ---- \paperthm{<id>}: state a registry theorem from its latex field ----
+% The theorem body comes from \csname leanstmt@<id>\endcsname, emitted by
+% tools/gen_paper_index.py ONLY for registry entries whose `latex` field is
+% filled (entries still carrying a status marker such as 【待撰】 are
+% skipped), so an unknown id and a pending id fail through the same hard
+% error below. Prose never hand-writes a registered theorem statement.
+% CI-side counterpart: tools/check_paper_refs.py treats
+% \begin{paperthm}{id} as a (strongest-form) registry reference.
+\newtheorem{registrythm}{Theorem}[section]
+\newenvironment{paperthm}[1]{%
+  \ifcsname leanstmt@#1\endcsname\else
+    \errmessage{paperthm: no latex statement for registry id '#1'
+      (unknown id or pending latex field)}%
+  \fi
+  \begin{registrythm}[\leanref{#1}]%
+  \csname leanstmt@#1\endcsname
+}{\end{registrythm}}
+
+% ---- Notation (append-only) ----------------------------------------------
+% Registry `latex` statements may use only macros defined in this block
+% (plus standard amsmath). Writing PRs may APPEND lines here; existing
+% lines must not be modified or removed — already-reviewed statements
+% depend on them. Gloss on the right: the Lean term each macro denotes.
+\newcommand{\Nat}{\mathbb{N}}                      % Lean ℕ
+\newcommand{\digitsTwo}{\mathsf{digits}_2}         % Nat.digits 2 (LSB-first)
+\newcommand{\ofDigitsTwo}{\mathsf{ofDigits}_2}     % Nat.ofDigits 2
+\newcommand{\transduce}{\mathsf{transduce}}        % CollatzFST.transduce
+\newcommand{\extIn}{\mathsf{extIn}}                % CollatzFST.extIn
+\newcommand{\Todd}{T_{\mathrm{odd}}}               % CollatzFST.Todd
+\newcommand{\vtwo}{\nu_2}                          % padicValNat 2
+\newcommand{\listcat}{\mathbin{+\!\!+}}            % List.append (++)
+\newcommand{\zeros}[1]{0^{#1}}                     % List.replicate #1 0
+\newcommand{\dropZeros}{\mathsf{dropZeros}}        % List.dropWhile (. = 0)
+\newcommand{\altPrefixLen}{\mathsf{altPrefixLen}}  % CollatzFST.altPrefixLen
 
 % ---- skeleton-stage marker for text to be written in later PRs ----
 \newcommand{\tbd}[1]{\emph{[TO WRITE: #1]}}
@@ -110,20 +146,69 @@ Section~\ref{sec:intro} and the explicit non-claims.}
 \section{Transducer Semantics}\label{sec:transducer}
 % =========================================================================
 
-% Outline: the binary carry transducer realizes the accelerated map
-% exactly; soundness is the registry pair
-%   - \leanref of transducer-soundness : ofDigits 2 (transduce x) = 3x + 1
-%   - \leanref of transducer-split     : output = v2(3x+1) zeros ++ trimmed
-% plus the two semantic completions:
-%   - \leanref of todd-eq-dropwhile    : trimmed value = T_odd(x)
-%   - \leanref of valuation-alt-prefix : v2(3x+1) = alternating prefix len
-\tbd{transducer construction paragraph}
+% Sources (repo-only): Core/Collatz_FST_Statements.lean (outBit, nextCarry,
+% run, transduce, Todd; soundness pair), Core/Collatz_FST_Phase.lean
+% (Phase K/S, extIn sentinels), Core/Collatz_FST_Ext.lean (BreaksAlt,
+% altPrefixLen). Definition-layer description only; every theorem-level
+% claim is one of the four \paperthm statements. No convergence claims;
+% no base-10 material (that belongs to Section 7).
 
-\tbd{soundness statement paragraph, citing
-\leanref{transducer-soundness} and \leanref{transducer-split}}
+The arithmetic step $x \mapsto 3x + 1$ is realized exactly by a
+\emph{binary carry transducer}. The input word is $\digitsTwo(x)$, the
+binary expansion of $x$ processed least-significant bit first; the machine
+state is a carry $c$; on input bit $b$ the machine outputs the bit
+$(3b + c) \bmod 2$ and moves to the carry $\lfloor (3b + c)/2 \rfloor$.
+For input bits $b \in \{0,1\}$ the carry alphabet $\{0,1,2\}$ is closed
+under this transition, so the machine is finite-state. The transduction
+$\transduce(x)$ runs from initial carry $c_0 = 1$, which absorbs the
+$+1$ of the map, and appends the binary expansion of the final carry once
+the input is exhausted.
 
-\tbd{accelerated-map semantics paragraph, citing
-\leanref{todd-eq-dropwhile} and \leanref{valuation-alt-prefix}}
+Two further definition-layer conventions are fixed here once and used by
+the feature levels of Sections~\ref{sec:flow}--\ref{sec:nogo}. First,
+feature-level runs read the \emph{sentinel-extended} input
+$\extIn(x) = \digitsTwo(x) \listcat 00$, the input word followed by two
+sentinel zeros; their effect --- every run ends in a flushed terminal
+configuration --- is stated precisely by the terminal-state theorems of
+Section~\ref{sec:flow}. Second, each feature-level state carries a
+\emph{phase} $P \in \{K, S\}$: phase $K$ is kept while the machine
+outputs $0$s, flips to $S$ at the first output bit $1$, and $S$ is
+absorbing --- the $K$ region thus marks the output prefix that
+acceleration truncates, and the valuation-parity mode of the two-register
+templates (Section~\ref{sec:intro}) is read off the exit from the $K$
+region.
+
+The transducer computes the map exactly, with no side condition on $x$:
+
+\begin{paperthm}{transducer-soundness}\end{paperthm}
+
+Moreover, the output word splits exactly at the acceleration boundary:
+its maximal zero prefix has length exactly $\vtwo(3x+1)$, and the split
+is an identity of words, so truncation acts locally on the output and
+does not interfere with the higher-order bits. Here $\zeros{n}$ denotes
+the word of $n$ zeros and $\dropZeros(w)$ the word $w$ with its maximal
+zero prefix removed.
+
+\begin{paperthm}{transducer-split}\end{paperthm}
+
+Acceleration thus becomes a word operation: strip the maximal zero
+prefix, then re-read the remainder as a number. This recovers the
+accelerated Collatz map $\Todd$ of Section~\ref{sec:intro}:
+
+\begin{paperthm}{todd-eq-dropwhile}\end{paperthm}
+
+Finally, the acceleration exponent is \emph{syntactic}: it can be read
+off the input word without running the machine. Let $\altPrefixLen(x)$
+be the length of the maximal prefix of $\digitsTwo(x)$ that agrees with
+the alternating pattern $1,0,1,0,\dots$ --- formally, the least $i$ such
+that bit $i$ of $x$ differs from the pattern bit $[i \text{ even}]$.
+
+\begin{paperthm}{valuation-alt-prefix}\end{paperthm}
+
+These four statements are the entire semantic interface between the
+arithmetic map and the automaton layers: from
+Section~\ref{sec:flow} onward, every quantity in this paper is a
+function of finite runs of a finite machine over $\extIn(x)$.
 
 % =========================================================================
 \section{Flow Conservation}\label{sec:flow}
