@@ -172,13 +172,13 @@
     $V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwelve$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-04
-    coefficients: self/2026-08-04
-    scope: self/2026-08-04
-    feature_level: self/2026-08-04
-    mode_definition: self/2026-08-04
-    witness_vs_universal: self/2026-08-04
-    model_class: self/2026-08-04
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l2-2mode-universal
   lean: CollatzFST.TwoMode.no_global_odd_2mode_potential
@@ -198,13 +198,13 @@
     $x \bmod 2 = 1$ and $1 < x$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-04
-    coefficients: self/2026-08-04
-    scope: self/2026-08-04
-    feature_level: self/2026-08-04
-    mode_definition: self/2026-08-04
-    witness_vs_universal: self/2026-08-04
-    model_class: self/2026-08-04
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l2-2mode-witness
   lean: CollatzFST.TwoMode.no_go_2mode_potential
@@ -223,13 +223,13 @@
     --- $V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwelve$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-04
-    coefficients: self/2026-08-04
-    scope: self/2026-08-04
-    feature_level: self/2026-08-04
-    mode_definition: self/2026-08-04
-    witness_vs_universal: self/2026-08-04
-    model_class: self/2026-08-04
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l2-single-universal
   lean: CollatzFST.LP.no_global_odd_ranking
@@ -243,13 +243,13 @@
     with $x \bmod 2 = 1$ and $1 < x$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-04
-    coefficients: self/2026-08-04
-    scope: self/2026-08-04
-    feature_level: self/2026-08-04
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
     mode_definition: n/a — 單模式模板，無模式判準
-    witness_vs_universal: self/2026-08-04
-    model_class: self/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l2-single-witness
   lean: CollatzFST.LP.no_nonneg_linear_ranking
@@ -261,13 +261,13 @@
     every $i$, and $\dotp{\theta}{\dF(x)} < 0$ for every $x \in \Wten$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-04
-    coefficients: self/2026-08-04
-    scope: self/2026-08-04
-    feature_level: self/2026-08-04
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
     mode_definition: n/a — 單模式模板，無模式判準
-    witness_vs_universal: self/2026-08-04
-    model_class: self/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l3-2mode-affine
   lean: CollatzFST.L3.no_go_level3_2mode_affine_potential
@@ -289,13 +289,13 @@
     $V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwenty$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-04
-    coefficients: self/2026-08-04
-    scope: self/2026-08-04
-    feature_level: self/2026-08-04
-    mode_definition: self/2026-08-04
-    witness_vs_universal: self/2026-08-04
-    model_class: self/2026-08-04
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l3-2mode-universal
   lean: CollatzFST.L3.no_global_odd_level3_2mode_potential
@@ -315,13 +315,13 @@
     $x \bmod 2 = 1$ and $1 < x$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-04
-    coefficients: self/2026-08-04
-    scope: self/2026-08-04
-    feature_level: self/2026-08-04
-    mode_definition: self/2026-08-04
-    witness_vs_universal: self/2026-08-04
-    model_class: self/2026-08-04
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l3-2mode-witness
   lean: CollatzFST.L3.no_go_level3_2mode_potential
@@ -340,13 +340,13 @@
     otherwise --- $V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwenty$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-04
-    coefficients: self/2026-08-04
-    scope: self/2026-08-04
-    feature_level: self/2026-08-04
-    mode_definition: self/2026-08-04
-    witness_vs_universal: self/2026-08-04
-    model_class: self/2026-08-04
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: terminal-l2
   lean: CollatzFST.Flow.run2_extIn_terminal
