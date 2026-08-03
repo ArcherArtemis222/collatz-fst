@@ -28,3 +28,5 @@ paper/*.fls
 paper/*.fdb_latexmk
 paper/*.toc
 paper/*.pdf
+paper/*.bbl
+paper/*.blg
