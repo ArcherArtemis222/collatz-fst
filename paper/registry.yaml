@@ -30,12 +30,12 @@
     $\outBit(c, b) = 1$ equals $1$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
+    strictness: approved/2026-08-03
     coefficients: n/a — trace 層計數，無 θ/β 參數
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
+    scope: approved/2026-08-03
+    feature_level: approved/2026-08-03
     mode_definition: n/a — 敘述本身無模式判準（模式語義的來源，正文交代）
-    witness_vs_universal: self/2026-08-03
+    witness_vs_universal: approved/2026-08-03
     model_class: n/a — trace 層結果，非模板類
 
 - id: dim-l2-eq-10
@@ -79,12 +79,12 @@
     For every $x \in \Nat$, $\dF(x)_3 = \dF(x)_4 + \dF(x)_5$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
+    strictness: approved/2026-08-03
     coefficients: n/a — 差分層恆等式，無 θ/β 參數
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
+    scope: approved/2026-08-03
+    feature_level: approved/2026-08-03
     mode_definition: n/a — 差分層恆等式，無模式判準
-    witness_vs_universal: self/2026-08-03
+    witness_vs_universal: approved/2026-08-03
     model_class: n/a — 守恆律實例，非模板類結果
 
 - id: flow-kirchhoff-l2
@@ -103,12 +103,12 @@
     + \iv{\runtwo(s, w) = g}$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
+    strictness: approved/2026-08-03
     coefficients: n/a — 守恆恆等式，無 θ/β 參數
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
+    scope: approved/2026-08-03
+    feature_level: approved/2026-08-03
     mode_definition: n/a — Level 2 無模式概念
-    witness_vs_universal: self/2026-08-03
+    witness_vs_universal: approved/2026-08-03
     model_class: n/a — 守恆律，非模板類結果
 
 - id: fstart-l3-crossblock
@@ -319,12 +319,12 @@
     $\runtwo((1, K, 0), \extIn(x)) = (0, S, 1)$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
+    strictness: approved/2026-08-03
     coefficients: n/a — 無 θ/β 參數
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
+    scope: approved/2026-08-03
+    feature_level: approved/2026-08-03
     mode_definition: n/a — 終末狀態敘述不含模式判準
-    witness_vs_universal: self/2026-08-03
+    witness_vs_universal: approved/2026-08-03
     model_class: n/a — 語義層結果，非模板類
 
 - id: terminal-l3
@@ -340,12 +340,12 @@
     $\runthree((1, K, 0, 0), \extIn(x)) = (0, S, 1, 0)$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
+    strictness: approved/2026-08-03
     coefficients: n/a — 無 θ/β 參數
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
+    scope: approved/2026-08-03
+    feature_level: approved/2026-08-03
     mode_definition: n/a — 終末狀態敘述不含模式判準
-    witness_vs_universal: self/2026-08-03
+    witness_vs_universal: approved/2026-08-03
     model_class: n/a — 語義層結果，非模板類
 
 - id: todd-eq-dropwhile
