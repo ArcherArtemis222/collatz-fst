@@ -51,6 +51,7 @@ REVIEWED_KEYS = [
 ID_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 # latex 欄的狀態標記（【待撰】/【僅引用】…）：整欄恰為一對全形括號者視為
 # 「未填」，不排 \csdef{leanstmt@...}——\paperthm 對這些 id 走硬報錯路徑。
+# tools/check_paper_refs.py 的 STATUS_RE 是同步副本（方向三），兩處判準必須一致。
 STATUS_RE = re.compile(r"^【.*】$")
 # 個別模組白名單：Core/ 與 ProjectA/ 之下的檔案。root 模組（Core.lean、
 # ProjectA.lean、Lean4RealConstruction.lean）不在其下，天然被擋。

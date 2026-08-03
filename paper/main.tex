@@ -12,6 +12,8 @@
 % W1 (a/paper-s2): \paperthm statement mechanism + Section 2 prose.
 % W2 (a/paper-s3): Section 3 prose; review protocol landed as
 %   paper/REVIEW-PROTOCOL.md.
+% W3 (a/paper-s4): Section 4 prose; check_paper_refs direction 3
+%   (\paperthm requires filled latex field); AGENTS.md protocol pointer.
 % =========================================================================
 \documentclass[11pt]{article}
 
@@ -83,6 +85,11 @@
 \newcommand{\outBit}{\mathsf{outBit}}              % CollatzFST.outBit
 \newcommand{\dF}{\Delta F}                         % CollatzFST.LP.ΔF (coord i = getD i 0, 0-based)
 \newcommand{\iv}[1]{[#1]}                          % if #1 then 1 else 0 (Iverson bracket)
+\newcommand{\Rat}{\mathbb{Q}}                      % Lean ℚ
+\newcommand{\spanQ}{\operatorname{span}_{\Rat}}    % Submodule.span ℚ
+\newcommand{\range}{\operatorname{range}}          % Set.range
+\newcommand{\dFQ}{\Delta F_{\Rat}}                 % Flow.dFQ (ΔF as ℚ-vector, 18 coords)
+\newcommand{\dFQninetysix}{\Delta F^{96}_{\Rat}}   % L3.dFQ96 (two-mode doubled difference, 96 coords)
 
 % ---- skeleton-stage marker for text to be written in later PRs ----
 \newcommand{\tbd}[1]{\emph{[TO WRITE: #1]}}
@@ -322,30 +329,125 @@ at its states.
 \section{Exact Geometry}\label{sec:geometry}
 % =========================================================================
 
-% Outline: exact dimensions of the difference-feature spans.
-%   - Level 2: dim = 10 (in 18): \leanref of dim-l2-eq-10
-%   - Level 3 two-mode: dim = 31 (in 96): \leanref of dim-l3-eq-31
-\tbd{dimension theorems paragraph, citing \leanref{dim-l2-eq-10} and
-\leanref{dim-l3-eq-31}}
+% Sources (repo-only): STATUS.md (dimension chains; three-row table),
+% ROADMAP-A A-3/A-4 (method outline; Cramer law; det-31 observation),
+% Dim/Delta file docstrings (Sol/pick, dF96, 65-functional account),
+% L3_2Mode_Recon.lean (48-dim ordering, coordinate 33). Tools anchors:
+% a3_functionals.py (L2 completeness rank 8), l3_recon.py incl. (6)
+% (L3 recon, mode-splitting reconciliation), gen_l3dim.py (byte
+% reproducibility; unimodular inverse, max|B| = 3), certificates.py
+% --cramer (Cramer law). Rules in force: Cramer law labeled TOOLS-LAYER,
+% not a Lean theorem; 31x31 row-level content stays out of the text
+% (artifact only; mechanism + one decide+kernel sentence); the
+% "Sigma-lambda is not a determinant" guard is mandatory.
 
-% Cramer law (MUST be labeled a tools-layer computational result, verified
-% by tools/certificates.py --cramer in CI; it is NOT a Lean theorem):
-%   lambda = adjugate row of the annihilated witness submatrix / gcd;
-%   certificate integers = maximal minors; in the single-mode case the
-%   scale 31 IS det(A_free) — the same 31 as the lower-bound determinant.
-%   Guard against the known mis-inference: sum(lambda) (1024 / 7826 / 31746)
-%   is NOT any of these determinants.
-\tbd{Cramer-law paragraph (tools-layer labeling as above)}
+Section~\ref{sec:flow} produced linear identities satisfied by every
+difference vector; this section shows that the identities found are all
+of them. Write $\dFQ(x)$ for $\dF(x)$ viewed as a vector of rationals,
+with one coordinate per Level~2 edge --- $18$ in the fixed enumeration.
+For the two-mode Level~3 templates the natural difference object is
+\emph{doubled}: $\dFQninetysix(x)$ has two blocks of $48$ coordinates,
+one per weight vector, with the features of the target $\Todd(x)$ added
+to the block selected by the mode of $\Todd(x)$ and the features of the
+source $x$ subtracted from the block selected by the mode of $x$ --- so
+that a two-mode descent difference is read off blockwise. The spans of
+these difference vectors have exact dimension:
 
-% Mode splitting breaks absorption — the three-row table (fixed by
-% STATUS.md / outline):
-%   single mode (48-dim): [16]+[33] holds but is absorbed by the family;
-%   two-mode same-block: not even a relation (residue +-1 on mode flips);
-%   two-mode cross-block: holds and is the UNIQUE gap (65th functional).
-% Registry anchors: \leanref of mode-bit-sum-l3 (source identity),
-% \leanref of fstart-l3-crossblock (the 65th functional as landed in Lean).
-\tbd{mode-splitting three-row table and discussion, citing
-\leanref{mode-bit-sum-l3} and \leanref{fstart-l3-crossblock}}
+\begin{paperthm}{dim-l2-eq-10}\end{paperthm}
+
+\begin{paperthm}{dim-l3-eq-31}\end{paperthm}
+
+Both upper bounds follow one pattern. The difference-layer functionals
+of Section~\ref{sec:flow} --- dead coordinates and conservation rows,
+with the two terminal rows merged --- cut out a solution space
+containing every difference vector, and projection to a set of free
+coordinates ($10$ at Level~2, $31$ at Level~3) is injective on that
+solution space: the remaining coordinates are linear in the free ones.
+Hence the dimensions are at most $10$ and $31$. At Level~2 the family is
+complete in exact arithmetic: two dead coordinates plus seven usable
+conservation rows have rank $8 = 18 - 10$
+(\texttt{tools/a3\_functionals.py}, exact rational, CI-enforced). At
+Level~3 the account comprises $65$ functionals --- $40$ lifted dead
+coordinates, $22$ lifted clean-flow rows, $2$ block-dependent dead
+coordinates, and one cross-block functional discussed below
+(\texttt{tools/l3\_recon.py}); the two Level-3 dimension files are
+machine-generated, and CI re-runs the generator and requires a
+byte-for-byte match (\texttt{tools/gen\_l3dim.py}).
+
+The lower bounds are witness computations. At Level~2 the ten Farkas
+witnesses of Section~\ref{sec:nogo} already suffice: projected to the
+ten free coordinates they form a $10 \times 10$ integer matrix with
+determinant $31 \neq 0$ (cross-checked in exact arithmetic by
+\texttt{tools/a3\_functionals.py}). At Level~3, $31$ witnesses project
+to a $31 \times 31$ matrix that is \emph{unimodular} --- determinant
+$1$ --- so its inverse $B$ is an integer matrix with entries of absolute
+value at most $3$, and the independence certificate is an explicit
+integer combination (re-verified in pure integers at generation time by
+\texttt{tools/gen\_l3dim.py}). In the formal development every witness
+row is a literal integer vector: after a simp-normalization each row
+identity closes by kernel-checked \texttt{decide}, and the row-level
+content lives in the generated files of the artifact
+(Section~\ref{sec:artifact}), not in this text.
+
+A computational law connects these determinants with the certificate
+integers of Section~\ref{sec:nogo}. It is a \emph{tools-layer} result,
+verified in exact rational arithmetic by
+\texttt{tools/certificates.py --cramer} on every CI push; it is not a
+Lean theorem. For each of the three certificates, the witness rows
+annihilated by the Farkas combination $\lambda$ have rank $m - 1$ ($m$
+the number of witnesses), so $\lambda$ is unique up to scale; taking a
+full-rank $(m-1)$-row submatrix of the annihilated stack, $\lambda$ is
+its vector of maximal minors divided by their gcd (Cramer's cofactor
+vector), and every nonzero coordinate of the aggregate is $\pm$ a
+maximal minor over the same gcd. In the single-mode case this
+degenerates to the cleanest form: $\lambda$ is a row of the adjugate of
+the free-coordinate witness matrix, and the certificate scale $31$
+\emph{is} its determinant --- the same $31$ as the lower-bound
+determinant above. The certificate solves in integers at scale $31$
+because that scale is a determinant, not a numerical accident. One
+mis-inference must be blocked: $\Sigma\lambda$ --- $1024$, $7826$,
+$31746$ for the three certificates --- is \emph{not} any of these
+determinants; the single-mode certificate itself is the counterexample
+($\Sigma\lambda = 1024$ while the determinant is $31$), and
+\texttt{tools/certificates.py} guards this inference in CI.
+
+Why is the two-mode dimension $31$ and not twice the single-mode story?
+Mode splitting changes which relations survive, and the change is
+carried by exactly one functional. The source identity is the exit
+uniqueness of Section~\ref{sec:flow} lifted to Level~3: coordinates
+$16$ and $33$ of the $48$-dimensional enumeration index the two exit
+edges of the $K$ region, and exactly one of the two exits is taken on
+any run (\leanref{mode-bit-sum-l3}). Whether this identity survives as
+a linear relation depends on how it meets the mode split; writing
+$\theta_b[k]$ for the functional that reads coordinate $k$ of block $b$
+of $\dFQninetysix$, the three cases are
+(\texttt{tools/l3\_recon.py} item (6), exact rational reconciliation):
+
+\begin{center}
+\begin{tabular}{@{}p{0.34\textwidth}p{0.58\textwidth}@{}}
+\toprule
+Setting & Status of the $[16]{+}[33]$ functional \\
+\midrule
+single mode ($48$-dim) & holds, but \emph{absorbed}: the dead and flow
+family ($20 + 13$ rows) already spans it; rank $32$, complete \\
+two-mode, same block ($\theta_b[16] + \theta_b[33]$) & \emph{not even a
+relation}: residue $\pm 1$ whenever the mode flips \\
+two-mode, cross block ($\theta_0[16] + \theta_1[33]$) & holds, and is
+the \emph{unique} gap --- the $65$th functional \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The unique missing relation is genuinely cross-block: no single-block
+functional expresses it. In the formal development the $65$th
+functional lands in an equivalent reorganized form --- the initial-state
+flow row summed over both blocks, in which the endpoint constants
+cancel, so no case analysis on the mode is needed
+(\leanref{fstart-l3-crossblock}). ``Absorbed'' in the first row is
+again structural placement, not unimportance: it says the single-mode
+family is complete without the identity, while the two-mode family is
+complete only with its cross-block form --- which is precisely why the
+two-mode dimension is $31 = 96 - 65$.
 
 % =========================================================================
 \section{No-Go Certificates}\label{sec:nogo}

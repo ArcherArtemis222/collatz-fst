@@ -43,32 +43,34 @@
   file: Lean4RealConstruction/ProjectA/Collatz_FST_DimLower.lean
   lean_type: |
     Module.finrank ℚ (Submodule.span ℚ (Set.range Flow.dFQ)) = 10
-  latex: 【待撰】
+  latex: |
+    $\dim_{\Rat} \spanQ(\range \dFQ) = 10$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-04
+    coefficients: n/a — 維度敘述，無 θ/β 參數
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: n/a — Level 2 維度敘述，無模式判準
+    witness_vs_universal: n/a — 閉式維度等式，無量詞形（上界／下界之分屬證明結構，正文交代）
+    model_class: n/a — 維度定理，非模板類結果
 
 - id: dim-l3-eq-31
   lean: CollatzFST.L3.finrank_span_dFQ96_eq_31
   file: Lean4RealConstruction/ProjectA/Collatz_FST_L3_DimLower.lean
   lean_type: |
     Module.finrank ℚ (Submodule.span ℚ (Set.range L3.dFQ96)) = 31
-  latex: 【待撰】
+  latex: |
+    $\dim_{\Rat} \spanQ(\range \dFQninetysix) = 31$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-04
+    coefficients: n/a — 維度敘述，無 θ/β 參數
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: n/a — 敘述不含模式判準（96 維雙區塊結構於正文交代）
+    witness_vs_universal: n/a — 閉式維度等式，無量詞形（上界／下界之分屬證明結構，正文交代）
+    model_class: n/a — 維度定理，非模板類結果
 
 - id: flow-2k0-alternating
   lean: CollatzFST.Flow.dF_flow_2K0
