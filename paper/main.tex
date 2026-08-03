@@ -14,6 +14,9 @@
 %   paper/REVIEW-PROTOCOL.md.
 % W3 (a/paper-s4): Section 4 prose; check_paper_refs direction 3
 %   (\paperthm requires filled latex field); AGENTS.md protocol pointer.
+% W4a (a/paper-s5a): Section 5 no-go theorems (eight \paperthm) with
+%   A-1 quantifier note and A-2 mode-flow balance; methodology paragraph
+%   remains for W4b.
 % =========================================================================
 \documentclass[11pt]{article}
 
@@ -90,6 +93,13 @@
 \newcommand{\range}{\operatorname{range}}          % Set.range
 \newcommand{\dFQ}{\Delta F_{\Rat}}                 % Flow.dFQ (ΔF as ℚ-vector, 18 coords)
 \newcommand{\dFQninetysix}{\Delta F^{96}_{\Rat}}   % L3.dFQ96 (two-mode doubled difference, 96 coords)
+\newcommand{\RatVec}[1]{\Rat^{#1}}                 % Fin #1 → ℚ (vector as function)
+\newcommand{\dotp}[2]{#1 \cdot #2}                 % LP.dot (Fin 18) / L3.dot48 (Fin 48)
+\newcommand{\Feat}{F}                              % TwoMode.F / LP.F (18-dim occupation features)
+\newcommand{\FeatThree}{F_3}                       % L3.F3 (48-dim occupation features)
+\newcommand{\Wten}{W_{10}}                         % LP.W₁₀ (10 witnesses)
+\newcommand{\Wtwelve}{W_{12}}                      % TwoMode.W12 (12 witnesses)
+\newcommand{\Wtwenty}{W_{20}}                      % L3.W20 (20 witnesses)
 
 % ---- skeleton-stage marker for text to be written in later PRs ----
 \newcommand{\tbd}[1]{\emph{[TO WRITE: #1]}}
@@ -453,29 +463,74 @@ two-mode dimension is $31 = 96 - 65$.
 \section{No-Go Certificates}\label{sec:nogo}
 % =========================================================================
 
-% Outline: three templates, each as (finite-witness version, universal
-% version over odd x > 1); affine strengthening for the two-mode templates.
-%   L2 single:  \leanref of nogo-l2-single-witness / nogo-l2-single-universal
-%   L2 two-mode: \leanref of nogo-l2-2mode-witness / nogo-l2-2mode-universal
-%                / nogo-l2-2mode-affine
-%   L3 two-mode: \leanref of nogo-l3-2mode-witness / nogo-l3-2mode-universal
-%                / nogo-l3-2mode-affine
-\tbd{Level 2 single-mode paragraph, citing \leanref{nogo-l2-single-witness}
-and \leanref{nogo-l2-single-universal}; the universal quantifier excludes
-the trivial witness $x = 1$}
+% Sources (repo-only): STATUS.md (no-go table, witness sets, Sigma-lambda),
+% ROADMAP-A A-1 (quantifier history, one sentence) and A-2 (affine
+% upgrade, mode-flow balance), NoGo file docstrings. Tools anchor:
+% certificates.py (lambda re-solved from witness sets; mode-flow balance
+% = 0; CI every push). Rules: full lambda vectors and witness lists stay
+% OUT of the text (artifact). Model-class placement belongs to Section 6.
+% The methodology paragraph below remains for W4b.
 
-\tbd{Level 2 two-mode paragraph, citing \leanref{nogo-l2-2mode-witness},
-\leanref{nogo-l2-2mode-universal}, and the affine strengthening
-\leanref{nogo-l2-2mode-affine}}
+The no-go theorems refute strict descent for three template families:
+the Level~2 single-mode linear templates and the Level~2 and Level~3
+two-mode templates. Each family comes in a finite-witness version ---
+descent fails already on an explicit finite set of odd starting points
+--- and a universal version over all odd $x > 1$; the two-mode families
+additionally come in an affine version with per-mode intercepts. The
+witness sets $\Wten$, $\Wtwelve$, $\Wtwenty$ have $10$, $12$ and $20$
+elements, and the refuting Farkas combinations $\lambda$
+(Section~\ref{sec:intro}) have $\Sigma\lambda = 1024$, $7826$ and
+$31746$ respectively; the three certificates are re-solved from the
+witness sets in exact rational arithmetic on every CI push
+(\texttt{tools/certificates.py}), and the full $\lambda$ vectors and
+witness lists live in the artifact (Section~\ref{sec:artifact}), not in
+this text.
 
-\tbd{Level 3 two-mode paragraph, citing \leanref{nogo-l3-2mode-witness},
-\leanref{nogo-l3-2mode-universal}, and \leanref{nogo-l3-2mode-affine}}
+For the single-mode family the potential is a nonnegative linear form
+in the occupation features, and descent is measured on the difference
+vectors of Section~\ref{sec:flow}:
 
-% Mode-flow balance makes the intercepts beta_m free: the certificate
-% identity sum lambda (e_m(y) - e_m(x)) = 0 (verified by
-% tools/certificates.py in CI) cancels the beta contributions in the
-% Farkas aggregate, so the affine class is refuted by the SAME lambda.
-\tbd{mode-flow balance paragraph}
+\begin{paperthm}{nogo-l2-single-witness}\end{paperthm}
+
+\begin{paperthm}{nogo-l2-single-universal}\end{paperthm}
+
+The guard $1 < x$ is what keeps the universal version non-vacuous:
+$\Todd(1) = (3 \cdot 1 + 1)/2^2 = 1$, so $\dF(1) = 0$ and strict
+descent fails at $x = 1$ for every $\theta$ --- a scope drift caught
+and fixed early by strengthening the statement (ROADMAP item A-1).
+
+The two-mode templates split the weight vector by the valuation-parity
+mode (Section~\ref{sec:intro}): the mode of $y$ is the occupation
+feature of the high-energy $K$-exit edge --- coordinate $5$ at
+Level~2, coordinate $33$ at Level~3 --- and the boundary-step
+uniqueness of Section~\ref{sec:flow} is what makes this a well-defined
+bit. At Level~2:
+
+\begin{paperthm}{nogo-l2-2mode-witness}\end{paperthm}
+
+\begin{paperthm}{nogo-l2-2mode-universal}\end{paperthm}
+
+\begin{paperthm}{nogo-l2-2mode-affine}\end{paperthm}
+
+At Level~3, over the $48$-coordinate features of the
+two-output-bit machine:
+
+\begin{paperthm}{nogo-l3-2mode-witness}\end{paperthm}
+
+\begin{paperthm}{nogo-l3-2mode-universal}\end{paperthm}
+
+\begin{paperthm}{nogo-l3-2mode-affine}\end{paperthm}
+
+The affine versions are a genuine strengthening --- the intercepts
+$\beta_0, \beta_1$ carry no sign constraint --- yet they are refuted by
+the \emph{same} $\lambda$ as the linear versions. The reason is the
+mode-flow balance identity of Section~\ref{sec:intro},
+$\sum_i \lambda_i (e_{m(y_i)} - e_{m(x_i)}) = 0$, which both two-mode
+certificates satisfy: in the Farkas aggregate the $\beta$ contributions
+enter weighted by exactly these mode-indicator differences, so they
+cancel identically, and the linear certificate closes the affine case
+unchanged (ROADMAP item A-2; the balance is re-verified as part of
+\texttt{tools/certificates.py} in CI).
 
 % Certificate methodology (outline): search in floating point -> exact
 % rational reconstruction -> Lean decide/ring closure; anchors and CI

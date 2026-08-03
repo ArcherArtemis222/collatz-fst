@@ -40,6 +40,46 @@ over $\{0,1\}$,
 $\sum_{e \in \inEdges(g)} \occtwo(s, w, e) + \iv{s = g}
 = \occtwo(s, w, (g, 0)) + \occtwo(s, w, (g, 1))
 + \iv{\runtwo(s, w) = g}$.}
+\csdef{leanstmt@nogo-l2-2mode-affine}{There are no $\beta_0, \beta_1 \in \Rat$ and
+$\theta_0, \theta_1 \in \RatVec{18}$ such that $0 \le (\theta_0)_i$
+for every $i$, $0 \le (\theta_1)_i$ for every $i$, and --- writing
+$V(y) = \beta_1 + \dotp{\theta_1}{\Feat(y)}$ if $\Feat(y)_5 = 1$
+and $V(y) = \beta_0 + \dotp{\theta_0}{\Feat(y)}$ otherwise ---
+$V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwelve$.}
+\csdef{leanstmt@nogo-l2-2mode-universal}{There are no $\theta_0, \theta_1 \in \RatVec{18}$ such that
+$0 \le (\theta_0)_i$ for every $i$, $0 \le (\theta_1)_i$ for every
+$i$, and --- writing $V(y) = \dotp{\theta_1}{\Feat(y)}$ if
+$\Feat(y)_5 = 1$ and $V(y) = \dotp{\theta_0}{\Feat(y)}$ otherwise
+--- $V(\Todd(x)) - V(x) < 0$ for every $x \in \Nat$ with
+$x \bmod 2 = 1$ and $1 < x$.}
+\csdef{leanstmt@nogo-l2-2mode-witness}{There are no $\theta_0, \theta_1 \in \RatVec{18}$ such that
+$0 \le (\theta_0)_i$ for every $i$, $0 \le (\theta_1)_i$ for every
+$i$, and --- writing $V(y) = \dotp{\theta_1}{\Feat(y)}$ if
+$\Feat(y)_5 = 1$ and $V(y) = \dotp{\theta_0}{\Feat(y)}$ otherwise
+--- $V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwelve$.}
+\csdef{leanstmt@nogo-l2-single-universal}{There is no $\theta \in \RatVec{18}$ such that $0 \le \theta_i$ for
+every $i$, and $\dotp{\theta}{\dF(x)} < 0$ for every $x \in \Nat$
+with $x \bmod 2 = 1$ and $1 < x$.}
+\csdef{leanstmt@nogo-l2-single-witness}{There is no $\theta \in \RatVec{18}$ such that $0 \le \theta_i$ for
+every $i$, and $\dotp{\theta}{\dF(x)} < 0$ for every $x \in \Wten$.}
+\csdef{leanstmt@nogo-l3-2mode-affine}{There are no $\beta_0, \beta_1 \in \Rat$ and
+$\theta_0, \theta_1 \in \RatVec{48}$ such that $0 \le (\theta_0)_i$
+for every $i$, $0 \le (\theta_1)_i$ for every $i$, and --- writing
+$V(y) = \beta_1 + \dotp{\theta_1}{\FeatThree(y)}$ if
+$\FeatThree(y)_{33} = 1$ and
+$V(y) = \beta_0 + \dotp{\theta_0}{\FeatThree(y)}$ otherwise ---
+$V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwenty$.}
+\csdef{leanstmt@nogo-l3-2mode-universal}{There are no $\theta_0, \theta_1 \in \RatVec{48}$ such that
+$0 \le (\theta_0)_i$ for every $i$, $0 \le (\theta_1)_i$ for every
+$i$, and --- writing $V(y) = \dotp{\theta_1}{\FeatThree(y)}$ if
+$\FeatThree(y)_{33} = 1$ and $V(y) = \dotp{\theta_0}{\FeatThree(y)}$
+otherwise --- $V(\Todd(x)) - V(x) < 0$ for every $x \in \Nat$ with
+$x \bmod 2 = 1$ and $1 < x$.}
+\csdef{leanstmt@nogo-l3-2mode-witness}{There are no $\theta_0, \theta_1 \in \RatVec{48}$ such that
+$0 \le (\theta_0)_i$ for every $i$, $0 \le (\theta_1)_i$ for every
+$i$, and --- writing $V(y) = \dotp{\theta_1}{\FeatThree(y)}$ if
+$\FeatThree(y)_{33} = 1$ and $V(y) = \dotp{\theta_0}{\FeatThree(y)}$
+otherwise --- $V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwenty$.}
 \csdef{leanstmt@terminal-l2}{For every $x \in \Nat$,
 $\runtwo((1, K, 0), \extIn(x)) = (0, S, 0)$ or
 $\runtwo((1, K, 0), \extIn(x)) = (0, S, 1)$.}

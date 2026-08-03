@@ -163,16 +163,22 @@
         (if (TwoMode.F (Todd x)).getD 5 0 = 1 then β₁ + LP.dot θ₁ (TwoMode.F (Todd x))
                                        else β₀ + LP.dot θ₀ (TwoMode.F (Todd x)))
           - (if (TwoMode.F x).getD 5 0 = 1 then β₁ + LP.dot θ₁ (TwoMode.F x) else β₀ + LP.dot θ₀ (TwoMode.F x)) < 0
-  latex: 【待撰】
+  latex: |
+    There are no $\beta_0, \beta_1 \in \Rat$ and
+    $\theta_0, \theta_1 \in \RatVec{18}$ such that $0 \le (\theta_0)_i$
+    for every $i$, $0 \le (\theta_1)_i$ for every $i$, and --- writing
+    $V(y) = \beta_1 + \dotp{\theta_1}{\Feat(y)}$ if $\Feat(y)_5 = 1$
+    and $V(y) = \beta_0 + \dotp{\theta_0}{\Feat(y)}$ otherwise ---
+    $V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwelve$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l2-2mode-universal
   lean: CollatzFST.TwoMode.no_global_odd_2mode_potential
@@ -183,16 +189,22 @@
       ∀ x : ℕ, x % 2 = 1 → 1 < x →
         (if (TwoMode.F (Todd x)).getD 5 0 = 1 then LP.dot θ₁ (TwoMode.F (Todd x)) else LP.dot θ₀ (TwoMode.F (Todd x)))
           - (if (TwoMode.F x).getD 5 0 = 1 then LP.dot θ₁ (TwoMode.F x) else LP.dot θ₀ (TwoMode.F x)) < 0
-  latex: 【待撰】
+  latex: |
+    There are no $\theta_0, \theta_1 \in \RatVec{18}$ such that
+    $0 \le (\theta_0)_i$ for every $i$, $0 \le (\theta_1)_i$ for every
+    $i$, and --- writing $V(y) = \dotp{\theta_1}{\Feat(y)}$ if
+    $\Feat(y)_5 = 1$ and $V(y) = \dotp{\theta_0}{\Feat(y)}$ otherwise
+    --- $V(\Todd(x)) - V(x) < 0$ for every $x \in \Nat$ with
+    $x \bmod 2 = 1$ and $1 < x$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l2-2mode-witness
   lean: CollatzFST.TwoMode.no_go_2mode_potential
@@ -203,16 +215,21 @@
       ∀ x ∈ TwoMode.W12,
         (if (TwoMode.F (Todd x)).getD 5 0 = 1 then LP.dot θ₁ (TwoMode.F (Todd x)) else LP.dot θ₀ (TwoMode.F (Todd x)))
           - (if (TwoMode.F x).getD 5 0 = 1 then LP.dot θ₁ (TwoMode.F x) else LP.dot θ₀ (TwoMode.F x)) < 0
-  latex: 【待撰】
+  latex: |
+    There are no $\theta_0, \theta_1 \in \RatVec{18}$ such that
+    $0 \le (\theta_0)_i$ for every $i$, $0 \le (\theta_1)_i$ for every
+    $i$, and --- writing $V(y) = \dotp{\theta_1}{\Feat(y)}$ if
+    $\Feat(y)_5 = 1$ and $V(y) = \dotp{\theta_0}{\Feat(y)}$ otherwise
+    --- $V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwelve$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l2-single-universal
   lean: CollatzFST.LP.no_global_odd_ranking
@@ -220,32 +237,37 @@
   lean_type: |
     ¬ ∃ θ : Fin 18 → ℚ, (∀ i, 0 ≤ θ i) ∧
       ∀ x : ℕ, x % 2 = 1 → 1 < x → LP.dot θ (LP.ΔF x) < 0
-  latex: 【待撰】
+  latex: |
+    There is no $\theta \in \RatVec{18}$ such that $0 \le \theta_i$ for
+    every $i$, and $\dotp{\theta}{\dF(x)} < 0$ for every $x \in \Nat$
+    with $x \bmod 2 = 1$ and $1 < x$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: n/a — 單模式模板，無模式判準
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l2-single-witness
   lean: CollatzFST.LP.no_nonneg_linear_ranking
   file: Lean4RealConstruction/ProjectA/Collatz_FST_NoLinearRanking.lean
   lean_type: |
     ¬ ∃ θ : Fin 18 → ℚ, (∀ i, 0 ≤ θ i) ∧ ∀ x ∈ LP.W₁₀, LP.dot θ (LP.ΔF x) < 0
-  latex: 【待撰】
+  latex: |
+    There is no $\theta \in \RatVec{18}$ such that $0 \le \theta_i$ for
+    every $i$, and $\dotp{\theta}{\dF(x)} < 0$ for every $x \in \Wten$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: n/a — 單模式模板，無模式判準
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l3-2mode-affine
   lean: CollatzFST.L3.no_go_level3_2mode_affine_potential
@@ -257,16 +279,23 @@
         (if (L3.F3 (Todd x)).getD 33 0 = 1 then β₁ + L3.dot48 θ₁ (L3.F3 (Todd x))
                                         else β₀ + L3.dot48 θ₀ (L3.F3 (Todd x)))
           - (if (L3.F3 x).getD 33 0 = 1 then β₁ + L3.dot48 θ₁ (L3.F3 x) else β₀ + L3.dot48 θ₀ (L3.F3 x)) < 0
-  latex: 【待撰】
+  latex: |
+    There are no $\beta_0, \beta_1 \in \Rat$ and
+    $\theta_0, \theta_1 \in \RatVec{48}$ such that $0 \le (\theta_0)_i$
+    for every $i$, $0 \le (\theta_1)_i$ for every $i$, and --- writing
+    $V(y) = \beta_1 + \dotp{\theta_1}{\FeatThree(y)}$ if
+    $\FeatThree(y)_{33} = 1$ and
+    $V(y) = \beta_0 + \dotp{\theta_0}{\FeatThree(y)}$ otherwise ---
+    $V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwenty$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l3-2mode-universal
   lean: CollatzFST.L3.no_global_odd_level3_2mode_potential
@@ -277,16 +306,22 @@
       ∀ x : ℕ, x % 2 = 1 → 1 < x →
         (if (L3.F3 (Todd x)).getD 33 0 = 1 then L3.dot48 θ₁ (L3.F3 (Todd x)) else L3.dot48 θ₀ (L3.F3 (Todd x)))
           - (if (L3.F3 x).getD 33 0 = 1 then L3.dot48 θ₁ (L3.F3 x) else L3.dot48 θ₀ (L3.F3 x)) < 0
-  latex: 【待撰】
+  latex: |
+    There are no $\theta_0, \theta_1 \in \RatVec{48}$ such that
+    $0 \le (\theta_0)_i$ for every $i$, $0 \le (\theta_1)_i$ for every
+    $i$, and --- writing $V(y) = \dotp{\theta_1}{\FeatThree(y)}$ if
+    $\FeatThree(y)_{33} = 1$ and $V(y) = \dotp{\theta_0}{\FeatThree(y)}$
+    otherwise --- $V(\Todd(x)) - V(x) < 0$ for every $x \in \Nat$ with
+    $x \bmod 2 = 1$ and $1 < x$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: nogo-l3-2mode-witness
   lean: CollatzFST.L3.no_go_level3_2mode_potential
@@ -297,16 +332,21 @@
       ∀ x ∈ L3.W20,
         (if (L3.F3 (Todd x)).getD 33 0 = 1 then L3.dot48 θ₁ (L3.F3 (Todd x)) else L3.dot48 θ₀ (L3.F3 (Todd x)))
           - (if (L3.F3 x).getD 33 0 = 1 then L3.dot48 θ₁ (L3.F3 x) else L3.dot48 θ₀ (L3.F3 x)) < 0
-  latex: 【待撰】
+  latex: |
+    There are no $\theta_0, \theta_1 \in \RatVec{48}$ such that
+    $0 \le (\theta_0)_i$ for every $i$, $0 \le (\theta_1)_i$ for every
+    $i$, and --- writing $V(y) = \dotp{\theta_1}{\FeatThree(y)}$ if
+    $\FeatThree(y)_{33} = 1$ and $V(y) = \dotp{\theta_0}{\FeatThree(y)}$
+    otherwise --- $V(\Todd(x)) - V(x) < 0$ for every $x \in \Wtwenty$.
   unreferenced_ok: false
   reviewed:
-    strictness: null
-    coefficients: null
-    scope: null
-    feature_level: null
-    mode_definition: null
-    witness_vs_universal: null
-    model_class: null
+    strictness: approved/2026-08-04
+    coefficients: approved/2026-08-04
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
+    mode_definition: approved/2026-08-04
+    witness_vs_universal: approved/2026-08-04
+    model_class: approved/2026-08-04
 
 - id: terminal-l2
   lean: CollatzFST.Flow.run2_extIn_terminal
