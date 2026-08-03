@@ -10,6 +10,8 @@
 %   - "forthcoming" must not support the strength of any main theorem;
 %     bounded-below / gauge normalization appears only as discussion.
 % W1 (a/paper-s2): \paperthm statement mechanism + Section 2 prose.
+% W2 (a/paper-s3): Section 3 prose; review protocol landed as
+%   paper/REVIEW-PROTOCOL.md.
 % =========================================================================
 \documentclass[11pt]{article}
 
@@ -72,6 +74,15 @@
 \newcommand{\zeros}[1]{0^{#1}}                     % List.replicate #1 0
 \newcommand{\dropZeros}{\mathsf{dropZeros}}        % List.dropWhile (. = 0)
 \newcommand{\altPrefixLen}{\mathsf{altPrefixLen}}  % CollatzFST.altPrefixLen
+\newcommand{\Seight}{S_8}                          % CollatzFST.S8
+\newcommand{\occtwo}{\mathsf{occ}_2}               % CollatzFST.occ2
+\newcommand{\runtwo}{\mathsf{run}_2}               % CollatzFST.run2
+\newcommand{\runthree}{\mathsf{run}_3}             % CollatzFST.L3.run3
+\newcommand{\microTraceTwo}{\mathsf{microTrace}_2} % CollatzFST.microTrace2
+\newcommand{\inEdges}{\mathsf{inEdges}}            % CollatzFST.Flow.inEdges
+\newcommand{\outBit}{\mathsf{outBit}}              % CollatzFST.outBit
+\newcommand{\dF}{\Delta F}                         % CollatzFST.LP.ΔF (coord i = getD i 0, 0-based)
+\newcommand{\iv}[1]{[#1]}                          % if #1 then 1 else 0 (Iverson bracket)
 
 % ---- skeleton-stage marker for text to be written in later PRs ----
 \newcommand{\tbd}[1]{\emph{[TO WRITE: #1]}}
@@ -214,26 +225,98 @@ function of finite runs of a finite machine over $\extIn(x)$.
 \section{Flow Conservation}\label{sec:flow}
 % =========================================================================
 
-% Outline: occupation vectors are path flows on a finite graph; Kirchhoff
-% conservation unifies the local counting relations.
-%   - conservation functional (feature layer): \leanref of flow-kirchhoff-l2
-%   - terminal-state theorems: \leanref of terminal-l2, terminal-l3
-\tbd{path-flow interpretation paragraph, citing \leanref{flow-kirchhoff-l2}}
+% Sources (repo-only): Core/Collatz_FST_Level2.lean (step2/run2/
+% microTrace2/occ2, S8), ProjectA/Collatz_FST_Flow.lean (conservation
+% chain, inEdges, terminal states), ProjectA/Collatz_FST_FlowDelta.lean
+% (difference layer, (2,K,0) row), ProjectA/Collatz_FST_L3_Flow.lean and
+% _L3_2Mode_Recon.lean (Level 3 state and terminals), ROADMAP-A A-4
+% (structural-identification narrative). Row-space membership claims
+% carry the tools anchor (a3_functionals.py). Rule in force: "absorbed"
+% must NOT read as "unimportant" -- it is structural placement.
 
-\tbd{terminal-state paragraph, citing \leanref{terminal-l2} and
-\leanref{terminal-l3}}
+A run of the machine is a path in a finite graph, and every count used
+in this paper is a count along that path. The Level~2 state refines the
+carry-and-phase state of Section~\ref{sec:transducer} with the previous
+output bit: a state is a triple $(c, P, p)$, and a transition edge is a
+pair (state, input bit). For a start state $s$ and an input word $w$,
+the trace $\microTraceTwo(s, w)$ records the sequence of steps, and the
+\emph{occupation count} $\occtwo(s, w, e)$ of an edge $e$ is the number
+of steps of that trace equal to $e$. The occupation vector of
+Section~\ref{sec:intro} is exactly this family of per-edge counts,
+collected over a fixed enumeration of the edges into the feature vector
+$F(x)$ of the canonical run: start state $(1, K, 0)$ --- initial carry
+$1$ as in $\transduce$, phase $K$, previous output $0$ --- over the
+sentinel-extended input $\extIn(x)$.
 
-% MANDATORY (outline): the two structural identifications.
-%   (i) the K-region alternating count e4 = e5 + e6 IS the Kirchhoff
-%       conservation law at state (2,K,0) — not an independent lemma:
-%       \leanref of flow-2k0-alternating;
-%  (ii) boundary-step uniqueness is absorbed by the conservation row
-%       space — the negative conclusion ("no separate proof needed")
-%       upgraded to a positive provenance (named law, named state):
-%       \leanref of boundary-step-unique.
-\tbd{structural identification (i), citing \leanref{flow-2k0-alternating}}
+Because a run is a path, visits balance at every state: what enters $g$
+must leave $g$, up to the two endpoints of the path. This Kirchhoff
+conservation law is a single theorem, quantified over all target states
+$g$, start states $s$ in the reachable state set $\Seight$, and binary
+words $w$. Here $\inEdges(g)$ enumerates the edges $(h, b)$ whose
+transition lands in $g$, the two occupation terms on the right-hand side
+are the out-edges of $g$, and the Iverson bracket $\iv{\cdot}$ corrects
+for the endpoints.
 
-\tbd{structural identification (ii), citing \leanref{boundary-step-unique}}
+\begin{paperthm}{flow-kirchhoff-l2}\end{paperthm}
+
+The endpoint corrections are pinned down once and for all by the
+terminal-state theorems: over the sentinel-extended input the final
+carry is flushed and the phase has left $K$, so the terminal state
+always lies in a fixed two-element set.
+
+\begin{paperthm}{terminal-l2}\end{paperthm}
+
+The Level~3 machine, used by the two-mode templates of
+Sections~\ref{sec:geometry}--\ref{sec:nogo}, refines the state with the
+last \emph{two} output bits $H = (d_{i-2}, d_{i-1})$ in place of the
+single previous bit; its canonical runs start at $(1, K, 0, 0)$, and the
+terminal state again lies in a two-element set --- two, out of the four
+possible values of the output-history pair.
+
+\begin{paperthm}{terminal-l3}\end{paperthm}
+
+That the terminal state is pinned to a \emph{two-element} set rather
+than to a single state is load-bearing: in the difference-layer account
+of Section~\ref{sec:geometry}, the terminal corrections of the two
+possible endpoints do not cancel state by state, and the two terminal
+conservation rows enter that account merged into one.
+
+Passing to differences makes the conservation law template-ready. Write
+$\dF(x)$ for the difference feature vector $F(\Todd(x)) - F(x)$, and
+$\dF(x)_i$ for its $i$-th coordinate ($0$-based, in the fixed edge
+enumeration). Instantiating the conservation law at a state $g$ for the
+runs of $x$ and of $\Todd(x)$ and subtracting, the initial corrections
+agree and cancel, leaving a linear identity among the coordinates of
+$\dF(x)$. At the state $(2, K, 0)$ this identity reads:
+
+\begin{paperthm}{flow-2k0-alternating}\end{paperthm}
+
+This is the first structural identification: the relation above is
+precisely the K-region alternating count --- the counting constraint on
+the alternating passage through the $K$ region --- which earlier
+bookkeeping treated as an independent combinatorial lemma requiring its
+own proof. It is not independent: it is the Kirchhoff row of the named
+state $(2, K, 0)$. The conclusion is a positive provenance, not a
+redundancy remark.
+
+The second structural identification concerns the boundary step, the
+unique exit from $K$ to $S$.
+
+\begin{paperthm}{boundary-step-unique}\end{paperthm}
+
+Exactly one step starts in phase $K$ and outputs $1$: the step that
+triggers survival. At the feature layer this uniqueness does not need to
+be imposed as a further constraint --- the linear relation it induces
+lies in the row space spanned by the dead-state and conservation
+functionals (exact rational rank verification:
+\texttt{tools/a3\_functionals.py}, run in CI on every push). We state
+the upgrade deliberately in positive form: boundary uniqueness, like
+the alternating count, is part of the same conservation structure, and
+it is the structural fact that later makes the valuation-parity mode of
+the two-register templates well defined
+(Sections~\ref{sec:geometry}--\ref{sec:nogo}). What looks like a list
+of independent counting lemmas is a single conservation law evaluated
+at its states.
 
 % =========================================================================
 \section{Exact Geometry}\label{sec:geometry}
