@@ -19,6 +19,9 @@
 %   remains for W4b.
 % W4b (a/paper-s5b): Section 5 certificate-methodology paragraphs
 %   (pipeline + anchor scripts + generator reproducibility).
+% W5 (a/paper-s67-s8): Section 6 completion (scoping setup + gauge
+%   discussion with trust labels), Section 7 (YAH comparison verified
+%   against the original + references.bib), Section 8 artifact body.
 % =========================================================================
 \documentclass[11pt]{article}
 
@@ -584,9 +587,21 @@ enforcement as part of the artifact.
 \section{Model Scoping}\label{sec:scoping}
 % =========================================================================
 
-% The following classification sentences are fixed VERBATIM (English
-% rendering of docs/ROADMAP-B.md §0); later PRs may add surrounding prose
-% but must not weaken or restate these claims:
+% The three classification paragraphs below are fixed VERBATIM (English
+% rendering of docs/ROADMAP-B.md §0); surrounding prose may be added
+% but the claims must not be weakened or restated. W5 adds the setup
+% paragraph (three-layer hierarchy, ROADMAP-B §0) and the gauge
+% discussion after them.
+
+``Finite-state method'' is not a single class, and the scope of the
+theorems of Section~\ref{sec:nogo} must be stated at the right
+granularity. We distinguish three layers: \textbf{Class A} ---
+single-accumulator additive rankings; \textbf{Class B} ---
+multi-register additive regular functions (copyless cost-register
+automata); and \textbf{Class C} --- stronger register or
+matrix-weighted models. The placement of the present results is then as
+follows.
+
 The single-mode no-go theorems fall in \textbf{Class A} (single-accumulator
 additive rankings): $V(w) = \alpha(q_0) + \sum_i \omega(q_i, b_i) +
 \beta(q_f)$.
@@ -603,34 +618,65 @@ Consequently, even if the universal Class-A conjecture holds, the
 conclusion is the impossibility of one-accumulator additive rankings only
 --- not of finite-state methods as a whole.
 
-% Discussion-only outlook (rule: no "forthcoming" supporting main-theorem
-% strength; bounded-below / gauge normalization is future work, stated as
-% such). Evidence for the boundary refinement may cite the B1.5 data
-% points WITH trust labels:
-%   - terminal-flow imbalance of the existing certificates:
-%     +-428 (Level 2, W12) and +-753 (Level 3, W20) — exact integer
-%     recomputation (tools/b15_terminal_balance.py); label: [exact integer];
-%   - two-balance Farkas probe (mode balance + terminal balance
-%     simultaneously): feasible at both levels — floating-point LP probe
-%     (HiGHS, odd x in 3..3999); label: [floating-point probe].
-\tbd{discussion paragraph on gauge normalization as future work, citing the
-B1.5 data points with the two trust labels above}
+% Gauge discussion (W5). Sources: ROADMAP-B B1 (goal statement, NOT
+% asserted as fact) and B1.5 data points with mandatory trust labels;
+% rule: no "forthcoming" supporting main-theorem strength.
+
+One hypothesis of the no-go theorems invites a normalization question:
+the weights are assumed componentwise nonnegative. A natural
+strengthening would assume only that the potential is bounded below,
+and recover nonnegativity afterwards as a \emph{gauge choice} --- the
+intended normalization is a shortest-path reweighting on the trimmed
+product (Section~\ref{sec:intro}) of the cost automaton with the
+input-language acceptor, with a structured per-register variant for the
+two-mode templates. Establishing this is future work; no theorem in
+this paper relies on it. Two data points calibrate the prospect.
+First, the existing two-mode certificates are not terminal-flow
+balanced: the aggregate
+$\sum_i \lambda_i \, (\iv{\mathrm{end}(y_i) = t} -
+\iv{\mathrm{end}(x_i) = t})$ equals $\pm 428$ at Level~2
+($\Wtwelve$) and $\pm 753$ at Level~3 ($\Wtwenty$)
+[exact integer: recomputed by
+\texttt{tools/b15\_terminal\_balance.py}] --- so upgrading the affine
+intercepts to one per (mode, terminal) pair is not free for the present
+$\lambda$. Second, a Farkas probe demanding mode balance and terminal
+balance simultaneously is feasible at both levels [floating-point
+probe: HiGHS LP over odd $x \in [3, 3999]$]; the exact reconstruction
+of such doubly balanced certificates remains open.
 
 % =========================================================================
 \section{Related Work}\label{sec:related}
 % =========================================================================
 
-% Paragraph (a) — material fixed by the outline.
-Yolcu, Aaronson, and Heule (arXiv:2105.14697) establish representational
-boundaries for rewriting-based matrix interpretations applied to
-Collatz-like systems; the present paper establishes boundaries for
-occupation-vector additive templates over a carry transducer. The two
-settings differ in both certificate type and representation, but carry the
-same message: for automated approaches to Collatz-style termination, the
-choice of certificate class and representation imposes substantive
-expressivity limits.
-\tbd{one connecting sentence positioning our certificate class relative to
-matrix interpretations, once Section~\ref{sec:nogo} prose is fixed}
+% Paragraph (a) — outline material, sharpened against the original
+% (arXiv:2105.14697 abs page, v3, fetched 2026-08-04); the corrections
+% are flagged in the W5 PR description. Verified components: the
+% UNARY-representation rewriting system is a previously studied one and
+% the matrix-interpretation impossibility (natural matrix
+% interpretations, even with dependency pairs) is proved for THAT
+% system; their own equivalence construction uses mixed binary--ternary
+% representations; the weakenings are proved automatically with
+% natural/arctic matrix interpretations.
+Yolcu, Aaronson, and Heule~\cite{YolcuAaronsonHeule2021} study the
+Collatz conjecture as termination of string rewriting: they construct a
+rewriting system, over mixed binary--ternary representations of the
+positive integers, whose termination is equivalent to the Collatz
+conjecture; they prove that a previously studied rewriting system
+simulating the Collatz function on \emph{unary} representations admits
+no termination proof by natural matrix interpretations, even in
+conjunction with dependency pairs; and their automated prover, using
+natural and arctic matrix interpretations, finds termination proofs of
+nontrivial weakenings of the conjecture. The present paper establishes
+boundaries for occupation-vector additive templates over a binary carry
+transducer. The two settings differ in both certificate type and
+representation, but carry the same message: for automated approaches to
+Collatz-style termination, the choice of certificate class and
+representation imposes substantive expressivity limits. The certificate
+classes themselves are incomparable in form --- a matrix interpretation
+certifies termination of a rewriting system by a well-founded matrix
+algebra, while our Farkas certificates refute additive rankings over a
+fixed transducer's occupation features --- so the two boundary results
+are complementary rather than overlapping.
 
 % Paragraph (b) — VERBATIM English translation of the neutral wording in
 % docs/audit/2506-21728.md («與本專案的關係» block); per the outline: no
@@ -642,29 +688,56 @@ suffice to establish the claimed global convergence; moreover, its
 potential involves $\log n$ and blockwise global quantities, and thus does
 not belong to the rational finite-state additive class studied in this
 paper.
+% The paragraph above is verbatim-protected (docs/audit/2506-21728.md
+% neutral wording); its bibliography entry is attached via \nocite below
+% rather than edited into the sentence.
+\nocite{Brauer2025}
 
 % =========================================================================
 \section{Artifact}\label{sec:artifact}
 % =========================================================================
 
-% Outline: the artifact story — each item one short paragraph or a table:
-%   - pinned toolchain (leanprover/lean4:v4.28.0-rc1) and pinned mathlib
-%     revision; CI guard forbids unauthorized pin changes;
-%   - zero sorry / no native_decide / no axiom beyond the kernel trio;
-%     trust base of the audited theorems: propext, Classical.choice,
-%     Quot.sound (Audit.lean, #print axioms);
-%   - import-boundary enforcement (scripts/check_boundaries.py in CI);
-%   - three anchor scripts (certificates.py, a3_functionals.py,
-%     l3_recon.py) recompute every hard-coded number on every push;
-%     generator reproducibility: gen_l3dim.py and gen_paper_index.py
-%     outputs must match the repository byte-for-byte;
-%   - the registry/PaperIndex mechanism itself: paper citations resolve
-%     through paper/registry.yaml; each cited statement is restated in
-%     PaperIndex.lean and kernel-checked against the original theorem, so
-%     a drifting statement fails the build, and \leanref consistency is
-%     enforced by tools/check_paper_refs.py. The paper thus documents its
-%     own anti-drift mechanism as part of the artifact.
-\tbd{artifact section body per the itemized outline above}
+% Sources (repo-only): AGENTS.md (pins, prohibitions), lakefile/manifest
+% (toolchain + mathlib rev c66c0c58), Audit.lean (#print axioms trust
+% base), guard.yml step list, STATUS Tools table. Quantifier wording per
+% the W4b review fix: "certificate, functional, and reconnaissance
+% datum" (NOT "number" — structural constants are not recomputed).
+
+The artifact is the repository itself, and its guarantees are enforced
+mechanically on every push rather than promised in prose.
+
+\begin{itemize}
+  \item \textbf{Pinned toolchain.} Lean
+    \texttt{leanprover/lean4:v4.28.0-rc1} and a pinned mathlib revision
+    (\texttt{c66c0c58}); a CI guard forbids unauthorized changes to
+    either pin.
+  \item \textbf{Proof hygiene.} Zero \texttt{sorry};
+    \texttt{native\_decide}, additional axioms, and
+    \texttt{@[implemented\_by]} are forbidden. The audited theorems
+    depend on exactly the kernel trio \texttt{propext},
+    \texttt{Classical.choice}, \texttt{Quot.sound}
+    (\texttt{\#print axioms}, \texttt{Audit.lean}).
+  \item \textbf{Import boundaries.} The partition of the development is
+    enforced by \texttt{scripts/check\_boundaries.py} in CI.
+  \item \textbf{Numeric anchors.} The three anchor scripts of
+    Section~\ref{sec:nogo} recompute every hard-coded certificate,
+    functional, and reconnaissance datum on every push, and the
+    generated Lean dimension files and the theorem index of this paper
+    regenerate byte-for-byte (\texttt{tools/gen\_l3dim.py},
+    \texttt{tools/gen\_paper\_index.py}).
+  \item \textbf{Statement anti-drift.} Every theorem reference in this
+    paper resolves through \texttt{paper/registry.yaml}: each cited
+    statement is restated in \texttt{PaperIndex.lean} and
+    kernel-checked against the original theorem, so a drifting
+    statement fails the build; citation--registry consistency in both
+    directions, and the requirement that every stated theorem's text
+    come from the registry, are enforced by
+    \texttt{tools/check\_paper\_refs.py}. The paper thus documents its
+    own anti-drift mechanism as part of the artifact.
+\end{itemize}
+
+\bibliographystyle{plain}
+\bibliography{references}
 
 % =========================================================================
 \appendix
