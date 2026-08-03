@@ -17,6 +17,8 @@
 % W4a (a/paper-s5a): Section 5 no-go theorems (eight \paperthm) with
 %   A-1 quantifier note and A-2 mode-flow balance; methodology paragraph
 %   remains for W4b.
+% W4b (a/paper-s5b): Section 5 certificate-methodology paragraphs
+%   (pipeline + anchor scripts + generator reproducibility).
 % =========================================================================
 \documentclass[11pt]{article}
 
@@ -532,10 +534,51 @@ cancel identically, and the linear certificate closes the affine case
 unchanged (ROADMAP item A-2; the balance is re-verified as part of
 \texttt{tools/certificates.py} in CI).
 
-% Certificate methodology (outline): search in floating point -> exact
-% rational reconstruction -> Lean decide/ring closure; anchors and CI
-% enforcement (three anchor scripts + generator reproducibility).
-\tbd{methodology paragraph}
+% Certificate methodology (W4b). Sources (repo-only): STATUS.md Tools
+% anchor table, ROADMAP-A (A-0 baseline, Cramer section), NoLinearRanking
+% docstring (witness values by the proven machine; ring closure at scale
+% 31), gen_l3dim docstring (simp-normalize + kernel decide), guard.yml
+% regeneration steps. Trust boundary sentence mandatory: theorems depend
+% on the Lean stage only.
+
+Each certificate is the product of a three-stage pipeline, and only the
+last stage carries trust. First, a \emph{search} stage locates
+candidates --- witness sets and approximate Farkas multipliers --- by
+floating-point linear programming; nothing from this stage enters the
+formal development. Second, an \emph{exact reconstruction} stage
+re-derives the multipliers from the witness set alone, in exact
+rational arithmetic with no floating point
+(\texttt{tools/certificates.py}); for the single-mode certificate the
+multiplier family on $\Wten$ is unique up to scale, so the
+reconstruction has no freedom left. Third, the \emph{formal} stage
+closes the argument in Lean: the witness feature vectors are not
+imported data but are computed inside the proof by the already-verified
+machine itself --- kernel-evaluated \texttt{decide} on
+$\occtwo$/$\Todd$, with the Level~3 rows closing by kernel-checked
+\texttt{decide} after a simp normalization, as in
+Section~\ref{sec:geometry} --- and the Farkas aggregate collapses to a
+componentwise nonnegative, nonzero combination (at Level~2 single mode,
+a positive multiple of one feature weight at the determinant scale $31$
+of Section~\ref{sec:geometry}), an identity closed by \texttt{ring};
+strict descent on the witnesses then yields the contradiction. The
+theorems of this section depend on the third stage only; the first two
+are heuristics and, respectively, a reproducibility anchor.
+
+The numeric layer is enforced, not merely claimed. Three anchor
+scripts recompute every hard-coded certificate, functional, and
+reconnaissance datum of this paper on every CI push: \texttt{tools/certificates.py} (Python--Lean cross-validation of
+the $\dF$ extraction; exact re-derivation of the three $\lambda$ from
+their witness sets; mode-flow balance $= 0$; the Cramer law and the
+$\Sigma\lambda$-guard of Section~\ref{sec:geometry}),
+\texttt{tools/a3\_functionals.py} (completeness of the Level~2
+functional family and the free-coordinate reconstruction identities),
+and \texttt{tools/l3\_recon.py} (the full Level~3 reconnaissance
+account behind Section~\ref{sec:geometry}). In addition, the
+machine-generated Lean dimension files and the paper's own theorem
+index must \emph{regenerate byte-for-byte}: CI re-runs the generators
+(\texttt{tools/gen\_l3dim.py}, \texttt{tools/gen\_paper\_index.py}) and
+fails on any diff. Section~\ref{sec:artifact} documents this
+enforcement as part of the artifact.
 
 % =========================================================================
 \section{Model Scoping}\label{sec:scoping}
