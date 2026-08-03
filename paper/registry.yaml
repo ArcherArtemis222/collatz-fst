@@ -342,13 +342,13 @@
     For every $x \in \Nat$, $\ofDigitsTwo(\dropZeros(\transduce(x))) = \Todd(x)$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
-    coefficients: self/2026-08-03
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
-    mode_definition: self/2026-08-03
-    witness_vs_universal: self/2026-08-03
-    model_class: self/2026-08-03
+    strictness: approved/2026-08-03
+    coefficients: n/a — 語義層等式，無此概念
+    scope: approved/2026-08-03
+    feature_level: n/a — 語義層等式，無此概念
+    mode_definition: n/a — 語義層等式，無此概念
+    witness_vs_universal: approved/2026-08-03
+    model_class: n/a — 語義層等式，無此概念
 
 - id: transducer-soundness
   lean: CollatzFST.ofDigits_transduce
@@ -359,13 +359,13 @@
     For every $x \in \Nat$, $\ofDigitsTwo(\transduce(x)) = 3x + 1$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
-    coefficients: self/2026-08-03
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
-    mode_definition: self/2026-08-03
-    witness_vs_universal: self/2026-08-03
-    model_class: self/2026-08-03
+    strictness: approved/2026-08-03
+    coefficients: n/a — 語義層等式，無此概念
+    scope: approved/2026-08-03
+    feature_level: n/a — 語義層等式，無此概念
+    mode_definition: n/a — 語義層等式，無此概念
+    witness_vs_universal: approved/2026-08-03
+    model_class: n/a — 語義層等式，無此概念
 
 - id: transducer-split
   lean: CollatzFST.transduce_split
@@ -379,13 +379,13 @@
     $\transduce(x) = \zeros{\vtwo(3x+1)} \listcat \dropZeros(\transduce(x))$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
-    coefficients: self/2026-08-03
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
-    mode_definition: self/2026-08-03
-    witness_vs_universal: self/2026-08-03
-    model_class: self/2026-08-03
+    strictness: approved/2026-08-03
+    coefficients: n/a — 語義層等式，無此概念
+    scope: approved/2026-08-03
+    feature_level: n/a — 語義層等式，無此概念
+    mode_definition: n/a — 語義層等式，無此概念
+    witness_vs_universal: approved/2026-08-03
+    model_class: n/a — 語義層等式，無此概念
 
 - id: valuation-alt-prefix
   lean: CollatzFST.padicValNat_eq_altPrefixLen
@@ -396,10 +396,10 @@
     For every $x \in \Nat$, $\vtwo(3x + 1) = \altPrefixLen(x)$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
-    coefficients: self/2026-08-03
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
-    mode_definition: self/2026-08-03
-    witness_vs_universal: self/2026-08-03
-    model_class: self/2026-08-03
+    strictness: approved/2026-08-03
+    coefficients: n/a — 語義層等式，無此概念
+    scope: approved/2026-08-03
+    feature_level: n/a — 語義層等式，無此概念
+    mode_definition: n/a — 語義層等式，無此概念
+    witness_vs_universal: approved/2026-08-03
+    model_class: n/a — 語義層等式，無此概念
