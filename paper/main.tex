@@ -557,16 +557,16 @@ machine itself --- kernel-evaluated \texttt{decide} on
 $\occtwo$/$\Todd$, with the Level~3 rows closing by kernel-checked
 \texttt{decide} after a simp normalization, as in
 Section~\ref{sec:geometry} --- and the Farkas aggregate collapses to a
-single strictly positive combination (at Level~2 single mode, a
-positive multiple of one feature weight at the determinant scale $31$
+componentwise nonnegative, nonzero combination (at Level~2 single mode,
+a positive multiple of one feature weight at the determinant scale $31$
 of Section~\ref{sec:geometry}), an identity closed by \texttt{ring};
 strict descent on the witnesses then yields the contradiction. The
 theorems of this section depend on the third stage only; the first two
 are heuristics and, respectively, a reproducibility anchor.
 
 The numeric layer is enforced, not merely claimed. Three anchor
-scripts recompute every hard-coded number of this paper on every CI
-push: \texttt{tools/certificates.py} (Python--Lean cross-validation of
+scripts recompute every hard-coded certificate, functional, and
+reconnaissance datum of this paper on every CI push: \texttt{tools/certificates.py} (Python--Lean cross-validation of
 the $\dF$ extraction; exact re-derivation of the three $\lambda$ from
 their witness sets; mode-flow balance $= 0$; the Cramer law and the
 $\Sigma\lambda$-guard of Section~\ref{sec:geometry}),
