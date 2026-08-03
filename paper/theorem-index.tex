@@ -2,8 +2,11 @@
 % Regenerate: python3 tools/gen_paper_index.py
 % Input this file in the PREAMBLE (after \usepackage{etoolbox}). It
 % defines (1) one macro \csname leanname@<id>\endcsname per registry
-% entry via \csdef (consumed by the \leanref macro in main.tex) and
-% (2) \TheoremIndexTable, which typesets the appendix table:
+% entry via \csdef (consumed by the \leanref macro in main.tex),
+% (2) one macro \csname leanstmt@<id>\endcsname per registry entry
+% whose `latex` field is filled — entries still carrying a status
+% marker are skipped, so \paperthm hard-errors on them — and
+% (3) \TheoremIndexTable, which typesets the appendix table:
 % paper id / Lean full name / source file.
 \csdef{leanname@boundary-step-unique}{CollatzFST.boundary\_step\_unique}
 \csdef{leanname@dim-l2-eq-10}{CollatzFST.Flow.finrank\_span\_dFQ\_eq\_ten}
@@ -26,6 +29,11 @@
 \csdef{leanname@transducer-soundness}{CollatzFST.ofDigits\_transduce}
 \csdef{leanname@transducer-split}{CollatzFST.transduce\_split}
 \csdef{leanname@valuation-alt-prefix}{CollatzFST.padicValNat\_eq\_altPrefixLen}
+\csdef{leanstmt@todd-eq-dropwhile}{For every $x \in \Nat$, $\ofDigitsTwo(\dropZeros(\transduce(x))) = \Todd(x)$.}
+\csdef{leanstmt@transducer-soundness}{For every $x \in \Nat$, $\ofDigitsTwo(\transduce(x)) = 3x + 1$.}
+\csdef{leanstmt@transducer-split}{For every $x \in \Nat$,
+$\transduce(x) = \zeros{\vtwo(3x+1)} \listcat \dropZeros(\transduce(x))$.}
+\csdef{leanstmt@valuation-alt-prefix}{For every $x \in \Nat$, $\vtwo(3x + 1) = \altPrefixLen(x)$.}
 \newcommand{\TheoremIndexTable}{%
 \begin{longtable}{@{}p{0.32\textwidth}p{0.63\textwidth}@{}}
 \toprule
