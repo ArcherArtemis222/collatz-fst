@@ -124,7 +124,7 @@
         + (L3.dF96 x 1 (((2 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
           - L3.dF96 x 1 (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
           - L3.dF96 x 1 (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 1)) = 0
-  latex: 【待撰】
+  latex: 【僅引用】
   unreferenced_ok: false
   reviewed:
     strictness: null
@@ -142,7 +142,7 @@
     ∀ (x : ℕ),
       L3.occ3 (1, Phase.K, 0, 0) (extIn x) (((1 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 0)
         + L3.occ3 (1, Phase.K, 0, 0) (extIn x) (((2 : ℕ), Phase.K, (0 : ℕ), (0 : ℕ)), 1) = 1
-  latex: 【待撰】
+  latex: 【僅引用】
   unreferenced_ok: false
   reviewed:
     strictness: null
