@@ -29,6 +29,21 @@
 \csdef{leanname@transducer-soundness}{CollatzFST.ofDigits\_transduce}
 \csdef{leanname@transducer-split}{CollatzFST.transduce\_split}
 \csdef{leanname@valuation-alt-prefix}{CollatzFST.padicValNat\_eq\_altPrefixLen}
+\csdef{leanstmt@boundary-step-unique}{For every $x \in \Nat$, the number of steps $((c, P, p), b)$ of
+$\microTraceTwo((1, K, 0), \extIn(x))$ with $P = K$ and
+$\outBit(c, b) = 1$ equals $1$.}
+\csdef{leanstmt@flow-2k0-alternating}{For every $x \in \Nat$, $\dF(x)_3 = \dF(x)_4 + \dF(x)_5$.}
+\csdef{leanstmt@flow-kirchhoff-l2}{For every state $g$, every state $s \in \Seight$, and every word $w$
+over $\{0,1\}$,
+$\sum_{e \in \inEdges(g)} \occtwo(s, w, e) + \iv{s = g}
+= \occtwo(s, w, (g, 0)) + \occtwo(s, w, (g, 1))
++ \iv{\runtwo(s, w) = g}$.}
+\csdef{leanstmt@terminal-l2}{For every $x \in \Nat$,
+$\runtwo((1, K, 0), \extIn(x)) = (0, S, 0)$ or
+$\runtwo((1, K, 0), \extIn(x)) = (0, S, 1)$.}
+\csdef{leanstmt@terminal-l3}{For every $x \in \Nat$,
+$\runthree((1, K, 0, 0), \extIn(x)) = (0, S, 0, 1)$ or
+$\runthree((1, K, 0, 0), \extIn(x)) = (0, S, 1, 0)$.}
 \csdef{leanstmt@todd-eq-dropwhile}{For every $x \in \Nat$, $\ofDigitsTwo(\dropZeros(\transduce(x))) = \Todd(x)$.}
 \csdef{leanstmt@transducer-soundness}{For every $x \in \Nat$, $\ofDigitsTwo(\transduce(x)) = 3x + 1$.}
 \csdef{leanstmt@transducer-split}{For every $x \in \Nat$,
