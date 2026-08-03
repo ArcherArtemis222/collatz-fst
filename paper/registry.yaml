@@ -47,10 +47,10 @@
     $\dim_{\Rat} \spanQ(\range \dFQ) = 10$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
+    strictness: approved/2026-08-04
     coefficients: n/a — 維度敘述，無 θ/β 參數
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
     mode_definition: n/a — Level 2 維度敘述，無模式判準
     witness_vs_universal: n/a — 閉式維度等式，無量詞形（上界／下界之分屬證明結構，正文交代）
     model_class: n/a — 維度定理，非模板類結果
@@ -64,10 +64,10 @@
     $\dim_{\Rat} \spanQ(\range \dFQninetysix) = 31$.
   unreferenced_ok: false
   reviewed:
-    strictness: self/2026-08-03
+    strictness: approved/2026-08-04
     coefficients: n/a — 維度敘述，無 θ/β 參數
-    scope: self/2026-08-03
-    feature_level: self/2026-08-03
+    scope: approved/2026-08-04
+    feature_level: approved/2026-08-04
     mode_definition: n/a — 敘述不含模式判準（96 維雙區塊結構於正文交代）
     witness_vs_universal: n/a — 閉式維度等式，無量詞形（上界／下界之分屬證明結構，正文交代）
     model_class: n/a — 維度定理，非模板類結果
