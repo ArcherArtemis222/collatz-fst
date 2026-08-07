@@ -22,6 +22,11 @@
 % W5 (a/paper-s67-s8): Section 6 completion (scoping setup + gauge
 %   discussion with trust labels), Section 7 (YAH comparison verified
 %   against the original + references.bib), Section 8 artifact body.
+% W6 (a/paper-s1-final): abstract + Section 1 + title metadata ruling
+%   (author/date empty, \thanks removed — set at submission); closing
+%   audit: 【待撰】 zeroed (cite-only entries marked 【僅引用】), \tbd
+%   zeroed and its definition removed, full-text number-provenance scan
+%   attached to the PR.
 % =========================================================================
 \documentclass[11pt]{article}
 
@@ -106,48 +111,86 @@
 \newcommand{\Wtwelve}{W_{12}}                      % TwoMode.W12 (12 witnesses)
 \newcommand{\Wtwenty}{W_{20}}                      % L3.W20 (20 witnesses)
 
-% ---- skeleton-stage marker for text to be written in later PRs ----
-\newcommand{\tbd}[1]{\emph{[TO WRITE: #1]}}
+% W6: the skeleton-stage \tbd marker reached zero uses and its
+% definition is removed — any reintroduction is now a TeX error.
 
+% Title finalized (W6). Author and date left empty and the funding /
+% artifact-DOI \thanks footnote removed, per project-owner ruling: all
+% three are to be set at submission time.
 \title{Machine-Checked Expressivity No-Go Theorems for Finite-State
-  Additive Ranking Templates in Accelerated Collatz Dynamics%
-  \thanks{\tbd{funding / artifact DOI footnote}}}
-\author{\tbd{author list}}
-\date{\tbd{date}}
+  Additive Ranking Templates in Accelerated Collatz Dynamics}
+\author{}
+\date{}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-\tbd{abstract; positioning sentence fixed by the outline: machine-checked
-expressivity no-go theorems for finite-state additive ranking templates in
-accelerated Collatz dynamics. Summarize the four contributions of
-Section~\ref{sec:intro} and the explicit non-claims.}
+We present machine-checked expressivity no-go theorems for finite-state
+additive ranking templates in accelerated Collatz dynamics. In Lean~4
+we formalize a binary carry transducer that implements the accelerated
+map exactly; its occupation vectors are path flows on a finite graph,
+and a single Kirchhoff conservation law unifies the local counting
+relations. The difference-feature spaces have exact dimension $10$
+(Level~2) and $31$ (Level~3, two-mode), and machine-checked Farkas
+certificates refute strict descent for three template classes, with
+universal quantification over odd $x > 1$ and an affine strengthening
+with unconstrained per-mode intercepts. All certificates are re-derived
+in exact rational arithmetic in continuous integration, and every
+theorem stated in the paper is kernel-checked against its Lean
+original. This paper does not prove the Collatz conjecture, and it does
+not establish the impossibility of all finite-state methods; the scope
+boundary is made precise by a three-layer classification of
+finite-state potentials.
 \end{abstract}
 
 % =========================================================================
 \section{Introduction}\label{sec:intro}
 % =========================================================================
 
-% Outline (four contributions, in this order):
-%   (1) a formalized binary carry transducer implementing the accelerated
-%       Collatz map exactly (Section 2);
-%   (2) a flow-geometric interpretation: occupation vectors are path flows
-%       on a finite graph, and Kirchhoff conservation unifies the local
-%       counting relations (Section 3);
-%   (3) exact dimension theorems: the difference-feature spaces have
-%       dimension exactly 10 (Level 2) and exactly 31 (Level 3 two-mode)
-%       (Section 4);
-%   (4) machine-checked Farkas no-go certificates for three template
-%       classes, with universal quantification (x > 1) and affine
-%       strengthening (Section 5).
-\tbd{contribution paragraphs (1)--(4)}
+% Contributions (1)-(4) in the outline's fixed order; summary of
+% Sections 2-5 only — the introduction adds no new claims (W6 rule).
 
-% Explicit non-claims — fixed by the outline; keep both:
-%   - this paper does NOT prove the Collatz conjecture, and
-%   - it does NOT establish the impossibility of all finite-state methods;
-%     the scope boundary is made precise in Section 6.
-\tbd{non-claims paragraph}
+This paper proves, and machine-checks in Lean~4, a family of
+\emph{expressivity no-go theorems}: within a precisely delimited class
+of finite-state additive ranking templates, no template certifies
+strict descent of the accelerated Collatz map. Our contributions are
+four.
+
+\emph{(1) An exact transducer semantics}
+(Section~\ref{sec:transducer}). A binary carry transducer implements
+$x \mapsto 3x + 1$ digit by digit, and its output word factors exactly
+at the acceleration boundary; the accelerated map and its $2$-adic
+valuation are recovered as word operations on the transducer's output
+and input, respectively.
+
+\emph{(2) A flow-geometric reading of occupation counts}
+(Section~\ref{sec:flow}). The occupation vector of a run is a path
+flow on a finite graph, and one Kirchhoff conservation law,
+instantiated state by state, generates the local counting relations
+that earlier bookkeeping treated as separate lemmas.
+
+\emph{(3) Exact dimension theorems} (Section~\ref{sec:geometry}). The
+spans of the difference-feature vectors have dimension exactly $10$
+(Level~2, in $18$ coordinates) and exactly $31$ (Level~3 two-mode, in
+$96$); both directions of each equality are machine-checked, and the
+certificate integers are identified --- at the tools layer --- as
+determinants of witness matrices.
+
+\emph{(4) Machine-checked no-go certificates}
+(Section~\ref{sec:nogo}). Farkas certificates refute strict descent
+for three template families --- Level~2 single-mode, Level~2 two-mode,
+and Level~3 two-mode --- each in a finite-witness version and a
+universal version over all odd $x > 1$, with an affine strengthening
+(unconstrained per-mode intercepts) for the two-mode families.
+
+% Non-claims — fixed by the outline; BOTH sentences mandatory here in
+% the introduction, not only in Section 6.
+Two non-claims are part of the result and are stated explicitly. This
+paper does \emph{not} prove the Collatz conjecture. And it does
+\emph{not} establish the impossibility of all finite-state methods:
+the theorems delimit specific template classes, and the scope boundary
+is made precise in Section~\ref{sec:scoping}.
 
 \paragraph{Terminology.}
 % Glossary fixed at skeleton stage (paper-outline.md); definitions locked,
