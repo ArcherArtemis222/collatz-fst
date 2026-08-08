@@ -62,3 +62,6 @@ TeX 硬報錯；CI 不編譯 TeX，由 `tools/check_paper_refs.py` 攔截
 - `【待撰】`——尚未寫；
 - `【僅引用】`——W6 收尾稽核起：僅被 `\leanref` 點名引用、
   不以 `\paperthm` 陳述的條目。
+
+修訂階段（不新增定理陳述的散文變更）之界線見 REVISION-SCOPE.md；
+任何 `latex` 欄變更仍走本協議的完整重戳週期。
