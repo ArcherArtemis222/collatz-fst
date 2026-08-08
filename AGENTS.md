@@ -91,6 +91,7 @@ gh pr create --fill
 唯一真相來源是 docs/STATUS.md（定理索引）。
 Project A 殘項見 docs/ROADMAP-A.md；Project B 見 docs/ROADMAP-B.md。
 論文寫作 PR（paper/）的七欄審核協議見 paper/REVIEW-PROTOCOL.md。
+paper/ 修訂階段的操作界線與合規清單見 paper/REVISION-SCOPE.md。
 不要在沒讀這三份文件的情況下「順手修正」任何東西。
 
 ---
