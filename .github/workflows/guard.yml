@@ -53,6 +53,9 @@ jobs:
       - run: pip install numpy sympy
       - name: 重算 Farkas 憑證並與 Lean 對帳
         run: python3 tools/certificates.py
+      - name: 終末流量平衡的精確整數重算（論文 §6 exact-integer 錨；B1.5 資料點 1）
+        # 此 .github 變更經專案主人具名授權（B1.5 PR）：修補論文 §6 錨的 CI 覆蓋缺口。
+        run: python3 tools/b15_terminal_balance.py
       - name: 重算 A-3 泛函秩並與 Lean 邊表對帳
         # ROADMAP A-3 寫進了具體秩數字（10 / 8 / 2 / 7 條秩 6 / 合併秩 8）。
         # 沒有這一步，那些數字在 repo 裡沒有任何東西能重現——就是 W₁₂/W₂₀ 的失敗模式。

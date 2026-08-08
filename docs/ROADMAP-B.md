@@ -5,6 +5,8 @@
 > 已由 `tools/b15_terminal_balance.py` 精確整數重算確認；標【浮點探測】者
 > 維持標記（`tools/search/b15_lp_probe.py` 重跑，可行性結論再現），
 > 精確化列為 B1.5 待辦的第一項。
+> 落地紀錄（2026-08-08，B1.5 PR）：兩個【浮點探測】資料點已升級為
+> 精確整數憑證與 Lean 定理——B1.5 **已完成**，見該節完成紀錄。
 
 ---
 
@@ -70,7 +72,7 @@ Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
 - **與 A 論文的互動**：corollary 只有在 B1 完成後才進 A 的 appendix；
   未完成前 A 維持 θ≥0 敘述 + discussion 一段。不用 forthcoming 撐主定理。
 
-## B1.5：雙模式的 structured gauge（新增里程碑）
+## B1.5：雙模式的 structured gauge（**已完成** 2026-08-08；gauge lemma 併入 B1）
 
 雙模式是 2-register 模型（§0），gauge 對兩個暫存器各作用一個 `h_m`，
 校正項 `h_m(q₀) − h_m(q_f)` 依終末狀態而異 ⟹ 偏移類必須從
@@ -89,9 +91,10 @@ Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
      ——L2 不平衡全集中於模式 1 ⟹ 雙平衡搜尋實際僅增一條有效約束；
    - Level 3（t 依序 `(0,S,0,1)`／`(0,S,1,0)`）：m=0：+80／−80；
      m=1：−833／+833。
-2. LP 探測（奇數 3..3999，HiGHS）【浮點探測】：
+2. LP 探測（奇數 3..3999，HiGHS）【浮點探測；已精確化，見完成紀錄】：
    - 原始 LP（θ≥0 + 自由 β_{m,t} 的勢能）：兩層皆**不可行**——池上無候選勢能；
-   - 雙平衡 Farkas（模式平衡 + 終末平衡同時成立的憑證）：兩層皆**可行**。
+   - 雙平衡 Farkas（四條 per-(mode, terminal) 平衡 `Σλ·Δ⟦(m,t)⟧ = 0`
+     全零的憑證——探測程式的等式約束即為此四條版本）：兩層皆**可行**。
      支撐集：L2 = [3, 243, 599, 961, 1079, 1363, 1369, 1413, 1671, 1819,
      2343, 2345, 2401, 2731, 3083, 3259, 3377, 3677, 3745, 3905]（20 個）；
      L3 = [37, 487, 527, 779, 1423, 1819, 1911, 2091, 2209, 2337, 2407,
@@ -100,10 +103,32 @@ Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
      （2026-08-01 `tools/search/b15_lp_probe.py` 重跑：兩層「不可行／可行」
      結論再現；支撐集為浮點解路徑產物，維持【浮點探測】標記。）
 
-**待辦順序**：精確有理重推雙平衡 λ（sympy，`certificates.py` 模式）→
-掛錨進 CI → Lean 憑證（同 A 的 `ring` 機器，多兩條平衡恆等式）→
-structured gauge lemma（per-register `h_m`，吸收進 β_{m,t}）。
-完成後三條 no-go 全數升級為 bounded-below。
+**完成紀錄（2026-08-08，B1.5 PR）**：
+
+1. **精確重推**：雙平衡 λ 已以精確有理獨立重解
+   （`tools/search/b15_exact_balance.py`：浮點僅提供支撐集與 tight 座標的
+   組合資訊，λ 為 sympy 有理 nullspace 解，全部條件以純整數驗證）。
+   「雙平衡」措辭自此收緊為**四條 per-(mode, terminal) 平衡全零**——
+   這是收掉 4 個自由 β_{m,t} 的充要條件，嚴格強於「模式平衡＋終末平衡」
+   （後兩者合計僅 3 條獨立約束，殘留 1 維）。精確支撐集為上列浮點支撐集
+   的真子集：L2 剔 {1413, 2343, 3377} 餘 17 個、L3 剔 {3413} 餘 26 個。
+2. **錨**：`W17`/Σλ = 6131365、`W26`/Σλ = 9592170791，λ、聚合向量與
+   四條平衡值錨於 `tools/certificates.py --b15`（CI certs job 涵蓋；
+   負向測試：竄改單一 λ 即 exit 1）。
+3. **Lean 定理**（落點 `ProjectA/`——建立在 TwoMode／L3 機器上，
+   `check_boundaries` 禁止 B 匯入 A）：
+   - `CollatzFST.TwoMode.no_go_2mode_terminal_affine_potential`
+     （`ProjectA/Collatz_FST_2Mode_Terminal_NoGo.lean`）
+   - `CollatzFST.L3.no_go_level3_2mode_terminal_affine_potential`
+     （`ProjectA/Collatz_FST_L3_2Mode_Terminal_NoGo.lean`）
+
+   β 依 (模式, 終末) 各一、無符號約束；終末以單一位編碼
+   （L2 `(run2 …).2.2`、L3 `(run3 …).2.2.1`），忠實性由
+   `terminal_bit_faithful`／`terminal_bit_faithful3` 接地於終末狀態定理。
+   兩定理目前非 paper-facing，不進 registry。
+4. **殘項移轉**：structured gauge lemma（per-register `h_m`，吸收進
+   β_{m,t}）依賴 B1 的 reweighting 機器，隨 B1 進行；屆時三條 no-go
+   全數升級為 bounded-below。
 
 ## B2：固定 topology 的全語言判定
 

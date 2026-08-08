@@ -1,6 +1,6 @@
 # 定理狀態索引（唯一真相來源）
 
-最後更新：2026-08-01 ／ 對應 commit：`fa7db50`（Audit Update 2, #24）
+最後更新：2026-08-08 ／ 對應 PR：`a/b15-terminal-affine`（B1.5 雙平衡精確化）
 
 > 本檔由 repo 現況生成：定理名逐條 grep 核實、一句話摘要取自各定理 docstring。
 > 歷史敘述見 [HANDOVER.md](HANDOVER.md)（快照，不再更新）；待辦見
@@ -31,13 +31,16 @@
 
 ## Project A — No-Go 定理
 
-三個模板 × （有限見證版／全稱版／仿射版）共 8 條。見證集與 Farkas 憑證：
+三個模板 × （有限見證版／全稱版／仿射版）共 8 條，另有 B1.5 雙平衡仿射版
+2 條（見表末；非 paper-facing，不入 registry）。見證集與 Farkas 憑證：
 
 | 憑證 | 見證集 | Σλ | 重算錨 |
 |---|---|---|---|
 | Level 2 單模式 | `CollatzFST.LP.W₁₀`（10 個） | 1024 | `tools/certificates.py`（解族唯一；`--cramer`：λ = adj(A_free) 第 2 列、31 = det） |
 | Level 2 雙模式 | `CollatzFST.TwoMode.W12`（12 個） | 7826 | `tools/certificates.py`（模式流量平衡 = 0，A-2 前提） |
 | Level 3 雙模式 | `CollatzFST.L3.W20`（20 個） | 31746 | `tools/certificates.py`（同上） |
+| B1.5 Level 2 雙平衡 | `CollatzFST.TwoMode.W17`（17 個） | 6131365 | `tools/certificates.py --b15`（四條 per-(m,t) 平衡 = 0——β_{m,t} 對消的充要條件） |
+| B1.5 Level 3 雙平衡 | `CollatzFST.L3.W26`（26 個） | 9592170791 | 同上；推導 `tools/search/b15_exact_balance.py` |
 
 | 定理 | 檔案 | 一句話 |
 |---|---|---|
@@ -49,6 +52,8 @@
 | `CollatzFST.L3.no_go_level3_2mode_potential` ✦ ★（`nogo-l3-2mode-witness`） | `ProjectA/Collatz_FST_L3_2Mode_NoGo.lean` | 不存在兩組非負權重使 Level 3 雙模式勢能在 `W20` 每一步嚴格下降。 |
 | `CollatzFST.L3.no_go_level3_2mode_affine_potential` ★（`nogo-l3-2mode-affine`） | `ProjectA/Collatz_FST_L3_2Mode_NoGo.lean` | 仿射版（A-2）：Level 3 勢能加截距 `β₀ β₁` 仍不可行。 |
 | `CollatzFST.L3.no_global_odd_level3_2mode_potential` ★（`nogo-l3-2mode-universal`） | `ProjectA/Collatz_FST_L3_2Mode_NoGo.lean` | 全稱版：對每個奇數 `x > 1` 皆嚴格下降的 Level 3 雙模式勢能不存在。 |
+| `CollatzFST.TwoMode.no_go_2mode_terminal_affine_potential` | `ProjectA/Collatz_FST_2Mode_Terminal_NoGo.lean` | B1.5 雙平衡仿射版：截距升級為 per-(mode, terminal) β_{m,t}（4 個、無符號約束），仍不可行；終末位忠實性 `terminal_bit_faithful`。 |
+| `CollatzFST.L3.no_go_level3_2mode_terminal_affine_potential` | `ProjectA/Collatz_FST_L3_2Mode_Terminal_NoGo.lean` | 同上（Level 3）；終末位忠實性 `terminal_bit_faithful3`。 |
 
 註：`ProjectA/Collatz_FST_2Mode_Recon.lean` 與 `ProjectA/Collatz_FST_L3_2Mode_Recon.lean`
 檔頭 docstring 內出現的同名「定理」是交接紀錄的引文，不是宣告；canonical 宣告
@@ -121,7 +126,8 @@ Kirchhoff 鏈：trace 層流守恆 → 特徵層泛函 → 差分層 9 條（秩
 
 | 腳本 | 驗什麼 | 本機耗時 |
 |---|---|---|
-| `tools/certificates.py` | ΔF 特徵萃取 Python↔Lean 交叉驗證；三組 λ 從見證集重解（`W₁₀` 解族唯一）；模式流量平衡 = 0（A-2 仿射升級前提）。 | ~0.9 s |
+| `tools/certificates.py` | ΔF 特徵萃取 Python↔Lean 交叉驗證；三組 λ 從見證集重解（`W₁₀` 解族唯一）；模式流量平衡 = 0（A-2 仿射升級前提）；B1.5 雙平衡錨（`--b15`：W17/W26 聚合向量＋四條 per-(m,t) 平衡 = 0）。 | ~1 s |
+| `tools/b15_terminal_balance.py` | 既有 W₁₂/W₂₀ 憑證終末不平衡 ±428/±753 的精確整數重算（論文 §6 exact-integer 錨；B1.5 資料點 1）。CI 步驟經專案主人具名授權（B1.5 PR）。 | ~0.2 s |
 | `tools/a3_functionals.py` | Level 2 上界泛函完備性（死 2 + 流守恆 7、秩 8 = 18 − 10）；Lean↔Python 三條錨（16 邊關聯表、9 條差分關係、自由座標＋重建公式）。 | ~2.6 s |
 | `tools/l3_recon.py` | Level 3 全套偵察對帳：14 狀態／28 邊、終末 2 態、單模式 dim 16（完備）、雙模式 dim 31（缺口 = `θ₀[16]+θ₁[33]`）、65 條上界資料。 | ~15 s（沙盒可達 ~51 s） |
 | `tools/gen_l3dim.py` | 重新生成兩個 L3 Dim 檔後 `git diff --exit-code`——「逐位可重現」是 CI 強制，不是宣稱。 | — |
@@ -136,4 +142,6 @@ Kirchhoff 鏈：trace 層流守恆 → 特徵層泛函 → 差分層 9 條（秩
 - **外部文獻審計** `docs/audit/2506-21728.md` 已定稿（2026-08-01，PR-2；
   重現腳本 `tools/audit_falsifiers.py`）——僅低頻追蹤 arXiv 2506.21728 後續版本。
 - **Project B**：戰略見 ROADMAP-B.md（Phase 0 PR-3 落地；HANDOVER 的
-  Project B 段由其取代）。
+  Project B 段由其取代）。B1.5 雙平衡精確化已完成（2026-08-08）：
+  兩條 per-(mode, terminal) 仿射 no-go 落地 `ProjectA/`（上表），
+  錨 `tools/certificates.py --b15`；structured gauge lemma 隨 B1 進行。

@@ -14,6 +14,7 @@
 
     python3 tools/certificates.py            # 全部驗一遍
     python3 tools/certificates.py --level2   # 只驗 Level 2 單模式
+    python3 tools/certificates.py --b15      # 只驗 B1.5 雙平衡憑證
     python3 tools/certificates.py --cramer   # 只驗 Cramer 結構
 
 依賴：numpy、sympy。不需要 z3（z3 是用來「搜尋」的，這裡只做重算與驗證）。
@@ -107,6 +108,32 @@ W20 = [25, 81, 59, 175, 251, 449, 473, 523, 537, 591, 623, 679,
        683, 713, 745, 783, 839, 891, 903, 971]
 LAM20 = [397, 1499, 1734, 2571, 1197, 800, 1046, 2027, 1387, 2648,
          3051, 2373, 160, 1734, 1947, 428, 2005, 1846, 1850, 1046]       # Σ = 31746
+
+# ── B1.5 雙平衡憑證（per-(mode, terminal) 仿射 no-go；ROADMAP-B B1.5）──
+# 推導：tools/search/b15_exact_balance.py（浮點只取組合資訊，λ 為 sympy
+# 精確 nullspace 解）。支撐集為 ROADMAP-B 記錄浮點支撐集的真子集。
+
+W17 = [3, 243, 599, 961, 1079, 1363, 1369, 1671, 1819, 2345, 2401,
+       2731, 3083, 3259, 3677, 3745, 3905]
+LAM17 = [62550, 304251, 247708, 576866, 760514, 240149, 447790, 800581,
+         159842, 400102, 385240, 122130, 279475, 223895, 544400, 384246,
+         191626]                                                          # Σ = 6131365
+AGG17 = {3: 62550, 4: 62550, 24: 334846, 27: 40759, 28: 40759,
+         31: 40759, 32: 40759}                    # Σλ·Δ 的非零座標（36 維）
+
+W26 = [37, 487, 527, 779, 1423, 1819, 1911, 2091, 2209, 2337, 2407,
+       2427, 2457, 2505, 2721, 2729, 2735, 2863, 3255, 3343, 3377,
+       3639, 3641, 3825, 3913, 3937]
+LAM26 = [324933258, 68950678, 580696143, 506947154, 489030970, 831689147,
+         474825962, 613976452, 585136222, 51271520, 452045333, 467676557,
+         220147089, 161505288, 6408940, 381461112, 238934519, 895971728,
+         5016178, 379378979, 392227128, 106062111, 451013313, 76907280,
+         804321970, 25635760]                                             # Σ = 9592170791
+AGG26 = {8: 613976452, 17: 67293870, 25: 25635760, 32: 67293870,
+         40: 25635760, 58: 44869465, 61: 49885643, 62: 5016178,
+         63: 44869465, 65: 153814560, 72: 44869465, 74: 49885643,
+         77: 44869465, 79: 44869465, 80: 153814560, 88: 44869465,
+         91: 44869465, 93: 44869465, 94: 44869465}      # 非零座標（96 維）
 
 # Lean `Collatz_FST_NoLinearRanking.lean` §37 的 #eval 回歸值
 LEAN_DF10 = {
@@ -206,6 +233,50 @@ def run_two_mode(title: str, W, LAM, feat, mode_idx: int, n: int,
 
 
 # ────────────────────────────────────────────────────────────────────
+# B1.5 雙平衡：per-(mode, terminal) 仿射升級的 Farkas 憑證
+# ────────────────────────────────────────────────────────────────────
+
+def run_b15(title: str, W, LAM, feat, mode_idx: int, run, terms: list, n: int,
+            expect_sum: int, expect_agg: dict[int, int]) -> None:
+    """B1.5 錨：λ 收掉 4 個自由截距 β_{m,t} 的充要條件是四條 per-(m,t)
+    平衡全零——嚴格強於「模式平衡＋終末平衡」（後兩者合計僅 3 條獨立）。
+    狀態機 run 取自 b15_terminal_balance.py（照 Lean 定義的獨立實作）。"""
+    print(f"\n=== {title} ===")
+    D = np.array([two_mode_delta(x, feat, mode_idx, n) for x in W])
+    comb = np.array(LAM) @ D
+
+    check(sum(LAM) == expect_sum, f"Σλ = {sum(LAM)}（規格：{expect_sum}）")
+    check(all(v > 0 for v in LAM) and reduce(gcd, LAM) == 1, "λ 逐項 > 0 且互質")
+    check((comb >= 0).all(), "組合向量逐分量 ≥ 0（Farkas 條件）")
+    check((comb > 0).any(), "組合向量非零")
+
+    nz = {i: int(v) for i, v in enumerate(comb) if v != 0}
+    print(f"        非零座標（{len(nz)} 個）："
+          + ", ".join(f"θ{i // n}[{i % n}]={v}" for i, v in nz.items()))
+    check(nz == expect_agg, "聚合向量 = 記錄值（Lean key 恆等式右端的錨）")
+
+    # 四條 per-(m,t) 平衡：β_{m,t} 在 Farkas 組合中對消的充要條件
+    ends = {}
+    for x in W:
+        for z in (x, todd(x)):
+            if z not in ends:
+                e = run(z)
+                assert e in terms, f"終末 {e} 不在定理宣稱的兩態內（x={z}）"
+                ends[z] = e
+    bal = {(m, t): 0 for m in (0, 1) for t in terms}
+    for lam, x in zip(LAM, W):
+        y = todd(x)
+        mx, my = int(feat(x)[mode_idx] == 1), int(feat(y)[mode_idx] == 1)
+        bal[(my, ends[y])] += lam
+        bal[(mx, ends[x])] -= lam
+    print("        per-(m,t) 平衡：" + ", ".join(
+        f"(m={m}, t={t}) {v:+d}" for (m, t), v in bal.items()))
+    check(all(v == 0 for v in bal.values()),
+          "四條 per-(m,t) 平衡 = 0（蘊含模式平衡與終末平衡；"
+          "β_{m,t} 在組合中自動對消）")
+
+
+# ────────────────────────────────────────────────────────────────────
 # Cramer 結構：λ 是極大子式向量，憑證的整數值就是子式
 # ────────────────────────────────────────────────────────────────────
 
@@ -268,9 +339,10 @@ def main() -> int:
     ap.add_argument("--level2", action="store_true")
     ap.add_argument("--twomode", action="store_true")
     ap.add_argument("--level3", action="store_true")
+    ap.add_argument("--b15", action="store_true")
     ap.add_argument("--cramer", action="store_true")
     a = ap.parse_args()
-    everything = not (a.level2 or a.twomode or a.level3 or a.cramer)
+    everything = not (a.level2 or a.twomode or a.level3 or a.b15 or a.cramer)
 
     if everything or a.level2:
         run_level2()
@@ -280,6 +352,14 @@ def main() -> int:
     if everything or a.level3:
         run_two_mode("Level 3 雙模式：W20 / no_go_level3_2mode_potential",
                      W20, LAM20, F3, MODE_IDX_L3, 48, 31746, 27)
+    if everything or a.b15:
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from b15_terminal_balance import TERM2, TERM3, run2, run3
+        run_b15("B1.5 Level 2 雙平衡：W17 / no_go_2mode_terminal_affine_potential",
+                W17, LAM17, F2, MODE_IDX_L2, run2, TERM2, 18, 6131365, AGG17)
+        run_b15("B1.5 Level 3 雙平衡：W26 / no_go_level3_2mode_terminal_affine_potential",
+                W26, LAM26, F3, MODE_IDX_L3, run3, TERM3, 48, 9592170791, AGG26)
     if everything or a.cramer:
         run_cramer("Level 2 單模式 W₁₀", W10, LAM10, F2, MODE_IDX_L2, 18, False)
         run_cramer("Level 2 雙模式 W₁₂", W12, LAM12, F2, MODE_IDX_L2, 18, True)
