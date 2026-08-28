@@ -1,10 +1,10 @@
 /-
-# Project B 第三批：Nonnegative Reweighting Theorem——B1a
-（定義層＋(1)⟹(2)＋(3)⟹(1)＋吸收恆等式＋玩具電池）
+# Project B 第三批：Nonnegative Reweighting Theorem（B1 全定理）
 
 Mathlib rev c66c0c58（Lean v4.28.0-rc1）。設計核准 2026-08-28
 （B1-DESIGN-REPORT；Q1–Q4 與偏差點 D1/D2/D3 全項通過）。
-(2)⟹(3)（有界長最短路勢能）在 B1b 同檔追加，對本批純追加零改動。
+B1a（定義層＋(1)⟹(2)＋(3)⟹(1)＋吸收恆等式，PR #41）＋
+B1b（(2)⟹(3) 有界長最短路勢能＋tfae 收口；對 B1a 純追加零改動）。
 
 ## 內容
 
@@ -21,6 +21,12 @@ Mathlib rev c66c0c58（Lean v4.28.0-rc1）。設計核准 2026-08-28
 * **§B1.4 吸收恆等式**（`reweight_cost`）：Johnson reweighting
   `w′ = w + h∘src − h∘dst`、`α′ = α − h(init)`、`β′ = β + h` 之下
   cost **逐字恆等**（對全體字、非只接受字；與三條蘊含正交，任意 h 都成立）。
+* **§B1.5 (2)⟹(3)**（`hasPotential_of_cyclesNonneg`；B1b，Q3 定案選 (a)）：
+  `wordsLe`（長 ≤ n 字集）→ 縮短 A（純鴿籠 `reachWords_nonempty`）→
+  縮短 B（`exists_short_le_wpath`：(2) 之下成本不升地縮到長 < card Q，
+  剔除段錨 useful 態、`DFA.evalFrom_split` 經 `toDFA` 橋萃取）→
+  `potential`（`Finset.min'` 有界長最短路，可 `#eval` 機算）→
+  `potential_triangle` → 主定理。`boundedBelow_tfae` 文件性收口（Q4）。
 
 ## 技術註記（設計定案）
 
@@ -31,17 +37,19 @@ Mathlib rev c66c0c58（Lean v4.28.0-rc1）。設計核准 2026-08-28
    （`cyclesNonneg_of_boundedBelow` 證明內顯式構造）。旋轉不必另計。
 3. **D3**：勢能 h 不吸收 α（ROADMAP 的 super-source 版把 α 放進距離；等價，
    α 留在 `cost`／下界處讓 `potential`（B1b）與 `reweight` 介面最簡）。
-4. instance 經濟學：本批三條主定理**零 Fintype 需求**；
-   `[Fintype Q] [DecidableEq Q] [Fintype A] [DecidableEq A]` 只有 B1b 的
-   (2)⟹(3) 需要。`toDFA` 是 B1b 借 mathlib `DFA.evalFrom_split` 的橋，
-   先與定義層一同落地（設計 §2.1）。
+4. instance 經濟學：(1)⟹(2)、(3)⟹(1) 與吸收恆等式**零 Fintype 需求**；
+   §B1.5 內部再分段——字集枚舉只涉 `[Fintype A] [DecidableEq A]`、
+   鴿籠萃取與縮短 A 只涉 `[Fintype Q]`、勢能構造用全四個。
 5. 結論 (3) 只對 `UsefulEdge` 宣稱——從 useful 態指向死區的邊不在保證範圍
-   （ROADMAP B1 措辭紀律）；死區的 h 值在 B1b 構造中任取 0。
+   （ROADMAP B1 措辭紀律）；死區（`reachWords` 空）的 `potential` 值任取 0。
+6. 縮短引理走 **fuel 歸納**（對長度上界 n 歸納，非 `Nat.strong_induction_on`）：
+   剔除一段非空閉走行後長度嚴格降，fuel 同步降一——歸納形狀最平。
 -/
 import Mathlib.Computability.DFA
 import Mathlib.Data.Finset.Max
 import Mathlib.Algebra.Order.Archimedean.Basic
 import Mathlib.Algebra.Order.Field.Rat
+import Mathlib.Tactic.TFAE
 
 namespace CollatzFST.ProjectB
 
@@ -282,6 +290,214 @@ theorem reweight_cost (h : Q → ℚ) (u : List A) : (M.reweight h).cost u = M.c
     reweight_wpath]
   ring
 
+/-! ## §B1.5 (2)⟹(3)：有界長最短路勢能（B1b；Q3 定案選 (a)）
+
+三段 instance 經濟學（技術註記 4）：字集枚舉（§B1.5a）只涉字母表的有限性、
+鴿籠萃取與縮短 A（§B1.5b）只涉狀態的有限性、勢能構造（§B1.5c）用全四個。 -/
+
+/-! ### §B1.5a 字集枚舉 -/
+
+section Words
+
+variable [Fintype A] [DecidableEq A]
+
+/-- 長度 ≤ n 的全體字（(2)⟹(3) 專用的有限枚舉載體）。 -/
+def wordsLe : ℕ → Finset (List A)
+  | 0 => {[]}
+  | n + 1 => {([] : List A)} ∪ (Finset.univ ×ˢ wordsLe n).image fun p => p.1 :: p.2
+
+lemma mem_wordsLe {n : ℕ} {u : List A} : u ∈ wordsLe n ↔ u.length ≤ n := by
+  induction n generalizing u with
+  | zero => cases u <;> simp [wordsLe]
+  | succ n ih =>
+      cases u with
+      | nil => simp [wordsLe]
+      | cons a t => simp [wordsLe, ih]
+
+end Words
+
+/-! ### §B1.5b 鴿籠萃取與縮短 A -/
+
+section Split
+
+variable [Fintype Q]
+
+/-- 鴿籠萃取：長 ≥ card Q 的走行必含可整段剔除的非空閉走行
+（mathlib `DFA.evalFrom_split` 經 `toDFA` 橋；諸走行命題 rfl 級互通）。 -/
+private lemma exists_split {u : List A} {t : Q}
+    (hlen : Fintype.card Q ≤ u.length) (hu : M.evalFrom M.init u = t) :
+    ∃ (q₁ : Q) (x y z : List A),
+      u = x ++ y ++ z ∧ y ≠ [] ∧
+      M.evalFrom M.init x = q₁ ∧ M.evalFrom q₁ y = q₁ ∧ M.evalFrom q₁ z = t := by
+  obtain ⟨q₁, x, y, z, hsplit, -, hy, hx, hcyc, hz⟩ :=
+    M.toDFA.evalFrom_split (s := M.init) (t := t) hlen hu
+  exact ⟨q₁, x, y, z, hsplit, hy, hx, hcyc, hz⟩
+
+/-- 縮短 A（純鴿籠、無權重假設）：fuel 歸納——剔除閉走行、端點不變、長度嚴格降。 -/
+private lemma shorten_reach_aux :
+    ∀ (n : ℕ) (u : List A) (q : Q), u.length ≤ n → M.evalFrom M.init u = q →
+      ∃ u', u'.length < Fintype.card Q ∧ M.evalFrom M.init u' = q := by
+  intro n
+  induction n with
+  | zero =>
+      intro u q hlen hu
+      have hnil : u = [] := by
+        cases u with
+        | nil => rfl
+        | cons a t => simp at hlen
+      subst hnil
+      exact ⟨[], Fintype.card_pos_iff.mpr ⟨M.init⟩, hu⟩
+  | succ n ih =>
+      intro u q hlen hu
+      by_cases hcard : u.length < Fintype.card Q
+      · exact ⟨u, hcard, hu⟩
+      · push_neg at hcard
+        obtain ⟨q₁, x, y, z, rfl, hy, hx, hcyc, hz⟩ := M.exists_split hcard hu
+        refine ih (x ++ z) q ?_ (by rw [M.evalFrom_append, hx, hz])
+        cases y with
+        | nil => exact absurd rfl hy
+        | cons b ys =>
+            simp only [List.length_append, List.length_cons] at hlen ⊢
+            omega
+
+end Split
+
+/-! ### §B1.5c 勢能構造 -/
+
+section Potential
+
+variable [Fintype Q] [DecidableEq Q] [Fintype A] [DecidableEq A]
+
+/-- 從 init 走到 q、長 < card Q 的全體字（勢能的枚舉載體）。 -/
+def reachWords (q : Q) : Finset (List A) :=
+  (wordsLe (Fintype.card Q - 1)).filter fun u => M.evalFrom M.init u = q
+
+lemma mem_reachWords {q : Q} {u : List A} :
+    u ∈ M.reachWords q ↔ u.length < Fintype.card Q ∧ M.evalFrom M.init u = q := by
+  have hpos : 0 < Fintype.card Q := Fintype.card_pos_iff.mpr ⟨M.init⟩
+  unfold reachWords
+  rw [Finset.mem_filter, mem_wordsLe]
+  constructor
+  · rintro ⟨h1, h2⟩; exact ⟨by omega, h2⟩
+  · rintro ⟨h1, h2⟩; exact ⟨by omega, h2⟩
+
+/-- 縮短 A 收口：可達態的 `reachWords` 非空（勢能的 min 有東西可取）。 -/
+lemma reachWords_nonempty {q : Q} (hq : M.Reach q) : (M.reachWords q).Nonempty := by
+  obtain ⟨u, hu⟩ := hq
+  obtain ⟨u', hlen, hu'⟩ := M.shorten_reach_aux u.length u q le_rfl hu
+  exact ⟨u', M.mem_reachWords.mpr ⟨hlen, hu'⟩⟩
+
+/-- 縮短 B（全案樞紐）：(2) 之下成本不升地縮短。剔除的閉走行錨在 useful 態
+（可達＝前綴 x、可出＝後段 z ++ t 的出字），(2) 保證其權重 ≥ 0，
+故剔除後 `wpath` 不升。fuel 歸納同縮短 A。 -/
+private lemma shorten_le_wpath_aux (h2 : M.CyclesNonneg) {t : Q} (ht : M.CoReach t) :
+    ∀ (n : ℕ) (u : List A), u.length ≤ n → M.evalFrom M.init u = t →
+      ∃ u' ∈ M.reachWords t, M.wpath M.init u' ≤ M.wpath M.init u := by
+  intro n
+  induction n with
+  | zero =>
+      intro u hlen hu
+      have hnil : u = [] := by
+        cases u with
+        | nil => rfl
+        | cons a t' => simp at hlen
+      subst hnil
+      exact ⟨[], M.mem_reachWords.mpr ⟨Fintype.card_pos_iff.mpr ⟨M.init⟩, hu⟩, le_rfl⟩
+  | succ n ih =>
+      intro u hlen hu
+      by_cases hcard : u.length < Fintype.card Q
+      · exact ⟨u, M.mem_reachWords.mpr ⟨hcard, hu⟩, le_rfl⟩
+      · push_neg at hcard
+        obtain ⟨q₁, x, y, z, rfl, hy, hx, hcyc, hz⟩ := M.exists_split hcard hu
+        obtain ⟨v, hv⟩ := ht
+        have huseful : M.Useful q₁ :=
+          ⟨⟨x, hx⟩, ⟨z ++ v, by rw [M.evalFrom_append, hz]; exact hv⟩⟩
+        have hcw : 0 ≤ M.wpath q₁ y := h2 q₁ y huseful hcyc
+        have hlen' : (x ++ z).length ≤ n := by
+          cases y with
+          | nil => exact absurd rfl hy
+          | cons b ys =>
+              simp only [List.length_append, List.length_cons] at hlen ⊢
+              omega
+        obtain ⟨u', hmem, hle⟩ := ih (x ++ z) hlen' (by rw [M.evalFrom_append, hx, hz])
+        refine ⟨u', hmem, hle.trans ?_⟩
+        have e1 : M.evalFrom M.init (x ++ y) = q₁ := by rw [M.evalFrom_append, hx, hcyc]
+        have w1 : M.wpath M.init (x ++ y ++ z)
+            = M.wpath M.init x + M.wpath q₁ y + M.wpath q₁ z := by
+          rw [M.wpath_append, M.wpath_append, hx, e1]
+        have w2 : M.wpath M.init (x ++ z) = M.wpath M.init x + M.wpath q₁ z := by
+          rw [M.wpath_append, hx]
+        rw [w1, w2]
+        linarith
+
+/-- 縮短 B 公開形（設計報告簽名）：通往可出態 t 的走行可縮到長 < card Q
+且路徑權重不升。 -/
+lemma exists_short_le_wpath (h2 : M.CyclesNonneg) {t : Q} (ht : M.CoReach t)
+    {u : List A} (hu : M.evalFrom M.init u = t) :
+    ∃ u' ∈ M.reachWords t, M.wpath M.init u' ≤ M.wpath M.init u :=
+  M.shorten_le_wpath_aux h2 ht u.length u le_rfl hu
+
+/-- 勢能（(2)⟹(3) 的 canonical 見證；可 `#eval` 機算）：useful 態取
+「init 到此、長 < card Q 的最小路徑權重」（Gallai/Johnson 的無 super-source 版，
+D3）；死區（`reachWords` 空）任取 0——敘述不為死區負責（技術註記 5）。 -/
+def potential (q : Q) : ℚ :=
+  if hne : ((M.reachWords q).image (M.wpath M.init)).Nonempty
+  then ((M.reachWords q).image (M.wpath M.init)).min' hne
+  else 0
+
+/-- min 是下界。 -/
+private lemma potential_le {q : Q} {u : List A} (hu : u ∈ M.reachWords q) :
+    M.potential q ≤ M.wpath M.init u := by
+  have hne : ((M.reachWords q).image (M.wpath M.init)).Nonempty :=
+    ⟨_, Finset.mem_image_of_mem _ hu⟩
+  unfold potential
+  rw [dif_pos hne]
+  exact Finset.min'_le _ _ (Finset.mem_image_of_mem _ hu)
+
+/-- min 的達成見證。 -/
+private lemma exists_potential_witness {q : Q} (hq : M.Reach q) :
+    ∃ u ∈ M.reachWords q, M.wpath M.init u = M.potential q := by
+  have hne : ((M.reachWords q).image (M.wpath M.init)).Nonempty :=
+    (M.reachWords_nonempty hq).image _
+  obtain ⟨u, hu, hval⟩ := Finset.mem_image.mp (Finset.min'_mem _ hne)
+  refine ⟨u, hu, ?_⟩
+  unfold potential
+  rw [dif_pos hne]
+  exact hval
+
+/-- 三角不等式（只對 useful 邊；ROADMAP B1 措辭紀律）：
+min 的達成見證 u₀ → u₀ ++ [a] → 縮短 B → min 是下界。 -/
+lemma potential_triangle (h2 : M.CyclesNonneg) {q : Q} {a : A} (he : M.UsefulEdge q a) :
+    M.potential (M.step q a) ≤ M.potential q + M.w q a := by
+  obtain ⟨⟨hreach, hco⟩, hstep⟩ := he
+  obtain ⟨u₀, hu₀, hval⟩ := M.exists_potential_witness hreach
+  have hrun : M.evalFrom M.init (u₀ ++ [a]) = M.step q a := by
+    rw [M.evalFrom_append, (M.mem_reachWords.mp hu₀).2]; rfl
+  obtain ⟨u', hmem, hle⟩ := M.exists_short_le_wpath h2 hstep.2 hrun
+  have h1 : M.potential (M.step q a) ≤ M.wpath M.init u' := M.potential_le hmem
+  have h2' : M.wpath M.init (u₀ ++ [a]) = M.wpath M.init u₀ + M.w q a := by
+    rw [M.wpath_append, (M.mem_reachWords.mp hu₀).2]
+    simp [wpath_cons]
+  linarith
+
+/-- **B1 (2)⟹(3)**（ROADMAP-B B1）：useful cycles 非負 ⟹ 存在勢能——
+見證即 `potential`，三角不等式重排即勢能不等式。 -/
+theorem hasPotential_of_cyclesNonneg (h2 : M.CyclesNonneg) : M.HasPotential :=
+  ⟨M.potential, fun q a he => by
+    have := M.potential_triangle h2 he
+    linarith⟩
+
+/-- 文件性收口（Q4）：三敘述等價。主要出口仍是三條具名單箭頭
+（B1.5/B3 逐條消費）。 -/
+theorem boundedBelow_tfae :
+    [M.BoundedBelow, M.CyclesNonneg, M.HasPotential].TFAE := by
+  tfae_have 1 → 2 := M.cyclesNonneg_of_boundedBelow
+  tfae_have 2 → 3 := M.hasPotential_of_cyclesNonneg
+  tfae_have 3 → 1 := M.boundedBelow_of_hasPotential
+  tfae_finish
+
+end Potential
+
 end CostAutomaton
 
 /-! ## §B1.V 數據驗證（全部應輸出 `true`）
@@ -360,6 +576,25 @@ private def words2 : ℕ → List (List (Fin 2))
 -- 恆等式與 (2) 正交：負例配任意 h（借 hpos）恆等式照樣成立
 #eval ((List.range 7).flatMap words2).all fun u =>
   decide ((Mneg.reweight hpos).cost u = Mneg.cost u)
+
+/-! B1b 份：機算 `potential` 的迴歸。 -/
+
+-- 機算勢能 = 手寫勢能（Mpos 全態；B1a 的手寫 hpos 就是最短路值）
+#eval ([0, 1, 2] : List (Fin 3)).all fun q => decide (Mpos.potential q = hpos q)
+
+-- 機算勢能的三角不等式（全邊；本例全 useful）
+#eval ([0, 1, 2] : List (Fin 3)).all fun q => ([0, 1] : List (Fin 2)).all fun a =>
+  decide (0 ≤ Mpos.w q a + Mpos.potential q - Mpos.potential (Mpos.step q a))
+
+-- reweight（機算勢能）後全邊非負＋恆等式照樣成立
+#eval ([0, 1, 2] : List (Fin 3)).all fun q => ([0, 1] : List (Fin 2)).all fun a =>
+  decide (0 ≤ (Mpos.reweight Mpos.potential).w q a)
+#eval ((List.range 7).flatMap words2).all fun u =>
+  decide ((Mpos.reweight Mpos.potential).cost u = Mpos.cost u)
+
+-- 負例：(2) 失敗處三角必破——有界長 min 在負自環邊上不滿足三角
+-- （縮短 B 需要 (2) 的可見形；(2)⟹(3) 前提之必要性迴歸）
+#eval decide ¬(0 ≤ Mneg.w 1 0 + Mneg.potential 1 - Mneg.potential (Mneg.step 1 0))
 
 end Verification
 
