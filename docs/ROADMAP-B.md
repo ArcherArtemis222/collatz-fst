@@ -32,7 +32,7 @@
 
 ---
 
-## B0：語義層
+## B0：語義層（**已完成** 2026-08-28）
 
 把 Core 的 Phase K/S 邏輯封裝為正規的 subsequential transducer `U`。
 
@@ -45,9 +45,60 @@
    language-product 中應落在通往接受態的**無環尾段**（product 狀態含
    DFA 位置，哨兵邊不與任何普通邊同一 product 邊）。
    若成立，B1 的 end-marker 警告自動滿足；寫成一條 lemma 或 `#guard` 級檢查。
+   【原註記；其推理缺陷與修正見下方完成紀錄第 4 點】
 
 Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
 自建小而專用的 API，不要等上游。
+
+**完成紀錄（2026-08-28，B0 PR，分支 `b/b0-semantics`）**：
+
+1. **B0-1 語言層**（`ProjectB/Collatz_FST_OddLanguage.lean`）：謂詞
+   `IsCanonicalOdd`（位元 <2、LSB = 1、MSB = 1）與 6 狀態 DFA `oddDFA`
+   （接受 `{acc}`）一致：`mem_oddDFA_accepts_iff`；與 ℕ 的往返
+   `isCanonicalOdd_digits`／`digits_ofDigits_of_canonical`／`ofDigits_odd`
+   （皆 mathlib digits 引理的包裝）。**Q1 定案**：語言含 `[1]`
+   （`digits 5 ∈ L` 而 `Uacc ↦ [1]`，剔除即破 closure）；排除 1 是排名
+   量詞的條款，以 `RankingDomain` 另立、`rankingDomain_iff`
+   （`w ≠ [1] ↔ 1 < x`）接 no-go 量詞。
+2. **B0-2 transducer**（`ProjectB/Collatz_FST_Transducer.lean`）：
+   `SubTransducer`（states = 型參／`init`／`step`／per-transition 有界輸出
+   （`bound`/`out_le` 結構欄位）／`finalOut`）；`U` = Core 進位機包裝
+   （狀態 = 進位、init 1、每步恰一位、finalOut = 終端進位二進位無填零）。
+   **soundness 零重證**：唯一結構歸納是橋接 `U_runOut`（與 `run` 同形遞迴、
+   逐 case rfl）；acceptance 全 re-export——`ofDigits_U_output` ←
+   `ofDigits_transduce`、`U_output_split` ← `transduce_split`、
+   `ofDigits_Uacc` ← `Todd_eq_dropWhile`、`Uacc_digits` ← `digits_Todd_eq_drop`。
+   **Q2 定案**：選項 (a)——K 步照發 0，加速輸出 `Uacc = dropWhile (·=0) ∘ output`
+   收零；選項 (b)（K 步緩衝）需重推「緩衝發射 = dropWhile」歸納，違反
+   re-export 紅線。K/S 相位語義錨在 `runP_K_iff`／`U_output_split`。
+3. **closure**：`isCanonicalOdd_Uacc`——對**全體** L 成立、無需排除 `[1]`
+   （`Uacc_one : Uacc [1] = [1]`，Todd 不動點落點）；最強形
+   `Uacc_eq_digits_Todd`（`Uacc w = digits (Todd (ofDigits w))`）。
+4. **B0-3 哨兵引理——原註記的推理缺陷、反例與修復**。原註記設想上述
+   無環尾段可在未標記字母表 `{0,1}` 上形式化，**此設想不可能成立**：
+   `extIn 1 = [1,0,0]` 是 `extIn 9 = [1,0,0,1,0,0]` 的前綴——識別 `L·00`
+   的任何 DFA 讀完前者已在接受態、讀完後者再度接受，故接受態位於循環上，
+   「哨兵邊」與詞中段普通邊重合（`digits 9 = [1,0,0,1]` 內含因子 `100`
+   是同一現象的詞中段形式）。**修復（設計核准 2026-08-28）**：哨兵改讀
+   **標記字母**——字母表 `Option ℕ`（`some b` = 一般位元、`none` = 哨兵），
+   `extInM x = (digits x).map some ++ [none, none]`，`extInM_unmark`
+   一行投影回 Core 的 `extIn`。此後 B0-3 成立且為枚舉／小歸納級：
+   - `sentinel_positions`：前 `|digits x|` 步不觸尾段，兩哨兵步分別進
+     `tail1`／`tail2`（= 接受態）；
+   - `lstep_some_ne_tail1/2`：尾段唯哨兵字母可進入——「哨兵邊不與任何
+     普通邊同一 product 邊」的機制；
+   - `sentinel_edge₁_no_cycle`（`tail1 ⇝̸ acc`）、`sentinel_edge₂_no_cycle`
+     （`tail2 ⇝̸ tail1`）：「邊在循環上 ⟺ 存在從邊頭回邊尾的路徑」的
+     逐邊否定——兩條哨兵邊不在任何循環上；
+   - `prodRun_snd`：product 走行的 DFA 分量 = `extDFA` 走行，上述事實
+     對**任意**機器的 language-product 生效。
+   **B1 end-marker 警告以此正式解除**：B1 的乘積圖在標記字母表上構造，
+   哨兵邊是唯二通往接受態的邊且不在任何循環上，循環 pump 全程落在
+   `some`-區段。extDFA 的完整語言 iff 刻畫非 B0-3 所需，留待 B1 實需時補。
+5. **驗證**：`lake build` 全綠（新模組合計 <5 s，無 `maxHeartbeats` 調整、
+   無 `decide` 重負載）；兩檔內建 #eval 回歸電池 18 項全 `true`；
+   `check_boundaries.py` ProjectB 規則首次實測（含負向測試：暫存檔
+   ProjectB import ProjectA 必紅）。
 
 ## B1：Nonnegative Reweighting Theorem（gauge normalization）
 

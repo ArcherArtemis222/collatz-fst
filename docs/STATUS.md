@@ -1,6 +1,6 @@
 # 定理狀態索引（唯一真相來源）
 
-最後更新：2026-08-08 ／ 對應 PR：`a/b15-terminal-affine`（B1.5 雙平衡精確化）
+最後更新：2026-08-28 ／ 對應 PR：`b/b0-semantics`（B0 語義層——ProjectB 首批實體）
 
 > 本檔由 repo 現況生成：定理名逐條 grep 核實、一句話摘要取自各定理 docstring。
 > 歷史敘述見 [HANDOVER.md](HANDOVER.md)（快照，不再更新）；待辦見
@@ -120,6 +120,28 @@ Kirchhoff 鏈：trace 層流守恆 → 特徵層泛函 → 差分層 9 條（秩
 出處：`tools/l3_recon.py` ⑥（精確有理對帳，含推導打印）＋
 `ProjectA/Collatz_FST_L3_Delta.lean` 檔頭「65 條的帳」＋ ROADMAP-A A-3。
 
+## Project B — B0 語義層
+
+ProjectB 分區首批實體（2026-08-28）。全部非 paper-facing，不入 registry、
+不入 Audit 信任基底。B0-3 的標記字母表修正（原 ROADMAP 註記在未標記字母表上
+不可能成立：`extIn 1` 是 `extIn 9` 的前綴、接受態在循環上）與 Q1/Q2 設計定案
+見 [ROADMAP-B.md](ROADMAP-B.md) 的 B0 完成紀錄。namespace 一律
+`CollatzFST.ProjectB`。
+
+| 定理 | 檔案 | 一句話 |
+|---|---|---|
+| `ProjectB.mem_oddDFA_accepts_iff` | `ProjectB/Collatz_FST_OddLanguage.lean` | B0-1：6 狀態 DFA `oddDFA` 恰接受 canonical odd language（謂詞層 `IsCanonicalOdd` 一致）。 |
+| `ProjectB.isCanonicalOdd_digits`、`digits_ofDigits_of_canonical`、`ofDigits_odd` | `ProjectB/Collatz_FST_OddLanguage.lean` | 語言與 ℕ 的往返（mathlib digits 引理的包裝）。 |
+| `ProjectB.sentinel_positions` | `ProjectB/Collatz_FST_OddLanguage.lean` | B0-3 位置事實：`extInM x` 的走行恰在兩個哨兵步進入尾段 `tail1`/`tail2`（`tail2` = 接受態）。 |
+| `ProjectB.lstep_some_ne_tail1`、`lstep_some_ne_tail2` | `ProjectB/Collatz_FST_OddLanguage.lean` | 尾段唯哨兵字母可進入——哨兵邊不與任何普通邊同一 product 邊。 |
+| `ProjectB.sentinel_edge₁_no_cycle`、`sentinel_edge₂_no_cycle` | `ProjectB/Collatz_FST_OddLanguage.lean` | B0-3 無環性：兩條哨兵邊不在任何循環上（`tail1 ⇝̸ acc`、`tail2 ⇝̸ tail1`）。 |
+| `ProjectB.prodRun_snd` | `ProjectB/Collatz_FST_OddLanguage.lean` | product 投影：DFA 分量 = `extDFA` 走行——哨兵事實對任意機器 × 語言 DFA 的乘積生效。 |
+| `ProjectB.extInM_unmark` | `ProjectB/Collatz_FST_OddLanguage.lean` | 標記輸入 `extInM` 去標記後恰為 Core 的 `extIn`（一行投影橋）。 |
+| `ProjectB.U_runOut` | `ProjectB/Collatz_FST_Transducer.lean` | 橋接：subsequential 包裝 `U` 的走行 = Core `run`（B0 唯一結構歸納，逐 case rfl）。 |
+| `ProjectB.ofDigits_U_output`、`U_output_split`、`ofDigits_Uacc`、`Uacc_digits` | `ProjectB/Collatz_FST_Transducer.lean` | acceptance 全 re-export（← `ofDigits_transduce`／`transduce_split`／`Todd_eq_dropWhile`／`digits_Todd_eq_drop`）。 |
+| `ProjectB.isCanonicalOdd_Uacc` | `ProjectB/Collatz_FST_Transducer.lean` | closure：`w ∈ L ⟹ Uacc w ∈ L`——對全體 L 成立、不排除 `[1]`（`Uacc_one` 落點示例）。 |
+| `ProjectB.rankingDomain_iff` | `ProjectB/Collatz_FST_Transducer.lean` | 排名 domain 條款 `w ≠ [1] ↔ 1 < ofDigits w`（B1 對接 no-go 量詞的 hook）。 |
+
 ## Tools 錨（CI 強制）
 
 `.github/workflows/guard.yml` certs job 每次 push 都跑（精確有理、零浮點、決定性）：
@@ -145,3 +167,5 @@ Kirchhoff 鏈：trace 層流守恆 → 特徵層泛函 → 差分層 9 條（秩
   Project B 段由其取代）。B1.5 雙平衡精確化已完成（2026-08-08）：
   兩條 per-(mode, terminal) 仿射 no-go 落地 `ProjectA/`（上表），
   錨 `tools/certificates.py --b15`；structured gauge lemma 隨 B1 進行。
+  **B0 語義層已完成（2026-08-28）**：ProjectB 分區首批兩檔（上表），
+  B1 end-marker 警告由 B0-3 哨兵引理正式解除；下一步 B1 reweighting。
