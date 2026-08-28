@@ -1,6 +1,6 @@
 # 定理狀態索引（唯一真相來源）
 
-最後更新：2026-08-28 ／ 對應 PR：`b/b1b-shortest-path-potential`（B1b——(2)⟹(3) 最短路勢能＋tfae，B1 收官）
+最後更新：2026-08-28 ／ 對應 PR：`b/b15-structured-gauge`（B1.5 殘項——structured gauge lemma，雙暫存器＋終態選擇）
 
 > 本檔由 repo 現況生成：定理名逐條 grep 核實、一句話摘要取自各定理 docstring。
 > 歷史敘述見 [HANDOVER.md](HANDOVER.md)（快照，不再更新）；待辦見
@@ -120,7 +120,7 @@ Kirchhoff 鏈：trace 層流守恆 → 特徵層泛函 → 差分層 9 條（秩
 出處：`tools/l3_recon.py` ⑥（精確有理對帳，含推導打印）＋
 `ProjectA/Collatz_FST_L3_Delta.lean` 檔頭「65 條的帳」＋ ROADMAP-A A-3。
 
-## Project B — B0 語義層＋B1 reweighting（皆已完成）
+## Project B — B0 語義層＋B1 reweighting＋B1.5 structured gauge（皆已完成）
 
 ProjectB 分區首批實體（B0，2026-08-28）。全部非 paper-facing，不入 registry、
 不入 Audit 信任基底。B0-3 的標記字母表修正（原 ROADMAP 註記在未標記字母表上
@@ -132,6 +132,12 @@ B1（Nonnegative Reweighting Theorem）2026-08-28 兩段收官：B1a（PR #41—
 定義層＋(1)⟹(2)＋(3)⟹(1)＋吸收恆等式）＋B1b（(2)⟹(3) 有界長最短路勢能＋
 tfae 收口）。載體抽象、import 純 mathlib（零 Core）；設計定案（Q1–Q4、偏差點
 D1/D2/D3）與完成紀錄見 ROADMAP-B.md 的 B1 節。
+
+B1.5 殘項（structured gauge lemma）2026-08-28 收口：`SelCostAutomaton`——
+雙暫存器＋終態選擇（§0 歸類 2-register copyless CRA + final selection 的
+最小載體），主定理 = B1 出口兩次應用＋β-吸收恆等式（α 不動、偏移落在
+per-(mode, terminal)，與 #39 β_{m,t} 對齊；合成 = A 定理升級，見後續 PR）。
+設計定案（Q1–Q4、D1–D5）與完成紀錄見 ROADMAP-B.md 的 B1.5 節。
 
 | 定理 | 檔案 | 一句話 |
 |---|---|---|
@@ -153,6 +159,10 @@ D1/D2/D3）與完成紀錄見 ROADMAP-B.md 的 B1 節。
 | `ProjectB.CostAutomaton.hasPotential_of_cyclesNonneg` | `ProjectB/Collatz_FST_B1_Reweighting.lean` | B1 (2)⟹(3)：useful cycles 非負 ⟹ 存在勢能——見證 `potential`（有界長最短路，可 #eval 機算；死區任取 0）。 |
 | `ProjectB.CostAutomaton.exists_short_le_wpath`、`potential_triangle` | `ProjectB/Collatz_FST_B1_Reweighting.lean` | 縮短 B（全案樞紐：(2) 之下成本不升地縮到長 < card Q）與 useful 邊三角不等式。 |
 | `ProjectB.CostAutomaton.boundedBelow_tfae` | `ProjectB/Collatz_FST_B1_Reweighting.lean` | B1 文件性收口：(1)(2)(3) 三敘述 TFAE（主要出口仍是三條具名單箭頭）。 |
+| `ProjectB.SelCostAutomaton`（＋`restrict`／`cost`／`BoundedBelow`／`HasPotential`） | `ProjectB/Collatz_FST_B15_SelGauge.lean` | B1.5 載體：雙暫存器＋終態選擇（單一機器＋`sel : Q → Fin 2`＋`w : Fin 2 → Q → A → ℚ`）；`restrict m` 投影到 `CostAutomaton`（B1 全 API 免費取得）。 |
+| `ProjectB.SelCostAutomaton.boundedBelow_restrict` | `ProjectB/Collatz_FST_B15_SelGauge.lean` | B1.5 Q3 分解：一致下界對量詞限縮封閉（`cost_restrict` 一行；空接受集空虛成立、無特判）。 |
+| `ProjectB.SelCostAutomaton.reweight_cost` | `ProjectB/Collatz_FST_B15_SelGauge.lean` | B1.5 β-吸收恆等式：`w′ m = w m + h m∘src − h m∘dst`、α 不動、`β′ = β + h(sel ·)· − h(sel ·)(init)` 之下 cost 對全體字恆等（任意 h、與蘊含正交；偏移 = per-(mode, terminal) 常數，#39 β_{m,t} 對齊處）。 |
+| `ProjectB.SelCostAutomaton.structured_gauge`（＋`hasPotential_of_boundedBelow`） | `ProjectB/Collatz_FST_B15_SelGauge.lean` | B1.5 主定理：雙模式 bounded-below ⟹ ∃ h : Fin 2 → Q → ℚ，每個 m、每條 `(restrict m).UsefulEdge` reweighted 權重 ≥ 0 且 cost 恆等（B1 出口兩次應用＋choose 收族；Q2 措辭紀律逐 m 宣稱）。 |
 
 ## Tools 錨（CI 強制）
 
