@@ -289,6 +289,48 @@ Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
 - `D_A(x) = V(U(x)) − V(x)`：subsequential `U` 的每步輸出區塊權重
   push-back 到輸入轉移 + final output 進 β——標準 weighted composition。
 
+**完成紀錄（2026-08-28，B2 PR，分支 `b/b2-engine`；設計核准
+B2-DESIGN-REPORT，Q1–Q4 與偏差點 D1–D6 全項通過）**：
+
+1. **引擎**（`tools/b2_engine.py` 單檔；純標準庫、`fractions.Fraction`
+   精確有理、零浮點、零 Lean）：`mk_automaton`（規格鏡射 B1
+   `CostAutomaton`）→ `trim`（可達∧可出）→ `decide_all_negative`。
+   化約照上：取負 Bellman–Ford（嚴格改進鬆弛——零權循環不觸發，
+   語義上 pump 不改成本本就無害）同時做可達正循環偵測與邊界最短路；
+   super-source/sink 吸收（D1：α 作逐態值常數偏移、β 折進終端 max，
+   呼應 B1 D3）；空語言 ⟺ init 非 useful，顯式真空分支。fail 見證
+   `前綴 ++ 循環^k ++ 出綴`，k = max(0, ⌈−base/W_c⌉) 有理直接解；
+   **Karp 單獨不足的角已在檔頭與判定處註解點名**（無正循環時仍須查
+   邊界最大值 M* 並與 0 嚴格比較；α/β 是 boundary 貢獻），且由已知
+   答案 T1 迴歸（`Mneg` 無正循環、M* = 0 而 fail）。
+2. **憑證自驗**（不信引擎主流程、零圖搜尋）：pass 憑證 = `(R, C, d)`
+   ——NOTES (a)(b)(c)（P3 三角/P4 接受/P5 對齊）之上**新增 R/C 封閉性
+   檢查 P1/P2 把量化域「useful」局部化**（D2：P1 前向封閉、P2 對 R
+   後向封閉 ⟹ R∩C ⊇ Useful）；健全性定理 P1–P5 ⟹ AllNeg 之證明只用
+   B1 望遠鏡，即 B3 Lean 驗證書的敘述前身（P1–P5 為 `decide` 級 Bool
+   合取）。fail 見證 = 平坦接受字直接求值（完整檢查）。引擎回傳前
+   一律以驗證函數自檢輸出（D6）。
+3. **已知答案 T1–T5**（`from_b1_toy`，Mneg/Mpos 逐字轉錄 B1 Lean 檔
+   並註明行號）：T1 `Mneg` fail-邊界（Karp 角）；T2 `Mpos` fail-正循環
+   （k = 0）；T3 `Mpos_neg`（取負，D4 定案的 pass 例）憑證三值
+   d = {0: −5, 1: −3, 2: −2} 逐項錨定；T4 `Mneg_neg_shift`（取負＋
+   α = −5/2）真 pump k = ⌈5/2⌉ = 3、見證成本 1/2、k−1 成本 −1/2 < 0
+   （最小性；核准時勘誤：−3/2 是 k = 1 的值）；T5 真空 pass。
+4. **oracle 性質測試**（D5 方向性判準矩陣）：固定種子 20260828、
+   300 台 ≤ 4 態隨機機（權重偏正讓正循環夠多）× 有界窮舉
+   （L = n_states + 2）——pass：憑證綠（健全性定理 ⟹ 已完備）∧
+   窮舉無違例（防共模 bug 交叉探針）；fail：見證綠（求值即完備）∧
+   短字無違例 ⟹ 必為循環模式。四類覆蓋（pass 21／fail-循環 151／
+   fail-邊界 33／真空 95）門檻寫死。另做一次性淬煉（不進 repo）：
+   2 萬台至 6 態、3 字母、權重含 1/3 全過。
+5. **驗證**：`--selftest`（T1–T5＋負向測試四則＋oracle）全綠，
+   實測 ~0.01 秒（任務上限 10 秒）；負向測試——竄改 pass 憑證單值
+   （P4 破/P3 破各一）必紅、fail 見證換成本 < 0 或非接受字必紅。
+   CI：`guard.yml` certs job 尾端加跑 `--selftest` 一步
+   （專案主人具名授權，PR 描述照 #39 前例標明）；零新增 pip 依賴。
+6. **明確不做（照設計）**：任何 Lean（B3 驗證書）、Collatz 實例化與
+   `D_A` weighted composition（B3）、憑證序列化格式（B3 決定）。
+
 ## B3：重現 Project A（abstraction 驗收測試）
 
 用 B2 引擎重推三條 no-go。`scripts/check_boundaries.py` 本來就禁止
