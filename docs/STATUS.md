@@ -1,6 +1,6 @@
 # 定理狀態索引（唯一真相來源）
 
-最後更新：2026-08-28 ／ 對應 PR：`b/b1a-reweighting-defs`（B1a——reweighting 定理定義層＋兩條蘊含＋吸收恆等式）
+最後更新：2026-08-28 ／ 對應 PR：`b/b1b-shortest-path-potential`（B1b——(2)⟹(3) 最短路勢能＋tfae，B1 收官）
 
 > 本檔由 repo 現況生成：定理名逐條 grep 核實、一句話摘要取自各定理 docstring。
 > 歷史敘述見 [HANDOVER.md](HANDOVER.md)（快照，不再更新）；待辦見
@@ -120,7 +120,7 @@ Kirchhoff 鏈：trace 層流守恆 → 特徵層泛函 → 差分層 9 條（秩
 出處：`tools/l3_recon.py` ⑥（精確有理對帳，含推導打印）＋
 `ProjectA/Collatz_FST_L3_Delta.lean` 檔頭「65 條的帳」＋ ROADMAP-A A-3。
 
-## Project B — B0 語義層＋B1 reweighting（進行中）
+## Project B — B0 語義層＋B1 reweighting（皆已完成）
 
 ProjectB 分區首批實體（B0，2026-08-28）。全部非 paper-facing，不入 registry、
 不入 Audit 信任基底。B0-3 的標記字母表修正（原 ROADMAP 註記在未標記字母表上
@@ -128,10 +128,10 @@ ProjectB 分區首批實體（B0，2026-08-28）。全部非 paper-facing，不�
 見 [ROADMAP-B.md](ROADMAP-B.md) 的 B0 完成紀錄。namespace 一律
 `CollatzFST.ProjectB`。
 
-B1（Nonnegative Reweighting Theorem，設計核准 2026-08-28）拆半進行：
-B1a（下表後四列——定義層＋(1)⟹(2)＋(3)⟹(1)＋吸收恆等式）已落地；
-B1b（(2)⟹(3) 有界長最短路勢能＋tfae 收口）進行中，
-ROADMAP-B 的 B1 完成紀錄隨 B1b 補。
+B1（Nonnegative Reweighting Theorem）2026-08-28 兩段收官：B1a（PR #41——
+定義層＋(1)⟹(2)＋(3)⟹(1)＋吸收恆等式）＋B1b（(2)⟹(3) 有界長最短路勢能＋
+tfae 收口）。載體抽象、import 純 mathlib（零 Core）；設計定案（Q1–Q4、偏差點
+D1/D2/D3）與完成紀錄見 ROADMAP-B.md 的 B1 節。
 
 | 定理 | 檔案 | 一句話 |
 |---|---|---|
@@ -150,6 +150,9 @@ ROADMAP-B 的 B1 完成紀錄隨 B1b 補。
 | `ProjectB.CostAutomaton.cyclesNonneg_of_boundedBelow` | `ProjectB/Collatz_FST_B1_Reweighting.lean` | B1 (1)⟹(2)：成本有下界 ⟹ useful cycles 非負（pump k 圈＋阿基米德；零 Fintype）。 |
 | `ProjectB.CostAutomaton.boundedBelow_of_hasPotential` | `ProjectB/Collatz_FST_B1_Reweighting.lean` | B1 (3)⟹(1)：useful-edge 勢能 ⟹ 成本一致下界（望遠鏡；零 Fintype）。 |
 | `ProjectB.CostAutomaton.reweight_cost` | `ProjectB/Collatz_FST_B1_Reweighting.lean` | B1 吸收恆等式：Johnson reweighting（`α−h(init)`／`β+h`）之下 cost 逐字恆等（任意 h，與蘊含正交）。 |
+| `ProjectB.CostAutomaton.hasPotential_of_cyclesNonneg` | `ProjectB/Collatz_FST_B1_Reweighting.lean` | B1 (2)⟹(3)：useful cycles 非負 ⟹ 存在勢能——見證 `potential`（有界長最短路，可 #eval 機算；死區任取 0）。 |
+| `ProjectB.CostAutomaton.exists_short_le_wpath`、`potential_triangle` | `ProjectB/Collatz_FST_B1_Reweighting.lean` | 縮短 B（全案樞紐：(2) 之下成本不升地縮到長 < card Q）與 useful 邊三角不等式。 |
+| `ProjectB.CostAutomaton.boundedBelow_tfae` | `ProjectB/Collatz_FST_B1_Reweighting.lean` | B1 文件性收口：(1)(2)(3) 三敘述 TFAE（主要出口仍是三條具名單箭頭）。 |
 
 ## Tools 錨（CI 強制）
 

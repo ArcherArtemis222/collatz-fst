@@ -100,7 +100,7 @@ Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
    `check_boundaries.py` ProjectB 規則首次實測（含負向測試：暫存檔
    ProjectB import ProjectA 必紅）。
 
-## B1：Nonnegative Reweighting Theorem（gauge normalization）
+## B1：Nonnegative Reweighting Theorem（gauge normalization；**已完成** 2026-08-28）
 
 > **定理（目標敘述）。** 對有限的 trimmed weighted product graph
 > （automaton × language DFA，皆有理權重），以下等價：
@@ -122,6 +122,49 @@ Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
   非負假設變成 WLOG（gauge choice），不是實驗限制。
 - **與 A 論文的互動**：corollary 只有在 B1 完成後才進 A 的 appendix；
   未完成前 A 維持 θ≥0 敘述 + discussion 一段。不用 forthcoming 撐主定理。
+
+**完成紀錄（2026-08-28，B1a PR #41＋B1b PR，分支 `b/b1a-reweighting-defs`
+→ `b/b1b-shortest-path-potential`；設計報告 B1-DESIGN-REPORT.md 核准後兩段落地）**：
+
+1. **載體**（`ProjectB/Collatz_FST_B1_Reweighting.lean` 單檔；**import 純
+   mathlib、零 Core**）：抽象 `CostAutomaton Q A`（Q1 定案完全抽象——trimmed
+   product graph 是本定理的實例不是敘述成分，哨兵警告在抽象層自動消解，
+   實例化時由 B0-3 標記字母表引理承擔）；witness 形
+   `Reach`/`CoReach`/`Useful`/`UsefulEdge`（Q2）；端點
+   `BoundedBelow`/`CyclesNonneg`/`HasPotential`。核准偏差點：**D1**
+   `CyclesNonneg` 不帶 `c ≠ []`（空閉走行權重 0，逐字等價）；**D2**
+   「位於接受路徑上的 cycle」形式化為「錨在 useful 態的閉走行」（等價；
+   旋轉由全稱量詞自動涵蓋）；**D3** 勢能不吸收 α（super-source 版的等價
+   簡化，α 留在 cost／下界處）。
+2. **(1)⟹(2)** `cyclesNonneg_of_boundedBelow`：pump `u ++ cᵏ ++ v` 全程在
+   語言內＋阿基米德（`exists_nat_gt`）；**(3)⟹(1)**
+   `boundedBelow_of_hasPotential`：望遠鏡直接界
+   `B = α − h(init) + min_{t∈accept}(β t + h t)`——接受字沿途每條邊自動
+   useful（見證＝前綴／後綴）。兩條**零 Fintype 需求**。
+3. **(2)⟹(3)** `hasPotential_of_cyclesNonneg`（Q3 定案選 (a) 有界長最短路；
+   `[Fintype Q/A]`、`[DecidableEq Q/A]` 僅此蘊含需要）：`wordsLe` 字集
+   Finset → 縮短 A（純鴿籠 `reachWords_nonempty`）→ 縮短 B
+   （`exists_short_le_wpath`，全案樞紐：(2) 之下成本不升地縮到長 < card Q，
+   剔除段錨 useful 態——可達＝前綴、可出＝後段＋終點出字；
+   `DFA.evalFrom_split` 經 `toDFA` 橋做鴿籠萃取，rfl 級互通）→
+   `potential` = `Finset.min'` 最短路（可 `#eval` 機算；死區任取 0）→
+   `potential_triangle` → 主定理。縮短引理走 fuel 歸納（對長度上界歸納），
+   P2 探針（橋接／歸納骨架／dite 膠水）一次通過。
+4. **吸收恆等式** `reweight_cost`：`α′ = α − h(init)`、`β′ = β + h`、
+   `w′ = w + h∘src − h∘dst` 之下 cost **逐字恆等**（對全體字、任意 h、
+   與三條蘊含正交——B1.5 structured gauge 消費的正是此正交性）。
+   `boundedBelow_tfae` 文件性收口（Q4：主要出口是三條具名單箭頭）。
+5. **玩具電池**（17 項 `#eval` 全 `true`）：`Mneg` 負例（自環 usefulness
+   具體見證、pump 遞減、機算 potential 在負自環邊三角必破——(2) 前提
+   必要性的可見形）；`Mpos` 正例（機算 `potential` = 手寫 `hpos`、三角
+   全過、reweight 後全邊非負、恆等式長 ≤ 6 全字枚舉正負例各一次）。
+6. **明確不做（照設計）**：Collatz 實例化（B3）、A 定理 bounded-below
+   corollary（B3 前置，另 PR）、B2 判定引擎、通用 API。**直接紅利與
+   structured gauge lemma（B1.5 殘項）自此解鎖**，隨 B3 前置 PR 進行。
+7. **驗證**：`lake build` 全綠（模組 <4 s、零 `maxHeartbeats` 調整）；
+   `check_boundaries.py` 35 模組；mathlib 發現：pinned rev 無
+   `Mathlib.Data.Rat.Order`（ℚ 序結構 import 是
+   `Mathlib.Algebra.Order.Field.Rat`）、除法比較是 `div_lt_iff₀`。
 
 ## B1.5：雙模式的 structured gauge（**已完成** 2026-08-08；gauge lemma 併入 B1）
 
