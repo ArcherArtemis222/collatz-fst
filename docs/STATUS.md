@@ -1,6 +1,6 @@
 # 定理狀態索引（唯一真相來源）
 
-最後更新：2026-08-28 ／ 對應 PR：`b/b15-structured-gauge`（B1.5 殘項——structured gauge lemma，雙暫存器＋終態選擇）
+最後更新：2026-08-28 ／ 對應 PR：`b/b2-engine`（B2 全語言判定引擎——tools 層、零 Lean）
 
 > 本檔由 repo 現況生成：定理名逐條 grep 核實、一句話摘要取自各定理 docstring。
 > 歷史敘述見 [HANDOVER.md](HANDOVER.md)（快照，不再更新）；待辦見
@@ -175,6 +175,7 @@ per-(mode, terminal)，與 #39 β_{m,t} 對齊；合成 = A 定理升級，見�
 | `tools/a3_functionals.py` | Level 2 上界泛函完備性（死 2 + 流守恆 7、秩 8 = 18 − 10）；Lean↔Python 三條錨（16 邊關聯表、9 條差分關係、自由座標＋重建公式）。 | ~2.6 s |
 | `tools/l3_recon.py` | Level 3 全套偵察對帳：14 狀態／28 邊、終末 2 態、單模式 dim 16（完備）、雙模式 dim 31（缺口 = `θ₀[16]+θ₁[33]`）、65 條上界資料。 | ~15 s（沙盒可達 ~51 s） |
 | `tools/gen_l3dim.py` | 重新生成兩個 L3 Dim 檔後 `git diff --exit-code`——「逐位可重現」是 CI 強制，不是宣稱。 | — |
+| `tools/b2_engine.py` | B2 全語言判定引擎自測（`--selftest`）：B1 玩具機已知答案 T1–T5（含 Karp 角與真 pump）、負向測試四則（竄改憑證/見證必紅）、固定種子 300 台 oracle 判準矩陣。pass 憑證 (R, C, d) 過 P1–P5 局部檢查（B3 Lean 驗證書前身）、fail 見證字直接求值。CI 步驟經專案主人具名授權（B2 PR）。 | ~0.01 s |
 
 另：**Cramer 定律**（λ = 被湮滅列的 adjugate／極大子式向量、憑證整數值 = 子式、
 `Σλ ≠ det` 守則）由 `tools/certificates.py --cramer` 驗證，闡述見 ROADMAP-A A-4 段。
@@ -191,3 +192,6 @@ per-(mode, terminal)，與 #39 β_{m,t} 對齊；合成 = A 定理升級，見�
   錨 `tools/certificates.py --b15`；structured gauge lemma 隨 B1 進行。
   **B0 語義層已完成（2026-08-28）**：ProjectB 分區首批兩檔（上表），
   B1 end-marker 警告由 B0-3 哨兵引理正式解除；下一步 B1 reweighting。
+  **B2 全語言判定引擎已完成（2026-08-28，tools 層、零 Lean）**：
+  `tools/b2_engine.py`（上表；設計定案 Q1–Q4、D1–D6 與完成紀錄見
+  ROADMAP-B.md B2 節）；下一步 B3 以引擎重推三條 no-go＋Lean 驗證書。

@@ -87,3 +87,6 @@ jobs:
         run: |
           pip install pyyaml
           python3 tools/check_paper_refs.py
+      - name: B2 全語言判定引擎自測（trim＋正循環＋邊界最短路；憑證/見證自驗＋oracle）
+        # 此 .github 變更經專案主人具名授權（B2 PR）：任務指令明文授權此一步。
+        run: python3 tools/b2_engine.py --selftest
