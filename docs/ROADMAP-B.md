@@ -161,12 +161,13 @@ Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
 6. **明確不做（照設計）**：Collatz 實例化（B3）、A 定理 bounded-below
    corollary（B3 前置，另 PR）、B2 判定引擎、通用 API。**直接紅利與
    structured gauge lemma（B1.5 殘項）自此解鎖**，隨 B3 前置 PR 進行。
+   （structured gauge 已於 2026-08-28 收口，見 B1.5 節完成紀錄二。）
 7. **驗證**：`lake build` 全綠（模組 <4 s、零 `maxHeartbeats` 調整）；
    `check_boundaries.py` 35 模組；mathlib 發現：pinned rev 無
    `Mathlib.Data.Rat.Order`（ℚ 序結構 import 是
    `Mathlib.Algebra.Order.Field.Rat`）、除法比較是 `div_lt_iff₀`。
 
-## B1.5：雙模式的 structured gauge（**已完成** 2026-08-08；gauge lemma 併入 B1）
+## B1.5：雙模式的 structured gauge（**已完成**：資料點／no-go 2026-08-08、structured gauge lemma 2026-08-28）
 
 雙模式是 2-register 模型（§0），gauge 對兩個暫存器各作用一個 `h_m`，
 校正項 `h_m(q₀) − h_m(q_f)` 依終末狀態而異 ⟹ 偏移類必須從
@@ -222,7 +223,54 @@ Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
    兩定理目前非 paper-facing，不進 registry。
 4. **殘項移轉**：structured gauge lemma（per-register `h_m`，吸收進
    β_{m,t}）依賴 B1 的 reweighting 機器，隨 B1 進行；屆時三條 no-go
-   全數升級為 bounded-below。
+   全數升級為 bounded-below。（已收口，見下方完成紀錄二。）
+
+**完成紀錄二（2026-08-28，structured gauge PR，分支
+`b/b15-structured-gauge`；設計報告 B15-GAUGE-DESIGN-REPORT 核准
+（Q1–Q4、偏差點 D1–D5 全項通過）後落地）**：
+
+1. **載體**（`ProjectB/Collatz_FST_B15_SelGauge.lean` 新檔；import 僅
+   B1 檔——零 Core、零 ProjectA、零 Collatz 內容）：`SelCostAutomaton`
+   ——單一底層機器（init/step/accept）＋終態選擇 `sel : Q → Fin 2`＋
+   每暫存器邊權 `w : Fin 2 → Q → A → ℚ`＋共享 α β，即 §0 對雙模式模板
+   歸類（2-register copyless CRA + final selection）的最小載體（Q1 定案
+   獨立結構體：一對機器方案洩漏 step/init/accept/α/β 五處自由度）。
+   投影 `restrict m`（同機器、接受集過濾 `sel · = m`、權重 `w m`）使
+   B1 全 API 免費取得；`cost u = α + wpath_{sel(final u)} u + β(final u)`
+   對全體字有定義（D5，B1 紀律）。
+2. **Q3 分解**：`cost_restrict`（模式相符的字 restrict 成本 = 原成本）＋
+   `boundedBelow_restrict`（量詞限縮一行，同一個 B 複用）。空接受集的
+   m 空虛成立——逐條檢查 B1 (1)⟹(2)⟹(3) 全鏈零接受集非空前提
+   （`potential` 只查 reachWords、三角只在 UsefulEdge 調用），無需特判，
+   統一證明 type-check 即探針（一次通過）。
+3. **β-吸收恆等式** `reweight_cost`（Q4）：`w′ m = w m + h m∘src − h m∘dst`、
+   **α 不動**、`β′ q = β q + h (sel q) q − h (sel q) init` 之下 cost 對
+   全體字恆等（任意 h、與蘊含正交）。α 不動的理由：α 是共享常數，
+   per-mode 校正必須住在 per-state 的 β；β′ 對接受終態 t 的偏移
+   `h (sel t) t − h (sel t) init` 恰為 per-(mode, terminal) 常數——與
+   #39 兩條 terminal-affine no-go 的 β_{m,t} 對齊之處。唯一新歸納是
+   list 層望遠鏡 `reweight_wpath`（D1，4 行、鏡像 B1 §B1.4 同名引理；
+   零新圖論歸納——成因：`(S.reweight h).restrict m` 與
+   `(S.restrict m).reweight (h m)` 的 w/step 逐點 defeq 但 α/β 不同，
+   兩結構體不相等）。
+4. **主定理** `structured_gauge`（＋端點 `HasPotential`、單箭頭
+   `hasPotential_of_boundedBelow`；instance 需求全數繼承 B1 (2)⟹(3)）：
+   BoundedBelow ⟹ ∃ h : Fin 2 → Q → ℚ，每個 m、每條
+   `(restrict m).UsefulEdge` 的 reweighted 權重 ≥ 0 且 cost 恆等。
+   證明主體 = B1 出口兩次應用＋`choose` 收族＋恆等式，純拼裝。
+   措辭紀律（Q2）：逐 m 只對該模式 useful 邊宣稱；聯合 useful 邊的
+   雙保證是假命題（反例進電池）。**「雙模式 bounded-below ⟹ WLOG
+   θ_m ≥ 0 ＋自由 β_{m,t}」自此成立。**
+5. **玩具電池**（19 項 `#eval` 全 `true`）：`Ssel`（Fin 4 × Fin 2，兩個
+   異 sel 接受態、模式 1 循環 tight、q2 自環 w₁ = −1）——per-mode
+   usefulness 具體見證、機算 `potential` 八格對手算（含負自環延長取值的
+   pot₁(q2) = 2，B1 死區邊界實測）、per-mode 三角（顯式 useful 邊列表，
+   不掃全邊）、Q2 反例（q2 自環對任意 h reduced w₁ 恆 −1 < 0）、恆等式
+   長 ≤ 6 全字枚舉（junk h 正交性再跑一次）、α 不動＋β_{m,t} 偏移可見形。
+6. **明確不做（照設計）**：**與 #39 的合成（三條 no-go 升級
+   bounded-below = A 定理的實際升級）——見後續 PR**；逆向蘊含
+   `HasPotential → BoundedBelow`（D3，非交付項）；`Fin k` 一般化；
+   Collatz 實例化（B3）。
 
 ## B2：固定 topology 的全語言判定
 
