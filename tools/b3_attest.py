@@ -25,11 +25,17 @@ Lean 端 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零 ProjectA import** �
    `{some 0, some 1, none}` 上的可達乘積態截斷餵 `b2_engine`（`none ↦ 2`），四組 θ
    覆蓋 pass／fail-循環／fail-邊界，引擎判定與直接求值逐項交叉。引擎不重推 no-go
    （∃θ 量詞是 B3b 差分自動機的事），這裡只測「B3 實例化 ↔ B2 輸入格式」相容。
+5. **B3b 差分自動機（§G，2026-09-04 起）**：呼叫 `tools/b3b_diff.py` 的 CI 段
+   `run_checks`——差分自動機 `D(θ)` 構造與手算錨、成本橋（向量形 x < 8192 ＋ b2_engine
+   求值器通道）、trim 圖枚舉規模、θ-LP 不可行的整數圖憑證三種（LP 導出／對立對 (25, 315)
+   三件套／B3a 提升）、負向測試、引擎對 θ ≥ 0 樣本全語言 fail 的 harness。
+   NOTES Q5：CI 維持 attest 一步，`.github` 零變更。
 負向測試（§F）常駐：竄改 featList 錨、λ、σ、聚合各一則必紅。
 
     python3 tools/b3_attest.py            # 全部（CI）
 
-依賴：numpy、sympy（既有）；import `tools/certificates.py`（A 側）、`tools/b2_engine.py`。
+依賴：numpy、sympy（既有）；import `tools/certificates.py`（A 側）、`tools/b2_engine.py`、
+`tools/b3b_diff.py`（B3b，純標準庫）。
 """
 
 from __future__ import annotations
@@ -477,6 +483,16 @@ def run_negative(D, sigma) -> None:
     check(not verify_sigma(A, sig, range(64)), "σ 交換兩座標 ⟹ F_B ≡ F2∘σ 對帳紅")
 
 
+# ────────────────────────────────────────────────────────────────────
+# §G B3b 差分自動機 D(θ)、θ-LP 圖憑證、引擎全語言 harness（tools/b3b_diff.py 的 CI 段）
+# ────────────────────────────────────────────────────────────────────
+
+def run_diff() -> None:
+    print("\n=== §G B3b 差分自動機 D(θ)：成本橋、θ-LP 圖憑證、引擎全語言 harness ===")
+    import b3b_diff
+    b3b_diff.run_checks(check)
+
+
 def main() -> int:
     t0 = time.time()
     D = run_anchors()
@@ -484,13 +500,15 @@ def main() -> int:
     sigma = run_certify(D, found)
     run_harness()
     run_negative(D, sigma)
+    run_diff()
     print(f"\n耗時 {time.time() - t0:.2f} 秒。")
     if _failures:
         print(f"失敗 {len(_failures)} 項：")
         for f in _failures:
             print("   -", f)
         return 1
-    print("全部通過。B 側重推、Lean 錨、λ_B 獨立重解、與 A 的三段式認證、B2 harness 一致。")
+    print("全部通過。B 側重推、Lean 錨、λ_B 獨立重解、與 A 的三段式認證、B2 harness、"
+          "B3b 差分自動機（成本橋、θ-LP 圖憑證、全語言 harness）一致。")
     return 0
 
 

@@ -93,7 +93,7 @@ ROADMAP A-3 的 **Level 3（31 維）**部分——在寫任何 Lean 之前先�
 B3a（ROADMAP-B B3 第一階段）在 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零
 ProjectA import** 的素材重推 Level 2 單模式 no-go；`check_boundaries.py` 禁止 B 匯入 A，
 所以「兩個獨立重推導出同一數學」只能在 tools 層認證——這支腳本是唯一同時 import
-兩側的橋。精確整數／有理、零浮點、**進 CI**（實測約 0.7 秒）：
+兩側的橋。精確整數／有理、零浮點、**進 CI**（實測約 2 秒，含 §G）：
 
 * **B 側自含實作＋Lean 錨**：照 Lean 定義逐字重寫 `step2`／`lstep`／`featIdx`／
   `featList`／`F_B`；錨 `LEAN_B3_W`／`LEAN_B3_TODD`／`LEAN_B3_LAM`／
@@ -109,6 +109,42 @@ ProjectA import** 的素材重推 Level 2 單模式 no-go；`check_boundaries.py
   乘積態截斷（22 態、`none ↦ 2`）餵 `b2_engine`，四組 θ 覆蓋 pass／fail-循環／
   fail-邊界，見證去標記後恰為某 `extInM x`、引擎成本 = 直接求值。
 * **負向測試**常駐：featList 錨、λ、聚合座標、σ 各竄改一筆必紅。
+* **§G（B3b，2026-09-04）**：呼叫 `b3b_diff.py` 的 CI 段 `run_checks`（下節）；CI 維持
+  attest 一步、`.github` 零變更（NOTES Q5）。
+
+## b3b_diff.py 驗了什麼
+
+B3b（ROADMAP-B B3 第二階段）把 B3a 的見證集 no-go 升到**全語言**——純 tools、零 Lean
+（Lean 鏡射為 B3c）。函式庫形、**純標準庫**（`fractions.Fraction`，零浮點），CI 段由 `b3_attest.py`
+§G 呼叫（實測約 1.4 秒），本檔自己的入口只有本機重掃 `--deep`（約 15 秒，不進 CI）：
+
+* **差分自動機 `D(θ)`**：輸入側 Core Level-2 機器 ×（輸出側同一台機器，由輸入側發射位
+  `d = outBit` 同步驅動、於 K→S 邊界啟動；idle ⟺ 輸入側在 K）× 7 態 ranking-domain DFA
+  （B0 `lstep` 加 `one` 排除 `[1]`——x = 1 的終態與 x = 3, 13, 53, … 共用，接受集排除法不成立）。
+  邊權向量 `e_{featIdx(out,d)} − e_{featIdx(in,b)}`、α = 0、尾聲 1+p 個哨兵零押進 β；
+  `instantiate(θ)` 給 b2 `mk_automaton`。錨：可達 65／useful 39／邊 75／接受態 4（輸入分量恰
+  A 的終末態對）、x = 3／x = 5 手算逐步邊權與 β、x = 1 拒絕。
+* **成本橋**（通道分離）：向量形 `vec_cost(extInM x) = ΔF_B(x)` 對 x < 8192 全體（ΔF_B 經
+  `b3_attest.py` 的 B 側自含實作）；引擎通道：b2_engine `_cost` 對 4 組固定種子隨機有理 θ
+  （含負值）× 奇 x < 2048。
+* **θ-LP 與圖憑證**：trim 圖 simple cycles 328（相異權向量 175）、elementary 接受路徑 8269
+  （相異 5140）；`∃θ ≥ 0 AllNeg(θ)` ⟺ `{θ ≥ 0, θ·v(C) ≤ 0, θ·w(p) ≤ −1}` 可行。
+  **自建精確兩階段單純形**（Bland 規則）解其 Farkas 對偶；**求解器輸出不受信任**——可行點
+  與 Farkas 乘子都由呼叫端純有理／純整數驗證（設計階段 sympy `linprog` 曾對本實例回傳違反
+  約束的點，故 LP 不用 sympy）。結果**不可行**，整數憑證三種、同一驗證器：LP 導出（6 循環 +
+  1 路徑，只印不錨）、**對立對 (25, 315)**（ν = (1, 1)、零循環、聚合 = 0；三件套入錨：
+  ΔF_B 和為零、兩走行皆 elementary、皆在域內）、**B3a 提升**（λ_B 沿 W₁₀ 走行切環分解：
+  9 路徑生成元 Σν 34 + 5 循環生成元 Σμ 26、聚合 e₁₇ = Lean `agg_eq_e17`）。
+* **負向測試**：刪一列／換一列／循環係數 +1 必紅；去掉路徑列（加 Σθ_活 = 1）⟹ LP 可行
+  （θ = e₆：邊界座標 6／13 不在任何循環上）；去掉循環列 ⟹ 仍不可行（對立對只用路徑列）——
+  障礙完全住在邊界（路徑）結構。
+* **B2 引擎 harness**：25 組 θ ≥ 0 全數 fail，見證去標記解碼回奇數 x > 1、直接求值
+  `D_θ(x) ≥ 0` 且 = 引擎成本；最小見證 x = 3；boundary 模式恰 {θ≡1, θ≡0, e₆, e₁₃, K/S}。
+* **發現（D5）**：聚合 = 0 的憑證對**任意符號** θ 成立——ΔF_B(25) + ΔF_B(315) = 0 即
+  Level 2 單模式無符號線性 ranking 的 2 見證 no-go（A 的定理需 θ ≥ 0、10 見證）。
+  `--deep` 普查（向量類口徑）：x < 2¹⁶ 相異 ΔF_B 向量 12345、對立對 269；36 維雙模式差分
+  對立對 30（最小 (1611, 2233)，A 側 `two_mode_delta` 複核）、38 維仿射亦 30（截距差對消）
+  ——雙模式為觀察層，不入錨。paper 增補候選已轉交修訂線（見 ROADMAP-B B3 紀錄第 8 點）。
 
 ## search/ 各檔用途
 
