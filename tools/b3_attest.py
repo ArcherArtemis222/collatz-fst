@@ -5,7 +5,7 @@
 Lean 端 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零 ProjectA import** 的素材
 （Core 機器＋B0 語言層＋B1 載體）重推 Level 2 單模式 no-go。`check_boundaries.py`
 禁止 B 匯入 A，所以「兩個獨立重推導出同一數學」只能在 tools 層認證——本腳本是
-唯一允許同時 import 兩側的橋。精確整數／有理，零浮點。它做四件事：
+唯一允許同時 import 兩側的橋。精確整數／有理，零浮點。它做六件事：
 
 1. **B 側自含實作＋Lean 錨**（§A、§B）：照 Lean 定義逐字重寫 `step2`／`lstep`／
    `featIdx`／`featList`／`F_B`（B 側不 import certificates.py），與 Lean 檔 §B3.V
@@ -30,6 +30,11 @@ Lean 端 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零 ProjectA import** �
    求值器通道）、trim 圖枚舉規模、θ-LP 不可行的整數圖憑證三種（LP 導出／對立對 (25, 315)
    三件套／B3a 提升）、負向測試、引擎對 θ ≥ 0 樣本全語言 fail 的 harness。
    NOTES Q5：CI 維持 attest 一步，`.github` 零變更。
+6. **B3c Lean↔tools 字面同步（§H，2026-09-04 起）**：`ProjectB/Collatz_FST_B2_PassCert.lean`
+   （驗證書 T3 `MposNeg` 四欄＋憑證 (R, C, d)、T1 見證）與 `Collatz_FST_B3_OpposingPair.lean`
+   （對立對 (25, 315)：Todd 值、四條 featList、ΔF_B(25) 向量）的電池字面，逐項對 `b2_engine`
+   實跑輸出（T1／T3 verdict、`verify_pass_cert`）、B 側重算、`b3b_diff.EXPECT_PAIR`、
+   A 側 F2 通道對帳；負向測試三則。
 負向測試（§F）常駐：竄改 featList 錨、λ、σ、聚合各一則必紅。
 
     python3 tools/b3_attest.py            # 全部（CI）
@@ -491,6 +496,108 @@ def run_diff() -> None:
     print("\n=== §G B3b 差分自動機 D(θ)：成本橋、θ-LP 圖憑證、引擎全語言 harness ===")
     import b3b_diff
     b3b_diff.run_checks(check)
+# ────────────────────────────────────────────────────────────────────
+# §H B3c Lean↔tools 字面同步對帳（`ProjectB/Collatz_FST_B2_PassCert.lean` §B2.V 與
+#     `ProjectB/Collatz_FST_B3_OpposingPair.lean` §B3c.V 的電池字面 vs b2_engine 實跑／B 側重算）
+# ────────────────────────────────────────────────────────────────────
+
+# Lean 字面（自兩檔電池逐字抄錄；Lean 端以 #eval 比對同一字面，兩邊漂移 CI 即紅）
+LEAN_B3C_T3 = {                                   # `MposNeg`／`certMposNeg`（電池 14–19）
+    "step": [[1, 2], [0, 2], [2, 2]],
+    "w": [[2, 0], [-3, 1], [0, 0]],
+    "alpha": -5, "beta": [0, 0, -7], "accept": [2],
+    "R": [0, 1, 2], "C": [0, 1, 2], "d": [-5, -3, -2],
+}
+LEAN_B3C_T3_MSTAR = -9                            # d + β 於接受態 2
+LEAN_B3C_T1 = {"witness": [0, 1], "cost": 0}      # `Mneg_witness`（電池 20）
+LEAN_B3C_PAIR = (25, 315)                         # `no_signed_ranking_pair`
+LEAN_B3C_PAIR_TODD = (19, 473)                    # `Todd_25`／`Todd_315`
+LEAN_B3C_DF25 = [0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 1, -1, -1, 1, -1, 0, 1, 0]   # `ΔF_B_25_eq`
+LEAN_B3C_FEATLIST = {                             # 電池 2–5
+    25: [7, 12, 6, 5, 11, 14, 8],
+    19: [7, 13, 16, 8, 5, 10, 4],
+    315: [7, 13, 16, 9, 15, 17, 16, 8, 5, 10, 4],
+    473: [7, 12, 6, 5, 11, 14, 9, 15, 17, 16, 8],
+}
+LEAN_B3C_NEG_COORD = 4                            # `single_witness_insufficient` 的 θ = −e₄
+LEAN_B3C_BLOCK = [9, 15, 17, 16]                  # 機制觀察（設計報告 §4.2）：插進兩走行的同一閉走行
+
+
+def _lean_cert_T3(E):
+    return E.PassCert(frozenset(LEAN_B3C_T3["R"]), frozenset(LEAN_B3C_T3["C"]),
+                      {q: Fraction(v) for q, v in enumerate(LEAN_B3C_T3["d"])})
+
+
+def run_b3c() -> None:
+    print("\n=== §H B3c Lean↔tools 字面同步（驗證書 T3／T1、對立對 (25, 315)）===")
+    import b2_engine as E
+    import b3b_diff
+    import certificates as A
+    toys = E.from_b1_toy()
+    # ── 驗證書 T3（pass）──
+    M3, lit = toys["Mpos_neg"], LEAN_B3C_T3
+    check(all(M3.step[q][a] == lit["step"][q][a] and M3.w[q][a] == lit["w"][q][a]
+              for q in range(3) for a in range(2))
+          and M3.alpha == lit["alpha"] and list(M3.beta) == lit["beta"]
+          and sorted(M3.accept) == lit["accept"],
+          "T3：Lean `MposNeg` 四欄（step／w／α／β）與 accept ≡ b2_engine `Mpos_neg`")
+    v3 = E.decide_all_negative(M3)
+    cert = _lean_cert_T3(E)
+    check(v3.kind == "pass" and v3.cert.R == cert.R and v3.cert.C == cert.C
+          and v3.cert.d == cert.d and v3.info["Mstar"] == LEAN_B3C_T3_MSTAR,
+          f"T3：引擎 pass 憑證 (R, C, d) ≡ Lean `certMposNeg`、M* = {LEAN_B3C_T3_MSTAR}")
+    ok, why = E.verify_pass_cert(M3, cert)
+    check(ok, f"T3：Lean 字面憑證過 verify_pass_cert（{why}）——Lean 端 `MposNeg_passOK` 同判")
+    d = dict(cert.d)
+    ok4, why4 = E.verify_pass_cert(M3, E.PassCert(cert.R, cert.C, {**d, 2: d[2] + 10}))
+    ok3, why3 = E.verify_pass_cert(M3, E.PassCert(cert.R, cert.C, {**d, 1: d[1] - 10}))
+    check(not ok4 and why4.startswith("P4") and not ok3 and why3.startswith("P3"),
+          "T3 負向：d₂ += 10 ⟹ P4 紅、d₁ −= 10 ⟹ P3 紅（與 Lean 電池 21–22 同兩則）")
+    # ── 驗證書 T1（fail 見證）──
+    M1 = toys["Mneg"]
+    v1 = E.decide_all_negative(M1)
+    okw, whyw = E.verify_fail_witness(M1, E.FailWitness(tuple(LEAN_B3C_T1["witness"])))
+    check(v1.kind == "fail" and list(v1.witness.word) == LEAN_B3C_T1["witness"]
+          and E._cost(M1, v1.witness.word) == LEAN_B3C_T1["cost"] and okw,
+          f"T1：引擎見證字 {LEAN_B3C_T1['witness']}、成本 {LEAN_B3C_T1['cost']} "
+          f"≡ Lean `Mneg_witness`（{whyw}）")
+    # ── 對立對 ──
+    x, y = LEAN_B3C_PAIR
+    check((todd_via_U(x), todd_via_U(y)) == LEAN_B3C_PAIR_TODD,
+          f"對立對：Todd 經 U = {LEAN_B3C_PAIR_TODD} ≡ Lean `Todd_25`／`Todd_315`")
+    check(set(LEAN_B3C_FEATLIST) == {x, y, *LEAN_B3C_PAIR_TODD}
+          and verify_featlist_anchors(LEAN_B3C_FEATLIST),
+          "對立對：四條 Lean featList 錨（25／19／315／473）與 B 側重算逐位吻合")
+    D2 = delta_rows([x, y])
+    check(D2[0] == LEAN_B3C_DF25 and D2[1] == [-v for v in LEAN_B3C_DF25]
+          and all(a + b == 0 for a, b in zip(D2[0], D2[1])),
+          "對立對：ΔF_B(25) ≡ Lean `ΔF_B_25_eq`、ΔF_B(315) = −ΔF_B(25)、和零（`pair_sum_zero`）")
+    check(b3b_diff.EXPECT_PAIR == LEAN_B3C_PAIR,
+          f"對立對：b3b_diff 錨 EXPECT_PAIR = {LEAN_B3C_PAIR}（B3b 三件套；elementary 仍為 tools 錨）")
+    check(all(x_ % 2 == 1 and x_ > 1 for x_ in LEAN_B3C_PAIR),
+          "對立對：兩見證奇且 > 1（`no_signed_ranking_odd` 的 a fortiori 前提）")
+    check(LEAN_B3C_DF25[LEAN_B3C_NEG_COORD] == 1,
+          f"負向對照座標：ΔF_B(25)[{LEAN_B3C_NEG_COORD}] = 1（θ = −e₄ ⟹ θ·ΔF_B(25) = −1 < 0）")
+    check(all(int(v) == 0 for v in (A.F2(19) + A.F2(473) - A.F2(25) - A.F2(315))),
+          "對立對：A 側 F2 通道和零（B3b 已驗，此處入錨）")
+    fl, blk = LEAN_B3C_FEATLIST, LEAN_B3C_BLOCK
+    s, seq = (1, 'S', 0), []
+    for b in (1, 1, 1, 0):
+        seq.append(feat_idx(s, b))
+        s = step2(s, b)
+    check(fl[315] == fl[19][:3] + blk + fl[19][3:] and fl[473] == fl[25][:6] + blk + fl[25][6:]
+          and seq == blk and s == (1, 'S', 0),
+          f"機制觀察：featList 315／473 = featList 19／25 插入同一區塊 {blk}"
+          "（Core 機器在 (1,S,0) 讀 1,1,1,0 的閉走行；設計報告 §4.2，不入定理）")
+    # ── 負向 ──
+    tam = {k: list(v) for k, v in LEAN_B3C_FEATLIST.items()}
+    tam[25][1] = 13
+    check(not verify_featlist_anchors(tam), "負向：竄改 featList 25 一位（12→13）⟹ 紅")
+    bad = list(LEAN_B3C_DF25)
+    bad[LEAN_B3C_NEG_COORD] = 0
+    check(D2[0] != bad and any(a + b != 0 for a, b in zip(bad, D2[1])),
+          "負向：竄改 ΔF_B(25) 一位 ⟹ 字面對帳紅、和零檢查紅")
+
 
 
 def main() -> int:
@@ -501,6 +608,7 @@ def main() -> int:
     run_harness()
     run_negative(D, sigma)
     run_diff()
+    run_b3c()
     print(f"\n耗時 {time.time() - t0:.2f} 秒。")
     if _failures:
         print(f"失敗 {len(_failures)} 項：")
@@ -508,7 +616,7 @@ def main() -> int:
             print("   -", f)
         return 1
     print("全部通過。B 側重推、Lean 錨、λ_B 獨立重解、與 A 的三段式認證、B2 harness、"
-          "B3b 差分自動機（成本橋、θ-LP 圖憑證、全語言 harness）一致。")
+          "B3b 差分自動機（成本橋、θ-LP 圖憑證、全語言 harness）、B3c Lean 字面同步一致。")
     return 0
 
 
