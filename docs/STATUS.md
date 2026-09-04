@@ -1,6 +1,6 @@
 # 定理狀態索引（唯一真相來源）
 
-最後更新：2026-08-28 ／ 對應 PR：`b/b2-engine`（B2 全語言判定引擎——tools 層、零 Lean）
+最後更新：2026-09-04 ／ 對應 PR：`b/b3a-l2-instance`（B3a——L2 單模式實例化橋＋見證集 no-go 重推，用 B 框架重推 A）
 
 > 本檔由 repo 現況生成：定理名逐條 grep 核實、一句話摘要取自各定理 docstring。
 > 歷史敘述見 [HANDOVER.md](HANDOVER.md)（快照，不再更新）；待辦見
@@ -120,7 +120,7 @@ Kirchhoff 鏈：trace 層流守恆 → 特徵層泛函 → 差分層 9 條（秩
 出處：`tools/l3_recon.py` ⑥（精確有理對帳，含推導打印）＋
 `ProjectA/Collatz_FST_L3_Delta.lean` 檔頭「65 條的帳」＋ ROADMAP-A A-3。
 
-## Project B — B0 語義層＋B1 reweighting＋B1.5 structured gauge（皆已完成）
+## Project B — B0 語義層＋B1 reweighting＋B1.5 structured gauge＋B3a 實例化橋（皆已完成）
 
 ProjectB 分區首批實體（B0，2026-08-28）。全部非 paper-facing，不入 registry、
 不入 Audit 信任基底。B0-3 的標記字母表修正（原 ROADMAP 註記在未標記字母表上
@@ -138,6 +138,15 @@ B1.5 殘項（structured gauge lemma）2026-08-28 收口：`SelCostAutomaton`—
 最小載體），主定理 = B1 出口兩次應用＋β-吸收恆等式（α 不動、偏移落在
 per-(mode, terminal)，與 #39 β_{m,t} 對齊；合成 = A 定理升級，見後續 PR）。
 設計定案（Q1–Q4、D1–D5）與完成紀錄見 ROADMAP-B.md 的 B1.5 節。
+
+B3a（用 B 框架重推 A，第一階段）2026-09-04 收官：`L2auto θ` = Core Level-2
+機器 × B0 `extDFA` 的 language-product（零 ProjectA import），B 自訂座標
+`featIdx`（狀態 tuple 字典序，σ(B→A) 非平凡）與佔用向量 `F_B`，橋定理
+`cost_eq_sum`，no-go 重推 `no_go_L2` = 抽象錐矛盾 `farkas_contra` ＋ kernel
+`decide` 聚合（λ_B = 最輕單座標憑證，Σλ = 34——W₁₀ 上單座標憑證恰三個，
+A 的 Σλ = 1024 是其一）；D7 語言層全稱形 `no_go_L2_lang`。交叉認證與 B2
+harness 在 `tools/b3_attest.py`。設計定案（Q1–Q5、D1–D7）與完成紀錄見
+ROADMAP-B.md 的 B3 節；B3b（雙模式／差分自動機／引擎重推／驗證書）待排程。
 
 | 定理 | 檔案 | 一句話 |
 |---|---|---|
@@ -163,6 +172,12 @@ per-(mode, terminal)，與 #39 β_{m,t} 對齊；合成 = A 定理升級，見�
 | `ProjectB.SelCostAutomaton.boundedBelow_restrict` | `ProjectB/Collatz_FST_B15_SelGauge.lean` | B1.5 Q3 分解：一致下界對量詞限縮封閉（`cost_restrict` 一行；空接受集空虛成立、無特判）。 |
 | `ProjectB.SelCostAutomaton.reweight_cost` | `ProjectB/Collatz_FST_B15_SelGauge.lean` | B1.5 β-吸收恆等式：`w′ m = w m + h m∘src − h m∘dst`、α 不動、`β′ = β + h(sel ·)· − h(sel ·)(init)` 之下 cost 對全體字恆等（任意 h、與蘊含正交；偏移 = per-(mode, terminal) 常數，#39 β_{m,t} 對齊處）。 |
 | `ProjectB.SelCostAutomaton.structured_gauge`（＋`hasPotential_of_boundedBelow`） | `ProjectB/Collatz_FST_B15_SelGauge.lean` | B1.5 主定理：雙模式 bounded-below ⟹ ∃ h : Fin 2 → Q → ℚ，每個 m、每條 `(restrict m).UsefulEdge` reweighted 權重 ≥ 0 且 cost 恆等（B1 出口兩次應用＋choose 收族；Q2 措辭紀律逐 m 宣稱）。 |
+| `ProjectB.L2auto`（＋`featIdx`／`featList`／`F_B`） | `ProjectB/Collatz_FST_B3_L2Instance.lean` | B3a 實例化橋：Core Level-2 機器 × B0 `extDFA` 的 language-product（`prodStep step2`），權重 `θ (featIdx q (unmark a))`、α = β = 0、接受集 `S8 ×ˢ {tail2}`（D1）；B 自訂座標（狀態 tuple 字典序、K 列摺疊）與佔用向量。 |
+| `ProjectB.cost_eq_sum`（＋`wpath_prod`／`cost_eq_featList`） | `ProjectB/Collatz_FST_B3_L2Instance.lean` | 橋定理：`cost (L2auto θ) (extInM x) = ∑ i, θ i * F_B x i`（唯一實質歸納 `wpath_prod` ＋ mathlib list-count 求和）。 |
+| `ProjectB.accepts_extInM` | `ProjectB/Collatz_FST_B3_L2Instance.lean` | 奇數 x 的 `extInM x` 被 `L2auto θ` 接受（Core `run2_mem_S8` ＋ B0 `sentinel_positions`）。 |
+| `ProjectB.farkas_contra` | `ProjectB/Collatz_FST_B3_L2Instance.lean` | 抽象錐矛盾（B5 三成分之一）：λ > 0、聚合 Σλ·D 逐座標 ≥ 0 ⟹ 不存在 θ ≥ 0 使每列 θ·D_j < 0。 |
+| `ProjectB.no_go_L2`（＋`agg_nonneg`／`agg_eq_e17`） | `ProjectB/Collatz_FST_B3_L2Instance.lean` | B3a no-go 重推：不存在 θ ≥ 0 使 `L2auto θ` 的成本在 `W_B` = W₁₀ 每步 Todd 迭代嚴格下降；λ_B = (3,2,4,2,2,6,5,1,6,3)（Σ 34、聚合 e₁₇），聚合由 kernel `decide`，Todd 值經 B0 `U`。 |
+| `ProjectB.no_go_L2_lang` | `ProjectB/Collatz_FST_B3_L2Instance.lean` | 語言層全稱形（D7）：量詞走 B0 `RankingDomain`、動力學走 `Uacc`——`D_A(x) = V(U(x)) − V(x)` 的形狀。 |
 
 ## Tools 錨（CI 強制）
 
@@ -176,6 +191,7 @@ per-(mode, terminal)，與 #39 β_{m,t} 對齊；合成 = A 定理升級，見�
 | `tools/l3_recon.py` | Level 3 全套偵察對帳：14 狀態／28 邊、終末 2 態、單模式 dim 16（完備）、雙模式 dim 31（缺口 = `θ₀[16]+θ₁[33]`）、65 條上界資料。 | ~15 s（沙盒可達 ~51 s） |
 | `tools/gen_l3dim.py` | 重新生成兩個 L3 Dim 檔後 `git diff --exit-code`——「逐位可重現」是 CI 強制，不是宣稱。 | — |
 | `tools/b2_engine.py` | B2 全語言判定引擎自測（`--selftest`）：B1 玩具機已知答案 T1–T5（含 Karp 角與真 pump）、負向測試四則（竄改憑證/見證必紅）、固定種子 300 台 oracle 判準矩陣。pass 憑證 (R, C, d) 過 P1–P5 局部檢查（B3 Lean 驗證書前身）、fail 見證字直接求值。CI 步驟經專案主人具名授權（B2 PR）。 | ~0.01 s |
+| `tools/b3_attest.py` | B3a 交叉認證：B 側自含實作＋Lean 錨（見證／Todd 值／λ_B／聚合／20 條 `featList`）；λ_B 單座標掃描獨立重解（W₁₀ 上恰三個：Σλ 1024／312／34）＋精確單純形第四頂點；三段式認證（σ 雙射、`F_B ≡ F2∘σ` x < 4096、A 的 λ = 掃描 k = 2 成員、Lean 用最輕 k = 17）；B2 harness（22 態截斷、四組 θ 覆蓋 pass／循環／邊界）；負向測試四則。CI 步驟經專案主人具名授權（B3a PR）。 | ~0.7 s |
 
 另：**Cramer 定律**（λ = 被湮滅列的 adjugate／極大子式向量、憑證整數值 = 子式、
 `Σλ ≠ det` 守則）由 `tools/certificates.py --cramer` 驗證，闡述見 ROADMAP-A A-4 段。
@@ -194,4 +210,8 @@ per-(mode, terminal)，與 #39 β_{m,t} 對齊；合成 = A 定理升級，見�
   B1 end-marker 警告由 B0-3 哨兵引理正式解除；下一步 B1 reweighting。
   **B2 全語言判定引擎已完成（2026-08-28，tools 層、零 Lean）**：
   `tools/b2_engine.py`（上表；設計定案 Q1–Q4、D1–D6 與完成紀錄見
-  ROADMAP-B.md B2 節）；下一步 B3 以引擎重推三條 no-go＋Lean 驗證書。
+  ROADMAP-B.md B2 節）。
+  **B3a 已完成（2026-09-04）**：Level 2 單模式實例化橋＋見證集 no-go 用 B 框架
+  重推成功（上表；`tools/b3_attest.py` 三段式認證），W₁₀ 上單座標 Farkas 憑證
+  恰三個的發現與「31 為目標相依子式」敘事修正見 ROADMAP-B.md B3 節；
+  下一步 B3b（雙模式／差分自動機／引擎全語言重推／Lean 驗證書）待排程。
