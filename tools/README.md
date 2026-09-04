@@ -93,7 +93,7 @@ ROADMAP A-3 的 **Level 3（31 維）**部分——在寫任何 Lean 之前先�
 B3a（ROADMAP-B B3 第一階段）在 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零
 ProjectA import** 的素材重推 Level 2 單模式 no-go；`check_boundaries.py` 禁止 B 匯入 A，
 所以「兩個獨立重推導出同一數學」只能在 tools 層認證——這支腳本是唯一同時 import
-兩側的橋。精確整數／有理、零浮點、**進 CI**（實測約 2 秒，含 §G）：
+兩側的橋。精確整數／有理、零浮點、**進 CI**（實測約 2 秒，含 §G、§H）：
 
 * **B 側自含實作＋Lean 錨**：照 Lean 定義逐字重寫 `step2`／`lstep`／`featIdx`／
   `featList`／`F_B`；錨 `LEAN_B3_W`／`LEAN_B3_TODD`／`LEAN_B3_LAM`／
@@ -111,11 +111,17 @@ ProjectA import** 的素材重推 Level 2 單模式 no-go；`check_boundaries.py
 * **負向測試**常駐：featList 錨、λ、聚合座標、σ 各竄改一筆必紅。
 * **§G（B3b，2026-09-04）**：呼叫 `b3b_diff.py` 的 CI 段 `run_checks`（下節）；CI 維持
   attest 一步、`.github` 零變更（NOTES Q5）。
+* **§H（B3c，2026-09-04）**：Lean↔tools **字面同步**——`ProjectB/Collatz_FST_B2_PassCert.lean`
+  的驗證書 T3（`MposNeg` 四欄＋憑證 (R, C, d) = (全態, 全態, (−5, −3, −2))）與 T1 見證 `[0, 1]`
+  vs `b2_engine` 實跑（T1／T3 verdict、`verify_pass_cert`；竄改 d₂／d₁ 必紅）；
+  `ProjectB/Collatz_FST_B3_OpposingPair.lean` 的對立對 (25, 315)：Todd 值 (19, 473)、四條
+  featList、ΔF_B(25) 向量 vs B 側重算、`b3b_diff.EXPECT_PAIR`、A 側 F2 通道；機制觀察
+  （同一 4 步閉走行 `[9, 15, 17, 16]` 插進兩走行）入錨（觀察層）；負向三則。< 0.1 秒。
 
 ## b3b_diff.py 驗了什麼
 
 B3b（ROADMAP-B B3 第二階段）把 B3a 的見證集 no-go 升到**全語言**——純 tools、零 Lean
-（Lean 鏡射為 B3c）。函式庫形、**純標準庫**（`fractions.Fraction`，零浮點），CI 段由 `b3_attest.py`
+（Lean 鏡射：B3c 已落地對立對定理與 P1–P5 驗證書；D(θ) 本體待排程）。函式庫形、**純標準庫**（`fractions.Fraction`，零浮點），CI 段由 `b3_attest.py`
 §G 呼叫（實測約 1.4 秒），本檔自己的入口只有本機重掃 `--deep`（約 15 秒，不進 CI）：
 
 * **差分自動機 `D(θ)`**：輸入側 Core Level-2 機器 ×（輸出側同一台機器，由輸入側發射位

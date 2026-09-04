@@ -331,7 +331,7 @@ B2-DESIGN-REPORT，Q1–Q4 與偏差點 D1–D6 全項通過）**：
 6. **明確不做（照設計）**：任何 Lean（B3 驗證書）、Collatz 實例化與
    `D_A` weighted composition（B3）、憑證序列化格式（B3 決定）。
 
-## B3：重現 Project A（abstraction 驗收測試；**B3a、B3b 已完成** 2026-09-04、B3c 待排程）
+## B3：重現 Project A（abstraction 驗收測試；**B3a、B3b、B3c 已完成** 2026-09-04；D(θ) 鏡射與雙模式無符號定理待排程）
 
 用 B2 引擎重推三條 no-go。`scripts/check_boundaries.py` 本來就禁止
 ProjectB 匯入 ProjectA ⟹ 這是結構上誠實的重推導。
@@ -485,6 +485,50 @@ B3B-DESIGN-REPORT，Q1–Q6 作答與裁決點 D1–D8 全項通過）**：
    零新依賴。
 10. **明確不做（B3c 及之後）**：第 1 點所列 Lean 鏡射；雙模式／仿射實例化與其無符號定理；
     paper／registry；A 定理 bounded-below 升級合成；`Fintype` 化。
+
+**完成紀錄（B3c，2026-09-04，分支 `b/b3c-lean-mirror`；設計核准
+B3C-DESIGN-REPORT，Q1–Q5 作答與裁決點 D1–D9 全項通過；D1 裁定拆檔）**：
+
+1. **分階與措辭**：B3b 紀錄第 1 點列給 B3c 的四件——`rdDFA`：**緩辦**（D7；本 PR 不建 D(θ)，
+   Lean 端無消費者，全稱形以算術量詞與 B0 `RankingDomain` 已足；估 150 行、1 條記帳歸納，待 D(θ)
+   鏡射一併）；`DiffAuto θ` 載體與橋：**明確不做**（B4 量級）；圖憑證驗證書：P1–P5 泛型層落地
+   （第 3 點；圖 Farkas 本體不形式化）；2 見證無符號定理：落地（第 2 點）。**保險絲未觸發**：
+   零 ProjectA import、零 `Fintype (L2State × LSt)`、零 heartbeat 調整、B1 檔零改動、零 native 求值。
+2. **無符號對立對定理**（`ProjectB/Collatz_FST_B3_OpposingPair.lean`；import B3a 檔＋mathlib）：
+   `ΔF_B x i = F_B (Todd x) i − F_B x i`（B3a `DB` 的全稱形，`DB_eq_ΔF_B`）；`Todd 25 = 19`、
+   `Todd 315 = 473` 經 B0 `U`；`pair_sum_zero`（kernel `decide`，4 條 `extIn` 走行 × 18 座標，
+   Lean 端零 ΔF 字面，D4）；可見形 `ΔF_B_25_eq = +e₄ −e₆ +e₁₀ −e₁₁ −e₁₂ +e₁₃ −e₁₄ +e₁₆`。
+   **有限形** `no_signed_ranking_pair : ¬ ∃ θ : Fin 18 → ℚ, θ·ΔF_B 25 < 0 ∧ θ·ΔF_B 315 < 0`
+   ——零符號假設，證明 = 和零 ＋ `linarith`、零歸納；成本形 `no_signed_ranking_pair_cost`
+   （`no_go_L2` 的形狀去掉 θ ≥ 0、見證 2 個）；**全稱形**（D6）：算術量詞 `no_signed_ranking_odd`
+   （∀ 奇 x > 1）＋語言層 `no_signed_ranking_lang`（D7 `no_go_L2_lang` 逐字去掉 θ ≥ 0），
+   `no_go_L2_lang_of_signed` 標示 B3a 定理為其特例；負向對照 `single_witness_insufficient`
+   （θ = −e₄：單一見證擋不住）。三件套對應（D9）：和零 → 定理；皆在域內 → `rankingDomain_digits`；
+   elementary **不宣稱**（D(θ) 圖含輸出側的性質；`L2auto` 乘積態序列上 315 有重複），仍為 tools 錨。
+3. **B2 驗證書泛型層**（`ProjectB/Collatz_FST_B2_PassCert.lean`；純 B1 依賴、零 Core）：
+   `CostAutomaton.PassCert`（R、C : Finset、d : Q → ℚ）、`AllNeg`、`PassOK`（P1–P5 照
+   `b2_engine.verify_pass_cert` 逐字，D2）、`Decidable` 實例（`[DecidableEq Q] [Fintype A]`）；
+   **健全性** `allNeg_of_passOK : M.PassOK c → M.AllNeg`——三條記帳級 list 歸納（`evalFrom_mem_R`、
+   `mem_C_of_evalFrom`、`cert_telescope`）＋ `linarith`，零 instance 需求、真空與空接受集不分案。
+   實例：T3 `MposNeg`（B1 `Mpos` 取負；D5 重宣告）憑證 d = (−5, −3, −2)、R = C = 全態，
+   `MposNeg_passOK` 由 **`decide +kernel`**（D3：elaborator 端 `decide` 被 Batteries
+   `@[irreducible] Rat.add` 卡住；kernel 不看 reducibility，證明項 `of_decide_eq_true rfl`、公理不變；
+   前例 ProjectA L3 DimLower §84）⟹ `MposNeg_allNeg`——**B2 引擎 pass 憑證換成 Lean 定理**；
+   fail 側 T1 `Mneg_witness`（`[0, 1]` 接受、成本 0）⟹ `Mneg_not_allNeg`；T5 真空 `Mempty_allNeg`。
+4. **機制觀察（設計報告 §4.2，不入定理）**：`featList 315 = featList 19` 插入 `[9, 15, 17, 16]`、
+   `featList 473 = featList 25` 插入同一區塊——Core 機器在 (1,S,0) 讀 1,1,1,0 的 4 步閉走行
+   （長 3 循環＋(2,S,1) 自環）同時插進 x 與 Todd x 走行、差分中對消、輸入／輸出角色互換
+   （ΔF_B 315 = −ΔF_B 25）：B5「語境封閉」的最小實例；專案主人獨立證實。attest §H 入錨（觀察層）。
+5. **attest §H**（`tools/b3_attest.py`；`.github` 零變更、CI 仍一步）：Lean 字面（T3 四欄＋憑證三值、
+   T1 見證、對立對 Todd 值／四條 featList／ΔF_B(25)）vs `b2_engine` 實跑（T1／T3 verdict、
+   `verify_pass_cert`）、B 側重算、`b3b_diff.EXPECT_PAIR`、A 側 F2 通道；負向三則（竄改 d₂／d₁、
+   featList、ΔF_B 一位必紅）。15 項全綠、§H < 0.1 s。
+6. **驗證**：`lake build` 全綠（新模組 2.0 s ＋ 2.5 s、零 heartbeat）；`#print axioms` 十條主定理
+   僅三標準公理；電池 22 項全 `true`；`check_boundaries.py` 39 模組（負向測試：ProjectB import
+   ProjectA 必紅）；`b3_attest.py` 全綠 2.1 s；其餘腳本與兩生成器零 diff。
+7. **明確不做（B3c 之後）**：Lean 端 D(θ)／`DiffAuto θ` 與橋定理；路徑枚舉完備性；6 循環 LP 憑證
+   pump 族；`rdDFA`（D7）；雙模式／仿射無符號定理（B3b D5 (4) 觀察層）；A 定理 bounded-below
+   升級合成；paper／registry（paper 增補候選仍歸修訂線）；`Fintype` 化。
 
 ## B4：受限一般結果
 

@@ -1,6 +1,6 @@
 # 定理狀態索引（唯一真相來源）
 
-最後更新：2026-09-04 ／ 對應 PR：`b/b3b-diff-engine`（B3b——差分自動機 D(θ)＋B2 引擎全語言重推＋θ-LP 圖憑證，tools 層）
+最後更新：2026-09-04 ／ 對應 PR：`b/b3c-lean-mirror`（B3c——Lean 鏡射：無符號對立對定理＋B2 驗證書 P1–P5 健全性）
 
 > 本檔由 repo 現況生成：定理名逐條 grep 核實、一句話摘要取自各定理 docstring。
 > 歷史敘述見 [HANDOVER.md](HANDOVER.md)（快照，不再更新）；待辦見
@@ -120,7 +120,7 @@ Kirchhoff 鏈：trace 層流守恆 → 特徵層泛函 → 差分層 9 條（秩
 出處：`tools/l3_recon.py` ⑥（精確有理對帳，含推導打印）＋
 `ProjectA/Collatz_FST_L3_Delta.lean` 檔頭「65 條的帳」＋ ROADMAP-A A-3。
 
-## Project B — B0 語義層＋B1 reweighting＋B1.5 structured gauge＋B3a 實例化橋＋B3b 差分自動機（皆已完成）
+## Project B — B0 語義層＋B1 reweighting＋B1.5 structured gauge＋B3a 實例化橋＋B3b 差分自動機＋B3c Lean 鏡射（皆已完成）
 
 ProjectB 分區首批實體（B0，2026-08-28）。全部非 paper-facing，不入 registry、
 不入 Audit 信任基底。B0-3 的標記字母表修正（原 ROADMAP 註記在未標記字母表上
@@ -154,7 +154,16 @@ DFA，成本橋 `cost_{D(θ)}(extInM x) = θ·ΔF_B(x)`；B2 引擎對 θ ≥ 0 
 θ-LP（328 simple cycles／8269 elementary 路徑）以自建精確單純形判定**不可行**，整數圖憑證
 三種（LP 導出、對立對 (25, 315)、B3a 提升 Σν = 34 聚合 e₁₇）。**發現**：ΔF_B(25) + ΔF_B(315) = 0
 ⟹ L2 單模式**任意符號**線性 ranking 的 2 見證 no-go（paper 增補候選，轉交修訂線）；雙模式
-亦有對立對（觀察層）。無新定理；B3c（Lean 鏡射，含該 2 見證定理，落 ProjectB）待排程。
+亦有對立對（觀察層）。無新定理；Lean 鏡射見下段 B3c。
+
+B3c（2026-09-04，Lean 鏡射；D1 裁定拆檔）：**B2 驗證書泛型層** `ProjectB/Collatz_FST_B2_PassCert.lean`
+（純 B1 依賴）——`PassCert (R, C, d)`、`PassOK`（P1–P5 照 `b2_engine.verify_pass_cert` 逐字）、健全性
+`allNeg_of_passOK`（三條記帳歸納＋linarith，零 instance）；實例 T3 `MposNeg`（`decide +kernel`，D3）
+⟹ B2 引擎 pass 憑證換成 Lean 定理，T1 fail 見證、T5 真空。**無符號對立對定理**
+`ProjectB/Collatz_FST_B3_OpposingPair.lean`——`ΔF_B 25 + ΔF_B 315 = 0`（kernel `decide`）⟹
+`no_signed_ranking_pair`（任意符號 θ、2 見證、零歸納）與成本形／算術全稱形／語言全稱形（B3a D7
+去掉 θ ≥ 0）、負向對照 θ = −e₄。attest §H 做 Lean↔tools 字面同步。設計定案（Q1–Q5、D1–D9）與
+完成紀錄見 ROADMAP-B.md 的 B3 節。
 
 | 定理 | 檔案 | 一句話 |
 |---|---|---|
@@ -186,6 +195,13 @@ DFA，成本橋 `cost_{D(θ)}(extInM x) = θ·ΔF_B(x)`；B2 引擎對 θ ≥ 0 
 | `ProjectB.farkas_contra` | `ProjectB/Collatz_FST_B3_L2Instance.lean` | 抽象錐矛盾（B5 三成分之一）：λ > 0、聚合 Σλ·D 逐座標 ≥ 0 ⟹ 不存在 θ ≥ 0 使每列 θ·D_j < 0。 |
 | `ProjectB.no_go_L2`（＋`agg_nonneg`／`agg_eq_e17`） | `ProjectB/Collatz_FST_B3_L2Instance.lean` | B3a no-go 重推：不存在 θ ≥ 0 使 `L2auto θ` 的成本在 `W_B` = W₁₀ 每步 Todd 迭代嚴格下降；λ_B = (3,2,4,2,2,6,5,1,6,3)（Σ 34、聚合 e₁₇），聚合由 kernel `decide`，Todd 值經 B0 `U`。 |
 | `ProjectB.no_go_L2_lang` | `ProjectB/Collatz_FST_B3_L2Instance.lean` | 語言層全稱形（D7）：量詞走 B0 `RankingDomain`、動力學走 `Uacc`——`D_A(x) = V(U(x)) − V(x)` 的形狀。 |
+| `ProjectB.CostAutomaton.PassCert`（＋`AllNeg`／`PassOK`） | `ProjectB/Collatz_FST_B2_PassCert.lean` | B2 pass 憑證 (R, C, d) 與 P1–P5 檢查（照 `b2_engine.verify_pass_cert` 逐字；`Decidable` 於 `[DecidableEq Q] [Fintype A]`）。 |
+| `ProjectB.CostAutomaton.allNeg_of_passOK` | `ProjectB/Collatz_FST_B2_PassCert.lean` | 驗證書健全性：P1–P5 ⟹ 所有接受字成本 < 0（三條記帳歸納＋望遠鏡；零 instance、真空不分案）。 |
+| `ProjectB.MposNeg_allNeg`、`Mneg_not_allNeg`、`Mempty_allNeg` | `ProjectB/Collatz_FST_B2_PassCert.lean` | B2 已知答案 T3（pass，憑證 d = (−5, −3, −2) 由 `decide +kernel`）／T1（fail 見證 `[0, 1]` 成本 0）／T5（真空）在 Lean 端重現。 |
+| `ProjectB.ΔF_B`（＋`DB_eq_ΔF_B`／`pair_sum_zero`／`ΔF_B_25_eq`） | `ProjectB/Collatz_FST_B3_OpposingPair.lean` | 差分向量（B3a `DB` 的全稱形）；對立對 `ΔF_B 25 + ΔF_B 315 = 0` 由 kernel `decide` 對 Core 機器求值（Todd 25 = 19、Todd 315 = 473 經 B0 `U`）。 |
+| `ProjectB.no_signed_ranking_pair`（＋`no_signed_ranking_pair_cost`） | `ProjectB/Collatz_FST_B3_OpposingPair.lean` | **無符號對立對定理**：不存在任何符號的 θ ∈ ℚ¹⁸ 使 25、315 兩步同時嚴格下降（和零＋linarith；零圖論、零歸納）；成本形 = B3a `no_go_L2` 去掉 θ ≥ 0、見證 2 個。 |
+| `ProjectB.no_signed_ranking_odd`、`no_signed_ranking_lang`（＋`no_go_L2_lang_of_signed`） | `ProjectB/Collatz_FST_B3_OpposingPair.lean` | 全稱形：∀ 奇 x > 1 無符號線性 descent 不存在（算術量詞）；語言層形 = B3a D7 去掉 θ ≥ 0（B3a 定理為其特例）。 |
+| `ProjectB.single_witness_insufficient` | `ProjectB/Collatz_FST_B3_OpposingPair.lean` | 負向對照：θ = −e₄ 使 θ·ΔF_B 25 < 0——單一見證擋不住，兩見證的對立才是障礙。 |
 
 ## Tools 錨（CI 強制）
 
@@ -199,7 +215,7 @@ DFA，成本橋 `cost_{D(θ)}(extInM x) = θ·ΔF_B(x)`；B2 引擎對 θ ≥ 0 
 | `tools/l3_recon.py` | Level 3 全套偵察對帳：14 狀態／28 邊、終末 2 態、單模式 dim 16（完備）、雙模式 dim 31（缺口 = `θ₀[16]+θ₁[33]`）、65 條上界資料。 | ~15 s（沙盒可達 ~51 s） |
 | `tools/gen_l3dim.py` | 重新生成兩個 L3 Dim 檔後 `git diff --exit-code`——「逐位可重現」是 CI 強制，不是宣稱。 | — |
 | `tools/b2_engine.py` | B2 全語言判定引擎自測（`--selftest`）：B1 玩具機已知答案 T1–T5（含 Karp 角與真 pump）、負向測試四則（竄改憑證/見證必紅）、固定種子 300 台 oracle 判準矩陣。pass 憑證 (R, C, d) 過 P1–P5 局部檢查（B3 Lean 驗證書前身）、fail 見證字直接求值。CI 步驟經專案主人具名授權（B2 PR）。 | ~0.01 s |
-| `tools/b3_attest.py` | B3a 交叉認證：B 側自含實作＋Lean 錨（見證／Todd 值／λ_B／聚合／20 條 `featList`）；λ_B 單座標掃描獨立重解（W₁₀ 上恰三個：Σλ 1024／312／34）＋精確單純形第四頂點；三段式認證（σ 雙射、`F_B ≡ F2∘σ` x < 4096、A 的 λ = 掃描 k = 2 成員、Lean 用最輕 k = 17）；B2 harness（22 態截斷、四組 θ 覆蓋 pass／循環／邊界）；負向測試四則。**§G（B3b）**：呼叫 `tools/b3b_diff.py` 的 CI 段——差分自動機構造與手算錨、成本橋兩通道、枚舉規模（65／39／75／4；328／175；8269／5140）、θ-LP 不可行的整數圖憑證三種（含對立對 (25, 315) 三件套、B3a 提升）、負向測試五則、引擎 harness 25 組 θ 全 fail 最小見證 3。CI 步驟經專案主人具名授權（B3a PR）；B3b 不加步。 | ~2 s |
+| `tools/b3_attest.py` | B3a 交叉認證：B 側自含實作＋Lean 錨（見證／Todd 值／λ_B／聚合／20 條 `featList`）；λ_B 單座標掃描獨立重解（W₁₀ 上恰三個：Σλ 1024／312／34）＋精確單純形第四頂點；三段式認證（σ 雙射、`F_B ≡ F2∘σ` x < 4096、A 的 λ = 掃描 k = 2 成員、Lean 用最輕 k = 17）；B2 harness（22 態截斷、四組 θ 覆蓋 pass／循環／邊界）；負向測試四則。**§G（B3b）**：呼叫 `tools/b3b_diff.py` 的 CI 段——差分自動機構造與手算錨、成本橋兩通道、枚舉規模（65／39／75／4；328／175；8269／5140）、θ-LP 不可行的整數圖憑證三種（含對立對 (25, 315) 三件套、B3a 提升）、負向測試五則、引擎 harness 25 組 θ 全 fail 最小見證 3。**§H（B3c）**：Lean 字面同步——驗證書 T3（`MposNeg` 四欄＋憑證 (R, C, d)）／T1 見證 vs `b2_engine` 實跑與 `verify_pass_cert`；對立對 (25, 315) 的 Todd 值／四條 featList／ΔF_B(25) 向量 vs B 側重算、`b3b_diff.EXPECT_PAIR`、A 側 F2 通道；負向三則。CI 步驟經專案主人具名授權（B3a PR）；B3b／B3c 不加步。 | ~2 s |
 | `tools/b3b_diff.py` | B3b 函式庫（純標準庫）：`build_diff_automaton`／`instantiate(θ)`／`decode_witness`／枚舉／自建精確單純形（輸出全數自驗）／`theta_lp`／`verify_graph_certificate`／`opposite_pairs`／`lift_b3a`；CI 段 `run_checks` 由 attest §G 呼叫；`--deep` 本機重掃（向量橋 x < 2¹⁶、對立對普查含雙模式觀察、θ sweep ×200、只留路徑列 LP）。 | 經 attest 進 CI ~1.4 s；`--deep` ~15 s（本機） |
 
 另：**Cramer 定律**（λ = 被湮滅列的 adjugate／極大子式向量、憑證整數值 = 子式、
@@ -227,4 +243,7 @@ DFA，成本橋 `cost_{D(θ)}(extInM x) = θ·ΔF_B(x)`；B2 引擎對 θ ≥ 0 
   圖憑證（`tools/b3b_diff.py`，attest §G 進 CI）；θ-LP 不可行、憑證三種；**對立對發現**
   ΔF_B(25) + ΔF_B(315) = 0 ⟹ L2 單模式任意符號線性 ranking 的 2 見證 no-go（paper 增補
   候選轉交修訂線；雙模式亦有對立對，觀察層），見 ROADMAP-B.md B3 節 B3b 紀錄；
-  下一步 B3c（Lean 鏡射：`rdDFA`、`DiffAuto θ`、圖憑證驗證書、2 見證無符號定理，落 ProjectB）待排程。
+  **B3c 已完成（2026-09-04，Lean 鏡射）**：無符號對立對定理（`no_signed_ranking_pair` 與全稱形；
+  任意符號 θ、2 見證、零歸納）＋ B2 驗證書 P1–P5 泛型層與健全性（`allNeg_of_passOK`；T3 實例
+  `decide +kernel`）落 ProjectB（上表；attest §H 字面同步）；`rdDFA` 緩辦（D7）。下一步：D(θ) 鏡射
+  （含 `rdDFA`）、雙模式／仿射無符號定理、A 定理 bounded-below 升級合成——皆待排程。
