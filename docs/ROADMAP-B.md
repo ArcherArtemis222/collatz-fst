@@ -331,11 +331,80 @@ B2-DESIGN-REPORT，Q1–Q4 與偏差點 D1–D6 全項通過）**：
 6. **明確不做（照設計）**：任何 Lean（B3 驗證書）、Collatz 實例化與
    `D_A` weighted composition（B3）、憑證序列化格式（B3 決定）。
 
-## B3：重現 Project A（abstraction 驗收測試）
+## B3：重現 Project A（abstraction 驗收測試；**B3a 已完成** 2026-09-04、B3b 待排程）
 
 用 B2 引擎重推三條 no-go。`scripts/check_boundaries.py` 本來就禁止
 ProjectB 匯入 ProjectA ⟹ 這是結構上誠實的重推導。
 重推不出來 = abstraction 遺失了 A 的重要結構，先修 abstraction 再前進。
+
+**完成紀錄（B3a，2026-09-04，分支 `b/b3a-l2-instance`；設計核准
+B3A-DESIGN-REPORT，Q1–Q5 作答與裁決點 D1–D7 全項通過）**：
+
+1. **分階與措辭**：上段「用 B2 引擎重推三條 no-go」分兩階——B3a（本紀錄）
+   重推三條之一（Level 2 **單模式**）的見證集 no-go，引擎只作實例化相容性
+   harness（NOTES Q4 的誠實用法：引擎判定的是固定 θ 的全語言 < 0，與 no-go
+   的 ∃θ 量詞不同層）；雙模式／仿射（`SelCostAutomaton` 實例化）、
+   `D_A = V∘U − V` 差分自動機與引擎驅動的全語言重推、Lean 驗證書（P1–P5
+   鏡射）於 **B3b** 進場。**保險絲未觸發**：零 ProjectA import、零新機器、
+   零 `Fintype`、零 heartbeat 調整——A 的 no-go 在 B 的語言裡誠實重推成功。
+2. **實例化橋**（`ProjectB/Collatz_FST_B3_L2Instance.lean`；import Core＋B0＋
+   B1＋mathlib）：`L2auto θ : CostAutomaton (L2State × LSt) (Option ℕ)` =
+   Core Level-2 機器 × B0 `extDFA` 的 language-product（`prodStep step2`，B0
+   現成），`w (q, s) a = θ (featIdx q (unmark a))`（哨兵經 unmark 照常計費，
+   Q1），α = β = 0，接受集 `S8.toFinset ×ˢ {tail2}`（**D1**：終末態對是 A 的
+   `Flow.run2_extIn_terminal`，B 不可 import，改用 Core 可達集 `S8`；語義等價）。
+   B 座標 `featIdx` = 狀態 tuple `(c, P, p)` 與位元 b 的字典序、K 列 p 摺疊
+   （**Q2**：與 A 的 phase-major 不同，σ(B→A) =
+   `[0,1,6,7,8,9,2,3,10,11,12,13,4,5,14,15,16,17]` 非平凡）；`% 18` 全函數化
+   （**D2**，`extIn` 走行零垃圾）。佔用向量 `F_B x i = (featList x).count i`，
+   `featList` = Core `microTrace2` 逐步投影。
+3. **橋定理**：`wpath_prod`（本檔唯一實質歸納）→ `cost_eq_featList` →
+   **`cost_eq_sum`**（`cost (L2auto θ) (extInM x) = ∑ i, θ i * F_B x i`；mathlib
+   `Finset.sum_list_map_count` + `sum_subset`）；`accepts_extInM`（Core
+   `run2_mem_S8` + B0 `sentinel_positions`）。手算 x = 3：`featList 3 = [7, 13, 16, 8]`
+   （電池對照；兩個哨兵步 16、8 皆計費）。
+4. **no-go 重推** `no_go_L2`（敘述照任務逐字）：抽象錐矛盾 `farkas_contra`
+   （λ > 0、聚合 Σλ·D ≥ 0 ⟹ 無 θ ≥ 0 使逐列 < 0；B5「錐矛盾」的形式本體）
+   ＋ `agg_nonneg` 由 kernel `decide` 直接對 20 條 `extIn` 走行 × 18 座標求值
+   （**D4**：Lean 端零 ΔF 字面；可見形 `agg_eq_e17`）；Todd 值經 B0
+   `ofDigits_Uacc` + `decide`（**D3**，不用 `padicValNat` 算術）。**D7** 語言層
+   全稱形 `no_go_L2_lang`：量詞走 B0 `RankingDomain`、動力學走 `Uacc`
+   （B2 段 `D_A(x) = V(U(x)) − V(x)` 的形狀），由 `no_go_L2` a fortiori。
+5. **λ_B 獨立重解與發現（D5）**：`tools/b3_attest.py` 對 18 座標逐一「湮滅其餘
+   17 座標」（sympy 有理 nullspace，零浮點、不看答案）——**W₁₀ 上的單座標
+   Farkas 憑證恰三個**（B 座標／key／Σλ／聚合係數）：k = 2 (0,S,0,0) 1024／31
+   （= A 的 λ）；k = 4 (0,S,1,0) 312／31；k = 17 (2,S,1,1) **34／1**。Lean 取最輕
+   `lamB = (3, 2, 4, 2, 2, 6, 5, 1, 6, 3)`。**敘事修正**：tools/README 與
+   ROADMAP-A A-4「31 = det(A_free)、最小整數尺度必然是 31」是**目標 e₆ 相依**的
+   子式——換目標 e₁₇ 的湮滅列得 det = 1（么模）、λ 尺度 34；`certificates.py`
+   的「解族唯一」仍成立（給定目標之下 Cramer 唯一），但全域的 Farkas 多胞形
+   維度 ≥ 1。**第四頂點觀察**：sympy 精確單純形對 {λ ≥ 0, Σλ = 1, λᵀD ≥ 0}
+   給出非單座標頂點 λ·1387 = (130, 77, 164, 88, 79, 241, 207, 42, 239, 120)、
+   聚合 31·(e₉ + e₁₄)（僅印出，不入錨）。**【paper 增補候選】**：§4 Cramer 段
+   「31 = det」句宜加「目標相依」限定並提三憑證——**轉交修訂線**
+   （REVISION-SCOPE 合規閘門），本 PR `paper/` 零觸碰。
+6. **三段式認證**（`b3_attest.py` §D；tools 層是唯一允許同時 import 兩側之處）：
+   (i) σ 由 key 比對建立、驗雙射，`F_B x ≡ F2 x ∘ σ` 對 x < 4096 全體（含
+   x = 0、1 邊界），ΔF 十列在 σ 下逐位相等；(ii) A 的 `LAM10` 經 σ **恰等於**
+   掃描成員 k = σ⁻¹(6) = 2，且以 B 側 ΔF 純整數驗證通過（31·e₆ ↔ 31·e₂）；
+   (iii) Lean `lamB` = 掃描最輕成員。Lean 錨：見證、Todd 值、λ_B、聚合、
+   20 條 `featList`（自 §B3.V 電池抄錄）雙向對帳；負向測試四則（featList 錨／
+   λ／聚合座標／σ 各竄改一筆必紅）。
+7. **B2 harness**（§E）：`L2auto θ` 在字母表 `{some 0, some 1, none}` 上的可達
+   乘積態截斷 **22 態**（`none ↦ 2`），接受態恰 `((0,S,0), tail2)`、
+   `((0,S,1), tail2)`——引擎的 trim 自動重現 A 的終末態對；四組 θ：`θ ≡ 1`
+   fail-循環（見證 `extInM 5`）、`θ ≡ −1` pass（憑證 P1–P5 綠、樣本奇數 x < 2000
+   成本全 < 0）、`+1 於 K／−1 於 S` fail-循環（引擎取到 K 區 `01` 交錯循環，即
+   `(4^{m+1} − 1)/3` 族）、`θ ≡ −1, α = 5` fail-邊界（見證 `extInM 1`）；300 個
+   樣本字引擎成本 = 直接求值。
+8. **驗證**：`lake build` 全綠（新模組 6.3 s、零 `maxHeartbeats` 調整、
+   `#print axioms` 僅三條標準公理）；電池 19 項 `#eval` 全 `true`；
+   `check_boundaries.py` 37 模組（負向測試：暫存檔 ProjectB import ProjectA
+   必紅）；`b3_attest.py` 全綠 ≈ 0.7 s；CI：`guard.yml` certs job 尾端加**一步**
+   `python3 tools/b3_attest.py`（專案主人於任務指令「授權聲明」段具名授權，
+   PR 照 #39／#44 前例標明）；零新增 pip 依賴。
+9. **明確不做（B3b）**：第 1 點所列；另 extDFA 完整語言 iff、字母表限縮引理
+   （截斷的 Lean 對應）、A 定理 bounded-below 升級合成、`Fintype` 化。
 
 ## B4：受限一般結果
 

@@ -42,6 +42,9 @@ python3 tools/certificates.py
    gcd = 1，故最小整數尺度必然是 `|det| = 31`——上面第 2 點的「唯一性」與 A-3 下界
    用的 `det = 31`（`Collatz_FST_DimLower.lean`）因此是同一件事。
    注意 `Σλ`（1024 / 7826 / 31746）**不是**行列式，腳本有一條檢查專門守這個誤推。
+   **B3a 補充（2026-09-04）**：「31 = det」是**目標 e₆ 相依**的子式——同一 W₁₀ 另有
+   目標 e₈（det 31）與 e₁₇（det 1，么模、Σλ = 34）的單座標憑證，全域的 Farkas
+   多胞形維度 ≥ 1；見 `b3_attest.py` 與 ROADMAP-B B3 完成紀錄第 5 點。
 
 ## a3_functionals.py 驗了什麼
 
@@ -84,6 +87,28 @@ ROADMAP A-3 的 **Level 3（31 維）**部分——在寫任何 Lean 之前先�
 多一個哨兵零，導出「終末 3 個、缺 5 條」兩個錯結論。`certificates.py` 的 `_bits`
 有同一個 off-by-one，已一併修好——**Level 2 的見證集全是奇數 ≥ 25 所以不咬人，
 一到 Level 3 掃 `x = 0` 就咬**。
+
+## b3_attest.py 驗了什麼
+
+B3a（ROADMAP-B B3 第一階段）在 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零
+ProjectA import** 的素材重推 Level 2 單模式 no-go；`check_boundaries.py` 禁止 B 匯入 A，
+所以「兩個獨立重推導出同一數學」只能在 tools 層認證——這支腳本是唯一同時 import
+兩側的橋。精確整數／有理、零浮點、**進 CI**（實測約 0.7 秒）：
+
+* **B 側自含實作＋Lean 錨**：照 Lean 定義逐字重寫 `step2`／`lstep`／`featIdx`／
+  `featList`／`F_B`；錨 `LEAN_B3_W`／`LEAN_B3_TODD`／`LEAN_B3_LAM`／
+  `LEAN_B3_AGG_*`／`LEAN_B3_FEATLIST`（20 條，自 Lean §B3.V 電池抄錄）雙向對帳。
+* **λ_B 獨立重解**：18 座標逐一「湮滅其餘 17 座標」的單座標憑證掃描（sympy 有理
+  nullspace）——W₁₀ 上恰三個（B 座標 k = 2／4／17，Σλ = 1024／312／34，係數
+  31／31／1），Lean 用最輕的 k = 17；全部 Farkas 條件純整數驗證；另以 sympy 精確
+  單純形確認 Farkas 多胞形非空（第四頂點 Σλ = 1387、聚合 31·(e₉+e₁₄)，僅印出）。
+* **三段式認證**：(i) σ(B→A) 由 key 比對建立並驗雙射，`F_B x ≡ F2 x ∘ σ` 對
+  x < 4096 全體（含 x = 0、1）；(ii) `certificates.py` 的 `LAM10` 經 σ 恰為掃描的
+  k = σ⁻¹(6) = 2 成員；(iii) Lean `lamB` = 掃描最輕成員。
+* **B2 引擎 harness**（NOTES Q4）：`L2auto θ` 在 `{some 0, some 1, none}` 上的可達
+  乘積態截斷（22 態、`none ↦ 2`）餵 `b2_engine`，四組 θ 覆蓋 pass／fail-循環／
+  fail-邊界，見證去標記後恰為某 `extInM x`、引擎成本 = 直接求值。
+* **負向測試**常駐：featList 錨、λ、聚合座標、σ 各竄改一筆必紅。
 
 ## search/ 各檔用途
 

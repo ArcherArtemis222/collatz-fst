@@ -90,3 +90,6 @@ jobs:
       - name: B2 全語言判定引擎自測（trim＋正循環＋邊界最短路；憑證/見證自驗＋oracle）
         # 此 .github 變更經專案主人具名授權（B2 PR）：任務指令明文授權此一步。
         run: python3 tools/b2_engine.py --selftest
+      - name: B3a 交叉認證（F_B ≡ F2∘σ 座標雙射、λ_B 單座標掃描獨立重解、B2 引擎 harness）
+        # 此 .github 變更經專案主人具名授權（B3a PR）：任務指令「授權聲明」段明文授權此一步。
+        run: python3 tools/b3_attest.py
