@@ -99,7 +99,7 @@ ROADMAP A-3 的 **Level 3（31 維）**部分——在寫任何 Lean 之前先�
 B3a（ROADMAP-B B3 第一階段）在 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零
 ProjectA import** 的素材重推 Level 2 單模式 no-go；`check_boundaries.py` 禁止 B 匯入 A，
 所以「兩個獨立重推導出同一數學」只能在 tools 層認證——這支腳本是唯一同時 import
-兩側的橋。精確整數／有理、零浮點、**進 CI**（實測約 2 秒，含 §G、§H）：
+兩側的橋。精確整數／有理、零浮點、**進 CI**（實測約 2.3 秒，含 §G、§H、§I）：
 
 * **B 側自含實作＋Lean 錨**：照 Lean 定義逐字重寫 `step2`／`lstep`／`featIdx`／
   `featList`／`F_B`；錨 `LEAN_B3_W`／`LEAN_B3_TODD`／`LEAN_B3_LAM`／
@@ -123,6 +123,12 @@ ProjectA import** 的素材重推 Level 2 單模式 no-go；`check_boundaries.py
   `ProjectB/Collatz_FST_B3_OpposingPair.lean` 的對立對 (25, 315)：Todd 值 (19, 473)、四條
   featList、ΔF_B(25) 向量 vs B 側重算、`b3b_diff.EXPECT_PAIR`、A 側 F2 通道；機制觀察
   （同一 4 步閉走行 `[9, 15, 17, 16]` 插進兩走行）入錨（觀察層）；負向三則。< 0.1 秒。
+* **§I（R-B，2026-09-12）**：跨側對帳——`ProjectB/Collatz_FST_B3_SelInstance.lean` 的模式追蹤 Sel 實例
+  （B1.5 `SelCostAutomaton` 於 B3a 乘積 × 旗標上，`sel = 旗標`）：B 通道 `SelInst θ β` 的 cost 逐字重跑
+  ≡ A 通道 `β_{m,t} + θ_m·F2∘σ`（A 的 `V2` 模板；θ_A = θ_B∘σ⁻¹）於 4 組固定種子有理 (θ, β) × 奇 x < 2048
+  （4096 組精確相等）；旗標 ≡ [F_B 13 = 1] ≡ [F2 5 = 1]、邊界和雙門 F_B[6] + F_B[13] = 1 ≡ A 側 F2[2] + F2[5] = 1、
+  終態 B 側 ≡ A 側 `run2`（x < 4096 全體）；Lean 字面錨（Todd 鏈、featList 1787／2011、旗標四例、(m,t) 四例）；
+  軌道兩步差分和零；負向三則（竄改旗標錨／去 σ／竄改 featList）。≈ 0.2 秒。
 
 ## b3b_diff.py 驗了什麼
 

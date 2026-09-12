@@ -35,12 +35,18 @@ Lean 端 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零 ProjectA import** �
    （對立對 (25, 315)：Todd 值、四條 featList、ΔF_B(25) 向量）的電池字面，逐項對 `b2_engine`
    實跑輸出（T1／T3 verdict、`verify_pass_cert`）、B 側重算、`b3b_diff.EXPECT_PAIR`、
    A 側 F2 通道對帳；負向測試三則。
+7. **R-B 跨側對帳（§I，2026-09-12 起）**：`ProjectB/Collatz_FST_B3_SelInstance.lean` 的模式追蹤 Sel 實例
+   （B1.5 `SelCostAutomaton` 於 B3a 乘積 × 旗標上；`sel = 旗標`）——B 通道 `SelInst θ β` 的 cost 逐字重跑
+   （旗標乘積走行、沿 sel(終態) 暫存器的 wpath、β 於機器終態）≡ A 通道 `β_{m,t} + θ_m·F2∘σ`（A 的 `V2`
+   模板，m = F2[5]、t = run2 終末位）於固定種子有理 (θ, β) × 奇 x < 2048；旗標／(m,t)／featList／Todd
+   字面錨；旗標 ≡ [F_B 13 = 1] ≡ [F2 5 = 1] 與邊界和雙門 F_B[6] + F_B[13] = 1（≡ A 側 F2[2] + F2[5] = 1）
+   對 x < 4096 全體；終態定理 B 側 ≡ A 側 run2；負向三則。「B 實例 = A 模板」自此是 CI 錨。
 負向測試（§F）常駐：竄改 featList 錨、λ、σ、聚合各一則必紅。
 
     python3 tools/b3_attest.py            # 全部（CI）
 
 依賴：numpy、sympy（既有）；import `tools/certificates.py`（A 側）、`tools/b2_engine.py`、
-`tools/b3b_diff.py`（B3b，純標準庫）。
+`tools/b3b_diff.py`（B3b，純標準庫）、`tools/b15_terminal_balance.py`（A 側 `run2`，§I）。
 """
 
 from __future__ import annotations
@@ -600,6 +606,128 @@ def run_b3c() -> None:
 
 
 
+# ────────────────────────────────────────────────────────────────────
+# §I R-B 跨側對帳（2026-09-12 起；設計核准 RB-DESIGN-REPORT D9）：
+#     `ProjectB/Collatz_FST_B3_SelInstance.lean` 的模式追蹤 Sel 實例——B 通道 SelInst 成本
+#     ≡ A 通道 β_{m,t} + θ_m·F2∘σ；旗標／(m,t)／featList／Todd 字面錨；邊界和雙門；負向三則。
+# ────────────────────────────────────────────────────────────────────
+
+LEAN_RB_W = [1787, 2681]                                   # `WB1787`
+LEAN_RB_TODD = {1787: 2681, 2681: 2011}                    # `Todd_1787`／`Todd_2681`
+LEAN_RB_FLAG = {25: 0, 2681: 0, 3: 1, 1787: 1}             # 電池 1（模式 0 例 25、2681；模式 1 例 3、1787）
+LEAN_RB_MT = {1787: (1, 1), 2681: (0, 0), 961: (0, 1), 599: (1, 0)}   # 電池 5：四類 (m, t)
+LEAN_RB_FEATLIST = {                                       # 電池 11（A-5 機制註記同值）
+    1787: [7, 13, 16, 9, 15, 17, 17, 17, 16, 9, 15, 16, 8],
+    2011: [7, 13, 16, 9, 15, 16, 9, 15, 17, 17, 17, 16, 8],
+}
+LEAN_RB_BND = (2, 'K', 0)                                  # `bndK`（門 13）
+LEAN_RB_GATES = (6, 13)                                    # `boundary_sum_B`：F_B[6] + F_B[13] = 1
+LEAN_RB_TERMS = [(0, 'S', 0), (0, 'S', 1)]                 # `termStates` 機器分量（`run2_extIn_terminal_B`）
+RB_INIT = (((1, 'K', 0), 'start'), False)                  # `initF`
+
+
+def flag_step(p, a):
+    """Lean `flagStep`：B3a 乘積一步 × 旗標更新（於 (2,K,0) 讀去標記位元 1 時置真，餘傳遞）。"""
+    (s, l), f = p
+    b = unmark(a)
+    return ((step2(s, b), lstep(l, a)), f or (s, b) == (LEAN_RB_BND, 1))
+
+
+def sel_run(x: int):
+    """`extInM x` 的旗標乘積走行：回傳（逐步 (態, 字母) 列, 終態 ((機器, DFA), 旗標)）。"""
+    p, trace = RB_INIT, []
+    for a in ext_in_m(x):
+        trace.append((p, a))
+        p = flag_step(p, a)
+    return trace, p
+
+
+def sel_cost(theta, beta, x: int):
+    """Lean `SelInst θ β` 的 `cost (extInM x)` 逐字：α = 0 ＋ 沿 sel(終態) 暫存器的 wpath
+    ＋ β 於機器終態 (0,S,t)（餘 0）。回傳 (cost, m, 機器終態, DFA 終態)。"""
+    trace, ((s, l), f) = sel_run(x)
+    m = 1 if f else 0
+    w = sum((theta[m][feat_idx(q[0][0], unmark(a))] for q, a in trace), Fraction(0))
+    bt = beta[m][0] if s == (0, 'S', 0) else beta[m][1] if s == (0, 'S', 1) else Fraction(0)
+    return w + bt, m, s, l
+
+
+def run_selinst(sigma: list[int]) -> None:
+    print("\n=== §I R-B 跨側對帳（SelInst 成本 B 通道 ≡ A 通道 β + θ·F2∘σ；旗標／雙門／字面錨）===")
+    import random
+    import certificates as A
+    from b15_terminal_balance import run2 as run2A
+    inv = [sigma.index(j) for j in range(18)]              # A 座標 → B 座標
+    N = 4096
+    F2c = {x: [int(v) for v in A.F2(x)] for x in range(N)}
+    T2c = {x: run2A(x) for x in range(N)}
+    fin = {x: sel_run(x)[1] for x in range(N)}              # ((機器, DFA), 旗標)
+    zero = ([[Fraction(0)] * 18] * 2, [[Fraction(0)] * 2] * 2)
+    # ── (1) Lean 字面錨 ──
+    check([todd_via_U(x) for x in LEAN_RB_W] == [LEAN_RB_TODD[x] for x in LEAN_RB_W] == [2681, 2011],
+          "Todd 鏈 1787 → 2681 → 2011 經 U ≡ Lean `Todd_1787`／`Todd_2681`（`WB1787`）")
+    check(verify_featlist_anchors(LEAN_RB_FEATLIST)
+          and sorted(LEAN_RB_FEATLIST[1787]) == sorted(LEAN_RB_FEATLIST[2011])
+          and F_B(2011) == F_B(1787) and F_B(2681) != F_B(1787),
+          "featList 1787／2011 錨 ≡ B 側重算；F_B 2011 = F_B 1787（`F_B_2011_eq`）、單步不回歸")
+    check(all(fin[x][1] == bool(v) for x, v in LEAN_RB_FLAG.items()),
+          f"旗標錨 {LEAN_RB_FLAG}（模式 0：25、2681；模式 1：3、1787）≡ Lean `flagB`（電池 1）")
+    mt = {x: (int(fin[x][1]), fin[x][0][0][2]) for x in LEAN_RB_MT}
+    check(mt == LEAN_RB_MT, f"四類 (m, t) 錨 {LEAN_RB_MT} ≡ B 走行（旗標, 終末位）（電池 5）")
+    # ── (2) 旗標接地與雙門（全體 x < 4096，含偶數與 0）──
+    check(all(fin[x][1] == (F_B(x)[13] == 1) == (F2c[x][A.MODE_IDX_L2] == 1) for x in range(N)),
+          f"旗標 ≡ [F_B x 13 = 1] ≡ [F2 x [{A.MODE_IDX_L2}] = 1]（`flag_iff`；A 的模式位經 σ），x < {N} 全體")
+    g6, g13 = LEAN_RB_GATES
+    check(all(F_B(x)[g6] + F_B(x)[g13] == 1 for x in range(N))
+          and all(F2c[x][sigma[g6]] + F2c[x][sigma[g13]] == 1 for x in range(N))
+          and (sigma[g6], sigma[g13]) == (2, A.MODE_IDX_L2),
+          f"邊界和雙門 F_B[6] + F_B[13] = 1（`boundary_sum_B`）≡ A 側 F2[2] + F2[5] = 1"
+          f"（`mode_bit_endpoints` 的全稱形），x < {N} 全體")
+    # ── (3) 終態：B 走行機器分量 ≡ A 側 run2 且 ∈ termStates；DFA 分量奇 tail2／偶非 ──
+    check(all(fin[x][0][0] == T2c[x] and T2c[x] in LEAN_RB_TERMS for x in range(N))
+          and all(fin[x][0][1] == 'tail2' for x in range(1, N, 2))
+          and all(fin[x][0][1] != 'tail2' for x in range(0, N, 2)),
+          "終態：機器分量 ≡ A 側 run2 且 ∈ {(0,S,0),(0,S,1)}（`run2_extIn_terminal_B`）；DFA 分量奇 tail2／偶非")
+    # ── (4) 成本橋兩通道（固定種子有理 θ、β；A 通道 = V2 模板，θ_A = θ_B ∘ σ⁻¹）──
+    rng = random.Random(20260912)
+
+    def rq() -> Fraction:
+        return Fraction(rng.randint(-9, 9), rng.randint(1, 4))
+    samples = [([[rq() for _ in range(18)] for _ in range(2)], [[rq() for _ in range(2)] for _ in range(2)])
+               for _ in range(4)]
+    n_eq, n_all = 0, 0
+    for theta, beta in samples:
+        thetaA = [[theta[m][inv[j]] for j in range(18)] for m in range(2)]
+        for x in range(1, 2048, 2):
+            cB, m, _, _ = sel_cost(theta, beta, x)
+            mA, t = (1 if F2c[x][A.MODE_IDX_L2] == 1 else 0), T2c[x][2]
+            cA = beta[mA][t] + sum(thetaA[mA][j] * F2c[x][j] for j in range(18))
+            n_all += 1
+            n_eq += (m == mA and cB == cA)
+    check(n_eq == n_all == 4 * 1024,
+          f"成本橋：SelInst cost（B 通道）≡ β_{{m,t}} + θ_m·F2∘σ（A 通道 `V2`），{n_eq}/{n_all} 組 (θ, β, x) 精確相等")
+    # ── (5) 軌道：cost 2011 = cost 1787、兩步差分和零 ──
+    check(all(sel_cost(th, be, 2011)[0] == sel_cost(th, be, 1787)[0]
+              and (sel_cost(th, be, 2681)[0] - sel_cost(th, be, 1787)[0])
+              + (sel_cost(th, be, 2011)[0] - sel_cost(th, be, 2681)[0]) == 0
+              for th, be in samples),
+          "軌道：cost(2011) = cost(1787)（`orbit_cost_eq`）且兩步差分和零（`no_go_sel_signed` 可見形），4 組 (θ, β)")
+    # ── (6) 負向 ──
+    bad_flag = dict(LEAN_RB_FLAG)
+    bad_flag[25] = 1
+    check(not all(fin[x][1] == bool(v) for x, v in bad_flag.items()), "負向：竄改旗標錨（25 ↦ 1）⟹ 紅")
+    theta, beta = samples[-1]
+    mism = sum(sel_cost(theta, beta, x)[0]
+               != beta[sel_cost(theta, beta, x)[1]][T2c[x][2]]
+               + sum(theta[sel_cost(theta, beta, x)[1]][j] * F2c[x][j] for j in range(18))
+               for x in range(3, 200, 2))
+    check(mism > 0, f"負向：去掉 σ（B 的 θ 直接索引 A 的 F2）⟹ {mism}/99 個 x 不等，紅")
+    bad_fl = {k: list(v) for k, v in LEAN_RB_FEATLIST.items()}
+    bad_fl[2011][5] = 17
+    check(not verify_featlist_anchors(bad_fl), "負向：竄改 featList 2011 一位（16→17）⟹ 紅")
+    del zero
+
+
 def main() -> int:
     t0 = time.time()
     D = run_anchors()
@@ -609,6 +737,7 @@ def main() -> int:
     run_negative(D, sigma)
     run_diff()
     run_b3c()
+    run_selinst(sigma)
     print(f"\n耗時 {time.time() - t0:.2f} 秒。")
     if _failures:
         print(f"失敗 {len(_failures)} 項：")
@@ -616,7 +745,7 @@ def main() -> int:
             print("   -", f)
         return 1
     print("全部通過。B 側重推、Lean 錨、λ_B 獨立重解、與 A 的三段式認證、B2 harness、"
-          "B3b 差分自動機（成本橋、θ-LP 圖憑證、全語言 harness）、B3c Lean 字面同步一致。")
+          "B3b 差分自動機（成本橋、θ-LP 圖憑證、全語言 harness）、B3c Lean 字面同步、R-B Sel 實例跨側對帳一致。")
     return 0
 
 
