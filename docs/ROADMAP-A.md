@@ -304,6 +304,59 @@ Cramer 量是**組合的座標值**（31、36、347…）。腳本裡有一條�
 
 ---
 
+## A-5 無符號軌道升級：三模板去掉 θ ≥ 0、bounded-below 升級的 a fortiori 收口 ★ 小 ——【已完成】
+
+**狀態（2026-09-12，分支 `a/upgrade-signed-orbit`；設計核准 UPGRADE-DESIGN-REPORT，路線 S、
+裁決點 D1–D12）。** 落地 `ProjectA/Collatz_FST_Orbit_NoGo.lean`（單檔、零歸納、零 heartbeat 調整）。
+
+**起點是任務 (2)「把 A 的 no-go 假設從 θ ≥ 0 升級為 V 有下界」。** 指令的原案是 gauge 路線：
+在模式追蹤乘積（機器態 × B0 `LSt` × 模式旗標，`sel = 旗標`）的 per-mode useful 邊空間重解雙平衡
+Farkas（R1 邊粒度憑證），再與 B1.5 structured gauge 合成。探測結果（`tools/search/orbit_census.py --lp`）：
+
+| | Level 2 | Level 3 |
+|---|---|---|
+| 乘積可達態／邊；useful 邊 mode 0／1 | 38／114；23／21 | 64／192；39／37 |
+| R1 LP（邊聚合 ≥ 0 ＋ 四條 (m,t) 平衡；池 = 奇數 < 4000） | **可行**，精確支撐 21，聚合 = mode 1 的 K 交錯泵 2-cycle 一條 | **可行**，精確支撐 38，聚合 = mode 0 的一條 3-cycle |
+| 既有 W17/LAM17 在邊層 | 6 個負座標（feature 層憑證不升到逐邊——指令分析成立） | — |
+| 無符號 LP（邊聚合 ≡ 0 ＋ 四平衡） | **亦可行**（支撐 22） | **亦可行**（支撐 40） |
+
+無符號 LP 可行的意思是：符號假設可以整個拿掉，bounded-below 升級因而是 a fortiori 系理，gauge 不需要。
+其最小形是 2 見證，最強形是**軌道回歸**：
+
+> **T 1787 = 2681、T 2681 = 2011，而 `F 2011 = F 1787`、`F3 2011 = F3 1787`、終態相同。**
+
+2011 的位元串是 1787 的位元串把機器態 (2,S,1) 錨定的兩個閉走行 `111`（三個自環）與 `011`
+（(2,S,1) →0→ (1,S,0) →1→ (2,S,0) →1→ (2,S,1)）對調——佔用統計對「同錨閉走行的置換」不變，
+Todd 動力學恰好在兩步內實現了這個置換（B5「狀態對齊＋語境封閉」的最小實例；比 B3c 的對立對
+(25, 315) 更強：同一條軌道回到不可分辨的統計態）。
+
+**定理清單**（皆三標準公理；見證集 `Orbit.W1787 = [1787, 2681]`，與 W₁₀／W12／W17／W20／W26 不相交）：
+
+| 定理 | 內容 |
+|---|---|
+| `LP.no_feature_ranking_orbit_1787`、`TwoMode.no_feature_ranking_orbit_1787`、`L3.no_feature3_ranking_orbit_1787` | **任意函數版**：任何以（佔用向量, 終態）為自變量的函數都不能在 1787、2681 兩步同時嚴格下降——覆蓋一切以本 Level 佔用統計為輸入的模板（線性、仿射、terminal-affine、雙模式、非線性、任意符號）。 |
+| `LP.no_signed_linear_ranking`、`no_global_odd_signed_ranking`、`no_linear_ranking_bounded_below` | 單模式：`no_nonneg_linear_ranking`／`no_global_odd_ranking` 去掉 θ ≥ 0（`ΔF 2681 = −ΔF 1787`）；bounded-below 版 a fortiori。 |
+| `TwoMode.V2`、`no_go_2mode_terminal_affine_potential_V2` | #39 的 terminal-affine 模板抽成定義，#39 主定理以 `V2` rfl 級重述。 |
+| `TwoMode.no_go_2mode_terminal_signed`、`no_global_odd_2mode_terminal_signed`、`no_go_2mode_terminal_bounded_below` | #39（L2）去掉 θ ≥ 0、2 見證；全稱版；**bounded-below 升級**（`∃ B, ∀ 奇 x, B ≤ V x` 為假設）。 |
+| `TwoMode.no_go_2mode_affine_signed`、`no_go_2mode_signed` | A-2 仿射模板與 `no_go_2mode_potential` 模板的無符號版（`V2` 的特例）。 |
+| `L3.V3`、`no_go_level3_2mode_terminal_affine_potential_V3`、`no_go_level3_2mode_terminal_signed`、`no_global_odd_level3_2mode_terminal_signed`、`no_go_level3_2mode_terminal_bounded_below`、`no_go_level3_2mode_affine_signed`、`no_go_level3_2mode_signed` | Level 3 同組（同一軌道）。 |
+
+**bounded-below 的語言域**取全體奇數（含 x = 1）；與「奇 x > 1」等價（單一值不影響有界性）。
+β_{m,t} 照 #39 量化四個、無符號約束；任意函數版已涵蓋「β 為 (m,t) 任意函數」。
+
+**數字的出處**（先跑再寫）：`tools/certificates.py --orbit`（進 CI；A 側 `F2`/`F3`/`run2`/`run3`
+重算、Lean 電池字面雙向對帳、x < 4096 小普查、負向測試三則）；`tools/search/orbit_census.py`
+（不進 CI）：x < 2¹⁶ 普查——Level 2 軌道回歸 21 個（最小 1787, 3577, 3579, …）、Level 3 2 個
+（1787, 3577）、`F(Tx) = F(x)` 無；F-恆等對立對 71／4 組；雙模式對立對 30／4 組且**全部**含 (m,t)
+終末平衡（B3b D5(4) 的同一批 30 組）；「F 決定終態」零違例；`--lp` 重跑上表的 R1 LP 資料。
+
+**與 B 的關係**：B1「直接紅利」、B1.5「與 #39 的合成」自此以 a fortiori 收口（ROADMAP-B B1.5 節的
+收口句與覆活判準）；B 側雙模式 Sel 實例（B3 路線圖殘項 R-B）另 PR。**paper 增補候選**（三模板符號
+假設可整個移除、任意函數版、軌道回歸機制）轉修訂線（REVISION-SCOPE 合規閘門）；本 PR `paper/`
+零觸碰。
+
+---
+
 ## 不屬於 Project A 的東西
 
 `Recon/` 裡的循環基底拆解、LP 偵察，是**已完成的偵察成果**，不需要形式化為定理，

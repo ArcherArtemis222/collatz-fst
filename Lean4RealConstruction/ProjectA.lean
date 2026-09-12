@@ -1,7 +1,8 @@
 /-
 # Project A：Finite-State Template No-Go Theorems（收尾階段）
 
-三個具體有限狀態模板的精確 Farkas 矛盾證書。待辦見 docs/ROADMAP-A.md。
+三個具體有限狀態模板的精確 Farkas 矛盾證書，以及 A-5 軌道回歸的無符號 2 見證版
+（`Collatz_FST_Orbit_NoGo`）。待辦見 docs/ROADMAP-A.md。
 -/
 import Lean4RealConstruction.ProjectA.Collatz_FST_SimpAttr
 import Lean4RealConstruction.ProjectA.Collatz_FST_Flow
@@ -19,4 +20,5 @@ import Lean4RealConstruction.ProjectA.Collatz_FST_L3_DimUpper
 import Lean4RealConstruction.ProjectA.Collatz_FST_L3_DimLower
 import Lean4RealConstruction.ProjectA.Collatz_FST_L3_2Mode_NoGo
 import Lean4RealConstruction.ProjectA.Collatz_FST_L3_2Mode_Terminal_NoGo
+import Lean4RealConstruction.ProjectA.Collatz_FST_Orbit_NoGo
 import Lean4RealConstruction.ProjectA.PaperIndex

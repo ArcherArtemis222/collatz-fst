@@ -120,6 +120,9 @@ Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
   （可達 + 繞 k 圈 + 可出到接受態）。
 - **直接紅利**：Level 2 單模式 no-go 由「θ ≥ 0」升級為「V 有下界」——
   非負假設變成 WLOG（gauge choice），不是實驗限制。
+  （**收口 2026-09-12**：L2 單模式由 B3c 對立對 (25, 315)、L2／L3 雙模式由 A-5 軌道回歸
+  定理（`ProjectA/Collatz_FST_Orbit_NoGo.lean`）以**無符號**形涵蓋——三模板的 bounded-below
+  升級皆為 a fortiori 系理；見 B1.5 節收口句。）
 - **與 A 論文的互動**：corollary 只有在 B1 完成後才進 A 的 appendix；
   未完成前 A 維持 θ≥0 敘述 + discussion 一段。不用 forthcoming 撐主定理。
 
@@ -271,6 +274,19 @@ Mathlib 有 DFA/NFA/regular 基礎，無 weighted transducer 層；
    bounded-below = A 定理的實際升級）——見後續 PR**；逆向蘊含
    `HasPotential → BoundedBelow`（D3，非交付項）；`Fin k` 一般化；
    Collatz 實例化（B3）。
+
+**合成收口（2026-09-12，任務 (2)，分支 `a/upgrade-signed-orbit`；設計核准 UPGRADE-DESIGN-REPORT
+路線 S）**：指令原案（R1——在模式追蹤乘積 `((c,P,p), LSt, flag)`、`sel = flag` 的 per-mode useful
+邊空間重解雙平衡憑證，再與 structured gauge 合成）的探測結果：R1 LP 在池奇數 < 4000 上**可行**
+（L2 支撐 21、聚合 = mode 1 的 K 泵 2-cycle；L3 支撐 38、聚合 = mode 0 的一條 3-cycle；既有
+W17/LAM17 在邊層有 6 個負座標），**但聚合 ≡ 0 的無符號 LP 亦可行**，最強形為軌道回歸 x = 1787
+（`F 2011 = F 1787`、`F3 2011 = F3 1787`、終態同）。A 定理升級因此由 `ProjectA/Collatz_FST_Orbit_NoGo.lean`
+以 a fortiori 收掉（ROADMAP-A A-5）——**structured gauge 的 Collatz 消費在現有三模板上沒有非平凡實例**，
+方法保留。**覆活判準**：輸入超出 (F, 終態) 之模板；訊號 = LP1（邊聚合 ≥ 0）可行而 LP2（邊聚合 ≡ 0）
+不可行（`tools/search/orbit_census.py --lp`）。若覆活，建議走循環憑證形（消費 B1 (1)⟹(2)
+`cyclesNonneg_of_boundedBelow` ＋ `boundedBelow_restrict`，零 Fintype）而非 `structured_gauge`
+（Collatz 實例的 `Q`／`A` 非有限型，需有限重編碼）。B 側雙模式 Sel 實例（模式追蹤乘積＋成本橋；
+設計探針已編譯）列 B3 殘項 R-B，另 PR。
 
 ## B2：固定 topology 的全語言判定
 
@@ -529,6 +545,11 @@ B3C-DESIGN-REPORT，Q1–Q5 作答與裁決點 D1–D9 全項通過；D1 裁定�
 7. **明確不做（B3c 之後）**：Lean 端 D(θ)／`DiffAuto θ` 與橋定理；路徑枚舉完備性；6 循環 LP 憑證
    pump 族；`rdDFA`（D7）；雙模式／仿射無符號定理（B3b D5 (4) 觀察層）；A 定理 bounded-below
    升級合成；paper／registry（paper 增補候選仍歸修訂線）；`Fintype` 化。
+
+**補記（2026-09-12，A-5）**：上列「B3c 之後明確不做」中的兩項已有處置——「雙模式／仿射無符號定理
+（B3b D5 (4) 觀察層）」由 A-5 以軌道回歸落地於 A 側（`ProjectA/Collatz_FST_Orbit_NoGo.lean`；普查
+x < 2¹⁶：B3b 的 30 組雙模式對立對**全部**含 (m,t) 終末平衡、L3 有 4 組；B 側 `SelCostAutomaton`
+實例化仍待排程 = R-B）；「A 定理 bounded-below 升級合成」以 a fortiori 收口（見 B1.5 節收口句與覆活判準）。
 
 ## B4：受限一般結果
 
