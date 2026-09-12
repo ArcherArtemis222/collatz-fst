@@ -286,7 +286,8 @@ W17/LAM17 在邊層有 6 個負座標），**但聚合 ≡ 0 的無符號 LP 亦
 不可行（`tools/search/orbit_census.py --lp`）。若覆活，建議走循環憑證形（消費 B1 (1)⟹(2)
 `cyclesNonneg_of_boundedBelow` ＋ `boundedBelow_restrict`，零 Fintype）而非 `structured_gauge`
 （Collatz 實例的 `Q`／`A` 非有限型，需有限重編碼）。B 側雙模式 Sel 實例（模式追蹤乘積＋成本橋；
-設計探針已編譯）列 B3 殘項 R-B，另 PR。
+設計探針已編譯）列 B3 殘項 R-B，另 PR——**已收口 2026-09-12**（`ProjectB/Collatz_FST_B3_SelInstance.lean`，
+見 B3 節完成紀錄（R-B）；證明路線是軌道，gauge 未被使用，`structured_gauge` 的 `Fintype` 前提在該實例亦不成立）。
 
 ## B2：固定 topology 的全語言判定
 
@@ -347,7 +348,7 @@ B2-DESIGN-REPORT，Q1–Q4 與偏差點 D1–D6 全項通過）**：
 6. **明確不做（照設計）**：任何 Lean（B3 驗證書）、Collatz 實例化與
    `D_A` weighted composition（B3）、憑證序列化格式（B3 決定）。
 
-## B3：重現 Project A（abstraction 驗收測試；**B3a、B3b、B3c 已完成** 2026-09-04；D(θ) 鏡射與雙模式無符號定理待排程）
+## B3：重現 Project A（abstraction 驗收測試；**B3a、B3b、B3c 已完成** 2026-09-04；**R-B（L2 雙模式 Sel 實例）已完成** 2026-09-12；D(θ) 鏡射與 R-B-L3 待排程）
 
 用 B2 引擎重推三條 no-go。`scripts/check_boundaries.py` 本來就禁止
 ProjectB 匯入 ProjectA ⟹ 這是結構上誠實的重推導。
@@ -549,7 +550,57 @@ B3C-DESIGN-REPORT，Q1–Q5 作答與裁決點 D1–D9 全項通過；D1 裁定�
 **補記（2026-09-12，A-5）**：上列「B3c 之後明確不做」中的兩項已有處置——「雙模式／仿射無符號定理
 （B3b D5 (4) 觀察層）」由 A-5 以軌道回歸落地於 A 側（`ProjectA/Collatz_FST_Orbit_NoGo.lean`；普查
 x < 2¹⁶：B3b 的 30 組雙模式對立對**全部**含 (m,t) 終末平衡、L3 有 4 組；B 側 `SelCostAutomaton`
-實例化仍待排程 = R-B）；「A 定理 bounded-below 升級合成」以 a fortiori 收口（見 B1.5 節收口句與覆活判準）。
+實例化 = R-B，已於 2026-09-12 收口，見下方完成紀錄（R-B））；「A 定理 bounded-below 升級合成」以 a fortiori 收口（見 B1.5 節收口句與覆活判準）。
+
+**完成紀錄（R-B，2026-09-12，分支 `b/rb-dualmode-sel`；設計核准 RB-DESIGN-REPORT，Q1–Q6 作答與
+裁決點 D1–D11 全項通過：D3 歸納帳 2 條、D7 邊界和納入、D8 L3 續 PR、D9 attest §I、D6 保留）**：
+
+1. **分階與措辭**：本 PR 收 B3「用 B 框架重推三條 no-go」的雙模式二條之 **Level 2**——A 的 terminal-affine
+   雙模式模板（#39 `V2`）誠實實例化為 B1.5 `SelCostAutomaton`，以 B 詞彙立三層定理。**L2 已收，L3 待 B 側 L3
+   語義層（續 PR R-B-L3）**。分區盤點事實（D8）：`Core/` 對 Level 3 **零暴露**（五檔 grep `step3`／`run3`／`S14`／
+   `F3`／`microTrace3`／`occ3` 零命中）；`step3`／`microTrace3`／`occ3`／`KEYS3`／`F3`（`ProjectA/Collatz_FST_L3_2Mode_Recon.lean`）、
+   `run3`／`S14`／`runCarry_digits_mem`／`run3_extIn_terminal`（`ProjectA/Collatz_FST_L3_Flow.lean`）與 `V3` 全在
+   ProjectA，B 不可 import。B 側 L3 = 誠實重定義，估 ≈ 420 行、5 條記帳歸納（Inv3、投影 microTrace3→microTrace2、
+   run3 閉包、走行、wpath）、decide 預算 ≈ L2 ×3，另需裁決 48 維 vs K 列摺疊 30 維座標與終態路線；替代為專案主人
+   `core/*` 升格 step3／Inv3（B 側降至 ≈ 250 行）。**保險絲未觸發**：零 ProjectA import、零 `Fintype`、零 heartbeat
+   調整、零 native 求值。
+2. **載體**（`ProjectB/Collatz_FST_B3_SelInstance.lean`；import 僅 B1.5 與 B3a 檔）：`QF = (L2State × LSt) × Bool`
+   ——B3a 乘積直接加旗標分量（D1：Bool，合成律 `Bool.or_assoc`＋`decide_or`；不擴 `LSt`），旗標於 (2,K,0) 讀 1
+   （B 座標 13）置真、餘傳遞，哨兵 `none` 讀 0 永不置真；`sel p = if p.2 then 1 else 0`；`w m = θ m ∘ featIdx ∘ unmark`
+   （`θ : Fin 2 → Fin 18 → ℚ` 為 B 暫存器索引形，D2）；β 只看機器分量：(0,S,t) ↦ `βv (sel) t`、餘 0；α = 0；
+   接受集 = {(0,S,0),(0,S,1)} × {tail2} × Bool（4 態；B3a D1 取 S8 是因當時無 B 側終態定理）。
+3. **走行與歸納帳（D3）**：全檔恰兩條記帳級 list 歸納——`evalFrom_flag`（走行三分量顯式：機器 = Core `run2`、
+   DFA = `extDFA`、旗標 = `flagVal`；B3a `prodRun_fst`＋B0 `prodRun_snd` 的角色一次收掉）與 `wpath_flag`（B3a
+   `wpath_prod` 鏡射）；與 B3a 同數同形。NOTES Q2 預期的「`flag_iff` 唯一新歸納」實際上 `flag_iff` 是走行引理的
+   投影；無乘積態不變量歸納（Inv 直接取 Core `microTrace2_inv`）。
+4. **旗標接地**（交付 2）：`featIdx_eq_13`（Inv 之下座標 13 唯一，omega 兩案）、`mem_iff_13`、`gate_pointwise`、
+   **`boundary_sum_B : F_B x 6 + F_B x 13 = 1`**（D7 雙門讀法：K→S 出口只有門 6 = (1,K,0) 讀 0 與門 13 = (2,K,0)
+   讀 1，每條走行恰穿過一道——Core `boundary_step_unique` 的 B 座標形；**模式 = 走的是哪道門**，互斥且窮盡，
+   模式位對全體 x 良定義；A 的 `mode_bit_endpoints` 只對 24 端點 `decide`，此為全稱形）、`count13_le_one`（系理）、
+   **`flag_iff : flagB x = true ↔ F_B x 13 = 1`**（零歸納）、`selF_flagB`。模式例進電池：模式 0 = 25、2681，
+   模式 1 = 3、1787；四類 (m,t) 各有實例 1787 (1,1)、2681 (0,0)、961 (0,1)、599 (1,0)。
+5. **β 與成本橋**（交付 3；D4）：B 自產終態定理 `run2_extIn_terminal_B`（Core `run2_mem_S8`＋`run2_fst`／`extRun_carry`
+   ＋`decide` 掃 S8；重推 A 的 `Flow.run2_extIn_terminal`，8 行零歸納）⟹ `βsel_final`；`wpath_sum`（B3a `cost_eq_sum`
+   同款收尾）⟹ **`cost_eq_sel : cost (SelInst θ βv) (extInM x) = βv (modeB x) (termB x) + ∑ i, θ (modeB x) i * F_B x i`**
+   ——對**全體 x**（含偶數與 x = 1；A 的 `V2` 亦對全體 x 定義）；`accepts_extInM_sel`（奇數 x 接受，BoundedBelow 形非真空）。
+6. **三層定理**（交付 4；素材全 B 自產）：`Todd_1787`／`Todd_2681` 經 B0 `U`（B3a D3）；`F_B 2011 = F_B 1787` kernel `decide`
+   （B 座標，不引 A 的同型事實）；終末位 `decide`。(a) **`orbit_cost_eq`**（∀ θ βv）；(b) **`no_go_sel_signed`**
+   （`WB1787 = [1787, 2681]`、任意符號、`linarith`）；(c) **`no_go_sel_bounded_below`**——`SelCostAutomaton.BoundedBelow`
+   逐字為假設、證明中棄置（a fortiori）；docstring 寫明「gauge 目標類在此模板上為空的 kernel 可見紀錄；證明路線是
+   軌道，`structured_gauge` 未被使用且其 `Fintype` 前提在本實例不成立」。隨附（D5／D6）：`no_go_sel_signed_odd`
+   （∀ 奇 x > 1）、`no_go_sel_signed_lang`（`RankingDomain`＋`Uacc`）、任意函數版 `no_feature_ranking_orbit_B`。
+7. **attest §I**（D9；`tools/b3_attest.py`，CI 仍一步、`.github` 零變更）：B 通道 `SelInst θ β` 的 cost 逐字重跑
+   ≡ A 通道 `β_{m,t} + θ_m·F2∘σ`（A 的 `V2`；θ_A = θ_B∘σ⁻¹、m = F2[5]、t = `b15_terminal_balance.run2` 終末位）——
+   4 組固定種子有理 (θ, β) × 奇 x < 2048 = 4096 組精確相等；旗標 ≡ [F_B 13 = 1] ≡ [F2 5 = 1] 與邊界和雙門
+   ≡ A 側 F2[2] + F2[5] = 1 對 x < 4096 全體；終態定理 B 側 ≡ A 側 run2；Lean 字面錨（Todd 鏈、featList 1787／2011、
+   旗標四例、(m,t) 四例）；軌道兩步差分和零；負向三則（竄改旗標錨／去 σ 99/99 不等／竄改 featList）。12 項全綠 ≈ 0.2 s。
+   「B 實例 = A 模板」自此從 Lean 各自陳述升為 CI 錨。
+8. **驗證**：`lake build` 全綠（新模組 6.4 s、零 heartbeat 調整）；`#print axioms` 十條主定理僅三標準公理；
+   電池 17 項（20 個 `#eval`）全 `true`；`check_boundaries.py` 41 模組（負向測試：暫存檔 ProjectB import ProjectA 必紅）；
+   `b3_attest.py` 全綠 2.3 s；其餘腳本與兩生成器零 diff。
+9. **明確不做**：Recon 的 A↔B 等價定理（`V2 … x = cost (SelInst …) (extInM x)` 需跨界 import，順延——本句即
+   ROADMAP 的一句話紀錄）；gauge 的任何應用；paper／registry（增補候選仍歸修訂線）；L3（續 PR R-B-L3，第 1 點）；
+   `L2auto (θ m)` 與 `(SelInst θ βv).restrict m` 的逐邊等式；D(θ)／`rdDFA` 鏡射；`Fintype` 化。
 
 ## B4：受限一般結果
 

@@ -8,6 +8,8 @@ B1.5 structured gauge：雙暫存器＋終態選擇的 gauge 升級（B15_SelGau
 B3a：Level 2 單模式實例化橋＋見證集 no-go 重推——用 B 框架重推 A（B3_L2Instance）。
 B3c：B2 驗證書 P1–P5 的泛型層與健全性（B2_PassCert）；無符號對立對定理——
 L2 單模式任意符號線性 ranking 的 2 見證 no-go（B3_OpposingPair）。
+R-B：B 側雙模式 Sel 實例化——B1.5 `SelCostAutomaton` 於模式追蹤乘積 × 旗標上的 L2 實例、
+旗標接地、成本橋、三層定理（軌道恆等／無符號 2 見證／BoundedBelow 形）（B3_SelInstance）。
 路線圖見 docs/ROADMAP-B.md。
 -/
 import Lean4RealConstruction.ProjectB.Scaffold
@@ -18,3 +20,4 @@ import Lean4RealConstruction.ProjectB.Collatz_FST_B15_SelGauge
 import Lean4RealConstruction.ProjectB.Collatz_FST_B3_L2Instance
 import Lean4RealConstruction.ProjectB.Collatz_FST_B2_PassCert
 import Lean4RealConstruction.ProjectB.Collatz_FST_B3_OpposingPair
+import Lean4RealConstruction.ProjectB.Collatz_FST_B3_SelInstance
