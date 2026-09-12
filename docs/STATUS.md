@@ -1,6 +1,6 @@
 # 定理狀態索引（唯一真相來源）
 
-最後更新：2026-09-04 ／ 對應 PR：`b/b3c-lean-mirror`（B3c——Lean 鏡射：無符號對立對定理＋B2 驗證書 P1–P5 健全性）
+最後更新：2026-09-12 ／ 對應 PR：`a/upgrade-signed-orbit`（A-5——軌道回歸：三模板無符號 2 見證版＋bounded-below 升級 a fortiori）
 
 > 本檔由 repo 現況生成：定理名逐條 grep 核實、一句話摘要取自各定理 docstring。
 > 歷史敘述見 [HANDOVER.md](HANDOVER.md)（快照，不再更新）；待辦見
@@ -32,7 +32,8 @@
 ## Project A — No-Go 定理
 
 三個模板 × （有限見證版／全稱版／仿射版）共 8 條，另有 B1.5 雙平衡仿射版
-2 條（見表末；非 paper-facing，不入 registry）。見證集與 Farkas 憑證：
+2 條（見表末；非 paper-facing，不入 registry）；A-5 軌道回歸家族（無符號 2 見證版、
+bounded-below 升級）見本節末小段。見證集與 Farkas 憑證：
 
 | 憑證 | 見證集 | Σλ | 重算錨 |
 |---|---|---|---|
@@ -58,6 +59,25 @@
 註：`ProjectA/Collatz_FST_2Mode_Recon.lean` 與 `ProjectA/Collatz_FST_L3_2Mode_Recon.lean`
 檔頭 docstring 內出現的同名「定理」是交接紀錄的引文，不是宣告；canonical 宣告
 在上表兩個 NoGo 檔。`W12` / `W20` 的定義位於這兩個 Recon 檔。
+
+### A-5 軌道回歸：無符號 2 見證版與 bounded-below 升級（2026-09-12）
+
+Todd 軌道 1787 → 2681 → 2011 兩步後回到統計不可分辨的狀態（`F 2011 = F 1787`、`F3 2011 = F3 1787`、
+終態同；kernel `decide`），故三個模板去掉 θ ≥ 0 只需見證集 `Orbit.W1787 = [1787, 2681]`，
+「V 有下界」升級是 a fortiori 系理（任務 (2) 的目標敘述；gauge 不需要）。全檔零歸納、零 heartbeat；
+非 paper-facing、不入 registry（增補候選轉修訂線）。錨：`tools/certificates.py --orbit`。
+機制與大普查：`tools/search/orbit_census.py`（ROADMAP-A A-5）。
+
+| 定理 | 檔案 | 一句話 |
+|---|---|---|
+| `CollatzFST.Orbit.Todd_1787`、`Todd_2681`、`W1787` | `ProjectA/Collatz_FST_Orbit_NoGo.lean` | 軌道 1787 → 2681 → 2011 與兩步見證集。 |
+| `CollatzFST.LP.F_2011_eq_F_1787`、`TwoMode.F_2011_eq_F_1787`、`TwoMode.run2_2011_eq_run2_1787`、`L3.F3_2011_eq_F3_1787`、`L3.run3_2011_eq_run3_1787` | 同上 | 軌道回歸：兩層佔用向量與終態在 T² 1787 = 2011 與 1787 相同。 |
+| `CollatzFST.LP.no_feature_ranking_orbit_1787`、`TwoMode.no_feature_ranking_orbit_1787`、`L3.no_feature3_ranking_orbit_1787` | 同上 | **任意函數版**：任何以（佔用向量, 終態）為自變量的函數都不能在 1787、2681 兩步同時嚴格下降。 |
+| `CollatzFST.LP.no_signed_linear_ranking`、`no_global_odd_signed_ranking`、`no_linear_ranking_bounded_below` | 同上 | 單模式：`no_nonneg_linear_ranking` 去掉 θ ≥ 0（`ΔF 2681 = −ΔF 1787`）；全稱版；bounded-below 版。 |
+| `CollatzFST.TwoMode.V2`、`no_go_2mode_terminal_affine_potential_V2` | 同上 | #39 terminal-affine 模板抽成定義；#39 主定理以 `V2` rfl 級重述。 |
+| `CollatzFST.TwoMode.no_go_2mode_terminal_signed`、`no_global_odd_2mode_terminal_signed`、`no_go_2mode_terminal_bounded_below` | 同上 | #39（L2）去掉 θ ≥ 0、2 見證；全稱版；**bounded-below 升級**（假設 `∃ B, ∀ 奇 x, B ≤ V x`）。 |
+| `CollatzFST.TwoMode.no_go_2mode_affine_signed`、`no_go_2mode_signed` | 同上 | A-2 仿射模板與純雙模式模板的無符號版（`V2` 特例）。 |
+| `CollatzFST.L3.V3`、`no_go_level3_2mode_terminal_affine_potential_V3`、`no_go_level3_2mode_terminal_signed`、`no_global_odd_level3_2mode_terminal_signed`、`no_go_level3_2mode_terminal_bounded_below`、`no_go_level3_2mode_affine_signed`、`no_go_level3_2mode_signed` | 同上 | Level 3 同組（同一軌道）。 |
 
 ## Project A — 流守恆與維度（Level 2）
 
@@ -209,7 +229,7 @@ B3c（2026-09-04，Lean 鏡射；D1 裁定拆檔）：**B2 驗證書泛型層** 
 
 | 腳本 | 驗什麼 | 本機耗時 |
 |---|---|---|
-| `tools/certificates.py` | ΔF 特徵萃取 Python↔Lean 交叉驗證；三組 λ 從見證集重解（`W₁₀` 解族唯一）；模式流量平衡 = 0（A-2 仿射升級前提）；B1.5 雙平衡錨（`--b15`：W17/W26 聚合向量＋四條 per-(m,t) 平衡 = 0）。 | ~1 s |
+| `tools/certificates.py` | ΔF 特徵萃取 Python↔Lean 交叉驗證；三組 λ 從見證集重解（`W₁₀` 解族唯一）；模式流量平衡 = 0（A-2 仿射升級前提）；B1.5 雙平衡錨（`--b15`：W17/W26 聚合向量＋四條 per-(m,t) 平衡 = 0）；A-5 軌道回歸錨（`--orbit`：1787 → 2681 → 2011 的 F2/F3/終態重算與 Lean 字面對帳、x < 4096 小普查、負向三則）。 | ~1 s |
 | `tools/b15_terminal_balance.py` | 既有 W₁₂/W₂₀ 憑證終末不平衡 ±428/±753 的精確整數重算（論文 §6 exact-integer 錨；B1.5 資料點 1）。CI 步驟經專案主人具名授權（B1.5 PR）。 | ~0.2 s |
 | `tools/a3_functionals.py` | Level 2 上界泛函完備性（死 2 + 流守恆 7、秩 8 = 18 − 10）；Lean↔Python 三條錨（16 邊關聯表、9 條差分關係、自由座標＋重建公式）。 | ~2.6 s |
 | `tools/l3_recon.py` | Level 3 全套偵察對帳：14 狀態／28 邊、終末 2 態、單模式 dim 16（完備）、雙模式 dim 31（缺口 = `θ₀[16]+θ₁[33]`）、65 條上界資料。 | ~15 s（沙盒可達 ~51 s） |
@@ -225,6 +245,8 @@ B3c（2026-09-04，Lean 鏡射；D1 裁定拆檔）：**B2 驗證書泛型層** 
 ## 進行中
 
 - **A-4 論文化**（[ROADMAP-A.md](ROADMAP-A.md)）——A-0～A-3 已全部完成，這是 Project A 唯一殘項。
+- **A-5 軌道回歸**（ROADMAP-A A-5）——已完成（2026-09-12）：三模板無符號 2 見證版＋bounded-below
+  升級 a fortiori；paper 增補候選轉修訂線。
 - **外部文獻審計** `docs/audit/2506-21728.md` 已定稿（2026-08-01，PR-2；
   重現腳本 `tools/audit_falsifiers.py`）——僅低頻追蹤 arXiv 2506.21728 後續版本。
 - **Project B**：戰略見 ROADMAP-B.md（Phase 0 PR-3 落地；HANDOVER 的
@@ -245,5 +267,7 @@ B3c（2026-09-04，Lean 鏡射；D1 裁定拆檔）：**B2 驗證書泛型層** 
   候選轉交修訂線；雙模式亦有對立對，觀察層），見 ROADMAP-B.md B3 節 B3b 紀錄；
   **B3c 已完成（2026-09-04，Lean 鏡射）**：無符號對立對定理（`no_signed_ranking_pair` 與全稱形；
   任意符號 θ、2 見證、零歸納）＋ B2 驗證書 P1–P5 泛型層與健全性（`allNeg_of_passOK`；T3 實例
-  `decide +kernel`）落 ProjectB（上表；attest §H 字面同步）；`rdDFA` 緩辦（D7）。下一步：D(θ) 鏡射
-  （含 `rdDFA`）、雙模式／仿射無符號定理、A 定理 bounded-below 升級合成——皆待排程。
+  `decide +kernel`）落 ProjectB（上表；attest §H 字面同步）；`rdDFA` 緩辦（D7）。
+  **A-5 已完成（2026-09-12）**：雙模式／仿射無符號定理由軌道回歸落地 A 側、A 定理 bounded-below
+  升級以 a fortiori 收口（上表 A-5 小段；ROADMAP-B B1.5 收口句與覆活判準）。下一步：D(θ) 鏡射
+  （含 `rdDFA`）、B 側雙模式 Sel 實例化（R-B）——皆待排程。

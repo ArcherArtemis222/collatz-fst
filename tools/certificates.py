@@ -11,11 +11,18 @@
 3. **Cramer 結構**：λ 就是見證矩陣的極大子式向量，而憑證的整數值（31、36、347…）
    就是對應的行列式。這解釋了「λ 在相差尺度下唯一、t = 31 剛好解回整數」。
    詳見 `docs/ROADMAP-A.md` A-4。
+4. **軌道回歸**（ROADMAP-A A-5；`ProjectA/Collatz_FST_Orbit_NoGo.lean`）：Todd 軌道
+   1787 → 2681 → 2011 兩步後回到統計不可分辨的狀態——`F2(2011) = F2(1787)`、
+   `F3(2011) = F3(1787)`、終態相同——故任何以（佔用向量, 終態）為自變量的函數都不能在
+   1787、2681 兩步同時嚴格下降；三個 A 模板去掉 θ ≥ 0 只需這 2 個見證。本段用 A 側
+   `F2`/`F3`/`run2`/`run3` 重算並與 Lean 電池字面雙向對帳，附 x < 4096 小普查與負向測試
+   （大普查 x < 2¹⁶ 與 R1 邊粒度 LP 見 `tools/search/orbit_census.py`，不進 CI）。
 
     python3 tools/certificates.py            # 全部驗一遍
     python3 tools/certificates.py --level2   # 只驗 Level 2 單模式
     python3 tools/certificates.py --b15      # 只驗 B1.5 雙平衡憑證
     python3 tools/certificates.py --cramer   # 只驗 Cramer 結構
+    python3 tools/certificates.py --orbit    # 只驗軌道回歸（無符號 2 見證 no-go 的錨）
 
 依賴：numpy、sympy。不需要 z3（z3 是用來「搜尋」的，這裡只做重算與驗證）。
 """
@@ -148,6 +155,22 @@ LEAN_DF10 = {
     1305: [0, 0, -1, 0, -1, 1, 0, -1, -2, 0, 1, 0, -1, 0, -1, 1, 2, 1],
     1511: [0, 0, 0, 0, 0, 0, 0, 1, 2, -1, -1, 1, 1, -1, -1, 1, 1, -2],
 }
+
+
+# ── 軌道回歸（無符號 2 見證 no-go；ROADMAP-A A-5）──
+# Lean：ProjectA/Collatz_FST_Orbit_NoGo.lean §O.V 電池的字面（雙向對帳）。
+ORBIT = (1787, 2681, 2011)                                   # x, Todd x, Todd² x
+LEAN_ORBIT_F2 = {1787: [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 2, 0, 0, 0, 2, 3, 3],
+                 2681: [0, 0, 1, 1, 1, 0, 0, 0, 1, 3, 1, 0, 2, 1, 0, 1, 1, 1]}
+LEAN_ORBIT_F3 = {1787: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 1, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 2, 1, 0, 0, 1, 2],
+                 2681: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 1, 0, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0]}
+LEAN_ORBIT_TERM2 = {1787: (0, 'S', 1), 2681: (0, 'S', 0)}   # run2 讀完 extIn 的終態
+LEAN_ORBIT_TERM3 = {1787: (0, 'S', 0, 1), 2681: (0, 'S', 1, 0)}
+LEAN_ORBIT_MODE = {1787: 1, 2681: 0}                         # 兩層同：F2[5] / F3[33]
+LEAN_ORBIT_DF = [0, 0, 1, 0, 1, -1, 0, 0, 1, 3, 0, -2, 2, 1, 0, -1, -2, -2]   # LP.ΔF_1787；ΔF 2681 = −此
+LEAN_ORBIT_W = [1787, 2681]                                  # Orbit.W1787
 
 OK, BAD = "  [OK]  ", "  [!!]  "
 _failures: list[str] = []
@@ -334,6 +357,67 @@ def run_cramer(title: str, W, LAM, feat, mode_idx: int, n: int, two_mode: bool) 
           "不是 Cramer 量（單模式即 Σλ = 1024 而 det = 31）")
 
 
+
+# ────────────────────────────────────────────────────────────────────
+# 軌道回歸：無符號 2 見證 no-go 的錨（ROADMAP-A A-5）
+# ────────────────────────────────────────────────────────────────────
+
+def _orbit_returns(feat, run, N: int) -> tuple[list[int], int]:
+    """x 奇 < N 中 F(T²x) = F(x) 者，以及「F 決定終態」的違例數。"""
+    cache: dict[int, tuple] = {}
+
+    def F(x: int) -> tuple:
+        if x not in cache:
+            cache[x] = tuple(int(v) for v in feat(x))
+        return cache[x]
+    seen: dict[tuple, tuple] = {}
+    bad = 0
+    for x in range(1, N, 2):
+        k, t = F(x), run(x)
+        if k in seen and seen[k] != t:
+            bad += 1
+        seen.setdefault(k, t)
+    return [x for x in range(3, N, 2) if F(todd(todd(x))) == F(x)], bad
+
+
+def run_orbit() -> None:
+    from b15_terminal_balance import run2, run3
+    print("\n=== 軌道回歸：1787 → 2681 → 2011 / Collatz_FST_Orbit_NoGo.lean ===")
+    x, y, z = ORBIT
+    check(todd(x) == y and todd(y) == z, f"Todd 鏈 {x} → {y} → {z}（Orbit.Todd_1787／Todd_2681）")
+    check((F2(z) == F2(x)).all() and (F3(z) == F3(x)).all(),
+          "特徵回歸：F2(2011) = F2(1787) 且 F3(2011) = F3(1787)（LP/TwoMode.F_2011_eq_F_1787、L3.F3_2011_eq_F3_1787）")
+    check(run2(z) == run2(x) and run3(z) == run3(x),
+          "終態回歸：run2 / run3 讀完 extIn 2011 與 1787 相同（run2_2011_eq_run2_1787、run3_2011_eq_run3_1787）")
+    check((F2(y) != F2(x)).any() and (F3(y) != F3(x)).any(), "單步不回歸：F(2681) ≠ F(1787)（兩步現象）")
+    check(all((F2(w) == np.array(v)).all() for w, v in LEAN_ORBIT_F2.items())
+          and all((F3(w) == np.array(v)).all() for w, v in LEAN_ORBIT_F3.items()),
+          "Lean 字面：F 1787／F 2681、F3 1787／F3 2681 與 Python 重算逐位吻合")
+    check(all(run2(w) == t for w, t in LEAN_ORBIT_TERM2.items())
+          and all(run3(w) == t for w, t in LEAN_ORBIT_TERM3.items()),
+          f"Lean 字面：終態 run2 {LEAN_ORBIT_TERM2}、run3 {LEAN_ORBIT_TERM3}")
+    check(all(int(F2(w)[MODE_IDX_L2] == 1) == m and int(F3(w)[MODE_IDX_L3] == 1) == m
+              for w, m in LEAN_ORBIT_MODE.items()),
+          f"模式位（兩層一致）：{LEAN_ORBIT_MODE}（hm_1787／hm_2681、hm3_1787／hm3_2681）")
+    df = (F2(y) - F2(x)).tolist()
+    df2 = (F2(z) - F2(y)).tolist()
+    check(df == LEAN_ORBIT_DF and df2 == [-v for v in LEAN_ORBIT_DF],
+          "單模式差分：ΔF 1787 = Lean 字面、ΔF 2681 = −ΔF 1787（LP.ΔF_1787／ΔF_2681）")
+    check(list(ORBIT[:2]) == LEAN_ORBIT_W and all(w % 2 == 1 and w > 1 for w in LEAN_ORBIT_W)
+          and not (set(LEAN_ORBIT_W) & (set(W10) | set(W12) | set(W17) | set(W20) | set(W26))),
+          "見證集 W1787 = [1787, 2681]：奇且 > 1，與 W₁₀／W12／W17／W20／W26 不相交")
+    # 小普查（x < 4096；大普查 x < 2^16 在 tools/search/orbit_census.py）
+    r2, bad2 = _orbit_returns(F2, run2, 4096)
+    r3, bad3 = _orbit_returns(F3, run3, 4096)
+    check(r2 == [1787, 3577, 3579] and r3 == [1787, 3577] and bad2 == 0 and bad3 == 0,
+          f"小普查 x < 4096：軌道回歸 L2 {r2}、L3 {r3}（最小皆 1787）；「F 決定終態」違例 {bad2}/{bad3}")
+    # 負向測試：錨不是空的
+    tam = list(LEAN_ORBIT_F2[1787]); tam[3] += 1
+    check(not (F2(1787) == np.array(tam)).all(), "負向：竄改 F 1787 字面一位 ⟹ 對帳紅")
+    check(run2(2681) != LEAN_ORBIT_TERM2[1787], "負向：終態字面錯配（2681 的終態 ≠ 1787 的）⟹ 紅")
+    check((F2(todd(todd(1611))) != F2(1611)).any(), "負向：非軌道回歸的數（1611）不通過 F(T²x) = F(x)")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--level2", action="store_true")
@@ -341,8 +425,9 @@ def main() -> int:
     ap.add_argument("--level3", action="store_true")
     ap.add_argument("--b15", action="store_true")
     ap.add_argument("--cramer", action="store_true")
+    ap.add_argument("--orbit", action="store_true")
     a = ap.parse_args()
-    everything = not (a.level2 or a.twomode or a.level3 or a.b15 or a.cramer)
+    everything = not (a.level2 or a.twomode or a.level3 or a.b15 or a.cramer or a.orbit)
 
     if everything or a.level2:
         run_level2()
@@ -364,6 +449,10 @@ def main() -> int:
         run_cramer("Level 2 單模式 W₁₀", W10, LAM10, F2, MODE_IDX_L2, 18, False)
         run_cramer("Level 2 雙模式 W₁₂", W12, LAM12, F2, MODE_IDX_L2, 18, True)
         run_cramer("Level 3 雙模式 W₂₀", W20, LAM20, F3, MODE_IDX_L3, 48, True)
+    if everything or a.orbit:
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        run_orbit()
 
     print()
     if _failures:
