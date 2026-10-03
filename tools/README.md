@@ -99,7 +99,7 @@ ROADMAP A-3 的 **Level 3（31 維）**部分——在寫任何 Lean 之前先�
 B3a（ROADMAP-B B3 第一階段）在 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零
 ProjectA import** 的素材重推 Level 2 單模式 no-go；`check_boundaries.py` 禁止 B 匯入 A，
 所以「兩個獨立重推導出同一數學」只能在 tools 層認證——這支腳本是唯一同時 import
-兩側的橋。精確整數／有理、零浮點、**進 CI**（實測約 2.3 秒，含 §G、§H、§I）：
+兩側的橋。精確整數／有理、零浮點、**進 CI**（實測約 2.5 秒，含 §G、§H、§I、§J）：
 
 * **B 側自含實作＋Lean 錨**：照 Lean 定義逐字重寫 `step2`／`lstep`／`featIdx`／
   `featList`／`F_B`；錨 `LEAN_B3_W`／`LEAN_B3_TODD`／`LEAN_B3_LAM`／
@@ -129,6 +129,13 @@ ProjectA import** 的素材重推 Level 2 單模式 no-go；`check_boundaries.py
   （4096 組精確相等）；旗標 ≡ [F_B 13 = 1] ≡ [F2 5 = 1]、邊界和雙門 F_B[6] + F_B[13] = 1 ≡ A 側 F2[2] + F2[5] = 1、
   終態 B 側 ≡ A 側 `run2`（x < 4096 全體）；Lean 字面錨（Todd 鏈、featList 1787／2011、旗標四例、(m,t) 四例）；
   軌道兩步差分和零；負向三則（竄改旗標錨／去 σ／竄改 featList）。≈ 0.2 秒。
+* **§J（R-B-L3，2026-10-03）**：L3 跨側對帳——`ProjectB/Collatz_FST_B3_L3Machine.lean`（B 側 L3 語義層：L3 態 =
+  L2 核心 × 較舊歷史位）與 `Collatz_FST_B3_L3SelInstance.lean`（L3 雙模式 Sel 實例）：BFS ≡ `S14_B`、閉包＋見證之像
+  （「可達恰 14」）、終態 B 側 ≡ A 側 `run3`（x < 4096 全體）；σ₃（B→A）由 key 比對建立（B 的 (p, h) = A 的 (較新, 較舊)）、
+  雙射對合移動 24 點，`F3_B x ≡ F3 x ∘ σ₃` 對 x < 4096 全體；**欄剖面認證**：28 個活座標中 24 個由資料唯一決定，其餘 4 個
+  落在 A 的恆等欄 F3[9] ≡ F3[12]、F3[43] ≡ F3[46]（觀察），由 key 裁定；B 通道 `SelInst3 θ β` 成本 ≡ A 通道
+  `β_{m,t} + θ_m·F3∘σ₃`（`V3`；m = F3[33]、t = `run3` 第三分量）4096 組精確相等；旗標 ≡ [F3_B 33 = 1] ≡ R-B 的 L2 旗標、
+  雙門 ≡ A 側 F3[16] + F3[33] = 1、終末位 = 1 − L2 終末位；字面錨；負向三則（竄改 featList3／去 σ₃／終末位改取較新位）。≈ 0.3 秒。
 
 ## b3b_diff.py 驗了什麼
 

@@ -5,7 +5,7 @@
 Lean 端 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零 ProjectA import** 的素材
 （Core 機器＋B0 語言層＋B1 載體）重推 Level 2 單模式 no-go。`check_boundaries.py`
 禁止 B 匯入 A，所以「兩個獨立重推導出同一數學」只能在 tools 層認證——本腳本是
-唯一允許同時 import 兩側的橋。精確整數／有理，零浮點。它做六件事：
+唯一允許同時 import 兩側的橋。精確整數／有理，零浮點。它做八件事：
 
 1. **B 側自含實作＋Lean 錨**（§A、§B）：照 Lean 定義逐字重寫 `step2`／`lstep`／
    `featIdx`／`featList`／`F_B`（B 側不 import certificates.py），與 Lean 檔 §B3.V
@@ -41,12 +41,18 @@ Lean 端 `ProjectB/Collatz_FST_B3_L2Instance.lean` 用**零 ProjectA import** �
    模板，m = F2[5]、t = run2 終末位）於固定種子有理 (θ, β) × 奇 x < 2048；旗標／(m,t)／featList／Todd
    字面錨；旗標 ≡ [F_B 13 = 1] ≡ [F2 5 = 1] 與邊界和雙門 F_B[6] + F_B[13] = 1（≡ A 側 F2[2] + F2[5] = 1）
    對 x < 4096 全體；終態定理 B 側 ≡ A 側 run2；負向三則。「B 實例 = A 模板」自此是 CI 錨。
+8. **R-B-L3 跨側對帳（§J，2026-10-03 起）**：`ProjectB/Collatz_FST_B3_L3Machine.lean`（B 側 L3 語義層：L3 態 =
+   L2 核心 × 較舊歷史位）與 `Collatz_FST_B3_L3SelInstance.lean`（L3 雙模式 Sel 實例）——閉包＋見證合證「可達恰 14」、
+   終態 ≡ A 側 run3；σ₃（B → A）由 key 比對建立、雙射對合移動 24 點，`F3_B ≡ F3∘σ₃` 對 x < 4096 全體，並以欄剖面
+   認證（活座標 24/28 由資料唯一決定，其餘 4 個落在 A 的恆等欄 F3[9] ≡ F3[12]、F3[43] ≡ F3[46]，由 key 裁定）；
+   B 通道 `SelInst3 θ β` 成本 ≡ A 通道 `β_{m,t} + θ_m·F3∘σ₃`（`V3`）4096 組精確相等；旗標 ≡ [F3_B 33 = 1] ≡ R-B 的 L2 旗標、
+   雙門 F3_B[16] + F3_B[33] = 1 ≡ A 側 F3[16] + F3[33] = 1、終末位 = 1 − L2 終末位，皆 x < 4096；字面錨；負向三則。
 負向測試（§F）常駐：竄改 featList 錨、λ、σ、聚合各一則必紅。
 
     python3 tools/b3_attest.py            # 全部（CI）
 
 依賴：numpy、sympy（既有）；import `tools/certificates.py`（A 側）、`tools/b2_engine.py`、
-`tools/b3b_diff.py`（B3b，純標準庫）、`tools/b15_terminal_balance.py`（A 側 `run2`，§I）。
+`tools/b3b_diff.py`（B3b，純標準庫）、`tools/b15_terminal_balance.py`（A 側 `run2`，§I；`run3`，§J）。
 """
 
 from __future__ import annotations
@@ -728,6 +734,208 @@ def run_selinst(sigma: list[int]) -> None:
     del zero
 
 
+# ────────────────────────────────────────────────────────────────────
+# §J R-B-L3 跨側對帳（2026-10-03 起；設計核准 RB-L3-DESIGN-REPORT E8）：
+#     `ProjectB/Collatz_FST_B3_L3Machine.lean`（B 側 L3 語義層）與 `Collatz_FST_B3_L3SelInstance.lean`
+#     （L3 雙模式 Sel 實例）——閉包／可達／終態 ≡ A 側 run3；σ₃ 由 key 比對建立並以資料認證；
+#     B 通道 SelInst3 成本 ≡ A 通道 β_{m,t} + θ_m·F3∘σ₃（`V3`）；旗標／雙門／跨層恆等；字面錨；負向三則。
+# ────────────────────────────────────────────────────────────────────
+
+LEAN_RBL3_S14 = [((1, 'K', 0), 0), ((2, 'K', 0), 0),                 # `S14_B`（L3 態 = (L2 核心, 較舊歷史位)）
+                 ((0, 'S', 0), 0), ((0, 'S', 0), 1), ((0, 'S', 1), 0), ((0, 'S', 1), 1),
+                 ((1, 'S', 0), 0), ((1, 'S', 0), 1), ((1, 'S', 1), 0), ((1, 'S', 1), 1),
+                 ((2, 'S', 0), 0), ((2, 'S', 0), 1), ((2, 'S', 1), 0), ((2, 'S', 1), 1)]
+LEAN_RBL3_WIT = [[], [1], [0, 0, 0], [0, 0], [0], [0, 1, 0], [0, 1, 1, 0], [1, 1, 0], [0, 0, 1], [0, 1],
+                 [1, 1, 0, 1], [0, 1, 1], [1, 1], [1, 1, 1]]          # `S14_B_wit`
+LEAN_RBL3_TERMS = [((0, 'S', 1), 0), ((0, 'S', 0), 1)]               # `run3_extIn_terminal_B`（A 的 (0,S,0,1)、(0,S,1,0)）
+LEAN_RBL3_BND = ((2, 'K', 0), 0)                                      # `bndK3`（門 33）
+LEAN_RBL3_GATES = (16, 33)                                            # `boundary_sum3_B`
+LEAN_RBL3_FLAG = {25: 0, 2681: 0, 3: 1, 1787: 1}                      # §L.V2 電池 1
+LEAN_RBL3_MT = {1787: (1, 0), 2681: (0, 1), 961: (0, 0), 599: (1, 1)}  # §L.V2 電池 4（t = 較舊歷史位）
+LEAN_RBL3_FEATLIST = {                                                # §L.V1 電池 6
+    1787: [17, 33, 44, 27, 41, 45, 47, 47, 46, 27, 41, 44, 26],
+    2011: [17, 33, 44, 27, 41, 44, 27, 41, 45, 47, 47, 46, 26],
+}
+INIT3 = ((1, 'K', 0), 0)                                              # `init3_B`
+
+
+def step3(s, b: int):
+    """Lean `step3_B`：核心走 Core `step2`、歷史暫存器接收舊 p。"""
+    return (step2(s[0], b), s[0][2])
+
+
+def run3(s, w: list[int]):
+    """Lean `run3_B`（foldl）。"""
+    for b in w:
+        s = step3(s, b)
+    return s
+
+
+def feat_idx3(s, b: int) -> int:
+    """Lean `featIdx3_B`：((c,P,p),h), b ↦ 16c + 8·[P=S] + 4p + 2h + b（% 48）。"""
+    (c, P, p), h = s
+    return (16 * c + (8 if P == 'S' else 0) + 4 * p + 2 * h + b) % 48
+
+
+def trace3(x: int):
+    """`microTrace3_B init3_B (extIn x)` 與終態。"""
+    s, tr = INIT3, []
+    for b in ext_in(x):
+        tr.append((s, b))
+        s = step3(s, b)
+    return tr, s
+
+
+def feat_list3(x: int) -> list[int]:
+    return [feat_idx3(s, b) for s, b in trace3(x)[0]]
+
+
+def F3_B(x: int) -> list[int]:
+    """Lean `F3_B x`：48 維計數。"""
+    v = [0] * 48
+    for i in feat_list3(x):
+        v[i] += 1
+    return v
+
+
+def term_bit3(s) -> int:
+    """Lean `termB3`：終末位 = 較舊歷史位（#39 L3 的編碼 `(run3 …).2.2.1`）。"""
+    return 1 if s[1] == 1 else 0
+
+
+def sel3_run(x: int):
+    """`extInM x` 的 L3 旗標乘積走行（`flagStep3`）：回傳（逐步 (態, 字母) 列, 終態 ((機器, DFA), 旗標)）。"""
+    p, tr = ((INIT3, 'start'), False), []
+    for a in ext_in_m(x):
+        tr.append((p, a))
+        (s, l), f = p
+        b = unmark(a)
+        p = ((step3(s, b), lstep(l, a)), f or (s, b) == (LEAN_RBL3_BND, 1))
+    return tr, p
+
+
+def sel3_cost(theta, beta, x: int, tbit=term_bit3):
+    """Lean `SelInst3 θ β` 的 `cost (extInM x)` 逐字：α = 0 ＋ 沿 sel(終態) 暫存器的 wpath ＋ `βsel3`
+    （兩終態取 β[m][t]、餘 0）。回傳 (cost, m, 機器終態, DFA 終態)。"""
+    tr, ((s, l), f) = sel3_run(x)
+    m = 1 if f else 0
+    w = sum((theta[m][feat_idx3(q[0][0], unmark(a))] for q, a in tr), Fraction(0))
+    bt = beta[m][tbit(s)] if s in LEAN_RBL3_TERMS else Fraction(0)
+    return w + bt, m, s, l
+
+
+def run_l3sel() -> None:
+    print("\n=== §J R-B-L3 跨側對帳（L3 語義層 ≡ A 側 run3／F3∘σ₃；SelInst3 成本 B 通道 ≡ A 通道 `V3`）===")
+    import random
+    import certificates as A
+    from b15_terminal_balance import run3 as run3A
+    N = 4096
+    # ── (1) 語義層：閉包＋見證合證「可達恰 14」、終態 ≡ A 側 run3 ──
+    seen, frontier = {INIT3}, [INIT3]
+    while frontier:
+        frontier = [t for t in {step3(s, b) for s in frontier for b in (0, 1)} if t not in seen]
+        seen.update(frontier)
+    check(seen == set(LEAN_RBL3_S14) and len(LEAN_RBL3_S14) == 14
+          and all(step3(s, b) in LEAN_RBL3_S14 for s in LEAN_RBL3_S14 for b in (0, 1))
+          and [run3(INIT3, w) for w in LEAN_RBL3_WIT] == LEAN_RBL3_S14
+          and [s for s in LEAN_RBL3_S14 if s[0][1] == 'K'] == [((1, 'K', 0), 0), ((2, 'K', 0), 0)],
+          "S14_B：BFS 恰 14 態 ≡ Lean 字面；閉包（`S14_B_closed`）＋見證之像（`S14_B_wit_run`）；"
+          "K 區恰 {((1,K,0),0), ((2,K,0),0)}，歷史 (0,0)（`S14_B_K`）")
+    fin3 = {x: trace3(x)[1] for x in range(N)}
+    T3A = {x: run3A(x) for x in range(N)}
+    check(all(fin3[x] == ((T3A[x][0], T3A[x][1], T3A[x][3]), T3A[x][2]) and fin3[x] in LEAN_RBL3_TERMS
+              for x in range(N))
+          and {fin3[x] for x in range(1, N, 2)} == set(LEAN_RBL3_TERMS),
+          f"終態：B 走行 ≡ A 側 run3 經 (c,P,h₂,h₁) ↦ ((c,P,h₁),h₂)、∈ 兩終態（`run3_extIn_terminal_B`），"
+          f"x < {N} 全體；奇 x 兩終態皆出現")
+    # ── (2) σ₃：key 語義比對建立 → 雙射／對合；F3_B ≡ F3∘σ₃；資料剖面認證 ──
+    keysB = {feat_idx3(((c, P, p), h), b): (c, P, p, h, b)
+             for c in (0, 1, 2) for P in ('K', 'S') for p in (0, 1) for h in (0, 1) for b in (0, 1)}
+    check(sorted(keysB) == list(range(48)), "`featIdx3_B` 於有效域 c < 3、p, h, b < 2 為 Fin 48 的雙射")
+    sigma3 = [A.KEYS_L3.index((c, P, h, p, b)) for (c, P, p, h, b) in (keysB[i] for i in range(48))]
+    moved = sum(1 for i in range(48) if sigma3[i] != i)
+    check(sorted(sigma3) == list(range(48)) and all(sigma3[sigma3[i]] == i for i in range(48)) and moved == 24,
+          f"σ₃（B → A，key 比對：B 的 (p, h) = A 的 (較新, 較舊)）雙射且對合，移動 {moved} 點（h ≠ p 的座標）")
+    F3A = {x: [int(v) for v in A.F3(x)] for x in range(N)}
+    F3Bc = {x: F3_B(x) for x in range(N)}
+    check(all(F3Bc[x][i] == F3A[x][sigma3[i]] for x in range(N) for i in range(48)),
+          f"F3_B x ≡ F3 x ∘ σ₃，x < {N} 全體（含 x = 0、1）")
+    colsB = {i: tuple(F3Bc[x][i] for x in range(N)) for i in range(48)}
+    colsA = {j: tuple(F3A[x][j] for x in range(N)) for j in range(48)}
+    live = [i for i in range(48) if any(colsB[i])]
+    match = {i: [j for j in range(48) if colsA[j] == colsB[i]] for i in live}
+    uniq = [i for i in live if match[i] == [sigma3[i]]]
+    tied = {tuple(match[i]) for i in live if len(match[i]) > 1}
+    check(len(live) == 28 and len(uniq) == 24 and tied == {(9, 12), (43, 46)}
+          and all(sigma3[i] in match[i] for i in live)
+          and {sigma3[i] for i in range(48) if i not in live} == {j for j in range(48) if not any(colsA[j])},
+          f"資料認證：活座標 {len(live)} 個中 {len(uniq)} 個由欄剖面唯一決定 σ₃；其餘 4 個落在 A 的兩組恆等欄 "
+          f"{sorted(tied)}（F3[9] ≡ F3[12]、F3[43] ≡ F3[46]；觀察，不入定理），由 key 比對裁定；"
+          f"死座標 20 個 σ₃ 映到 A 的死座標")
+    # ── (3) 字面錨、旗標、雙門、跨層 ──
+    check(all(feat_list3(x) == v for x, v in LEAN_RBL3_FEATLIST.items())
+          and F3_B(2011) == F3_B(1787) and F3_B(2681) != F3_B(1787)
+          and len(LEAN_RBL3_FEATLIST[1787]) == len(LEAN_RBL3_FEATLIST[2011]) == 13,
+          "featList3_B 1787／2011 錨 ≡ B 側重算；F3_B 2011 = F3_B 1787（`F3_B_2011_eq`）、走行長 13、單步不回歸")
+    fin = {x: sel3_run(x)[1] for x in range(N)}
+    fin2 = {x: sel_run(x)[1] for x in range(N)}
+    check(all(fin[x][1] == (F3Bc[x][33] == 1) == (F3A[x][A.MODE_IDX_L3] == 1) == fin2[x][1] for x in range(N)),
+          f"旗標 ≡ [F3_B 33 = 1] ≡ [F3 [{A.MODE_IDX_L3}] = 1] ≡ R-B 的 L2 旗標"
+          f"（`flag_iff3`、`flagB3_eq_flagB`／`modeB3_eq_modeB`），x < {N} 全體")
+    g16, g33 = LEAN_RBL3_GATES
+    check(all(F3Bc[x][g16] + F3Bc[x][g33] == 1 for x in range(N))
+          and (sigma3[g16], sigma3[g33]) == (16, A.MODE_IDX_L3)
+          and all(F3A[x][16] + F3A[x][33] == 1 for x in range(N)),
+          f"雙門 F3_B[16] + F3_B[33] = 1（`boundary_sum3_B`）≡ A 側 F3[16] + F3[33] = 1（`mode_bit_endpoints3` 的"
+          f"全稱形；σ₃ 在可達 K 列為恆等），x < {N} 全體")
+    check(all(fin[x][1] == bool(v) for x, v in LEAN_RBL3_FLAG.items())
+          and {x: (int(fin[x][1]), term_bit3(fin[x][0][0])) for x in LEAN_RBL3_MT} == LEAN_RBL3_MT,
+          f"旗標錨 {LEAN_RBL3_FLAG}、四類 (m, t) 錨 {LEAN_RBL3_MT} ≡ B 走行（§L.V2 電池 1、4）")
+    check(all(term_bit3(fin3[x]) == T3A[x][2] == 1 - fin2[x][0][0][2] for x in range(N)),
+          f"終末位 = A 側 run3 第三分量（`V3` 編碼）= 1 − R-B 的 L2 終末位（`termB3_eq`），x < {N} 全體")
+    # ── (4) 成本橋兩通道（固定種子有理 θ、β；A 通道 = V3 模板，θ_A = θ_B ∘ σ₃⁻¹）──
+    rng = random.Random(20261003)
+
+    def rq() -> Fraction:
+        return Fraction(rng.randint(-9, 9), rng.randint(1, 4))
+    samples = [([[rq() for _ in range(48)] for _ in range(2)], [[rq() for _ in range(2)] for _ in range(2)])
+               for _ in range(4)]
+    inv3 = [sigma3.index(j) for j in range(48)]
+    n_eq, n_all = 0, 0
+    for theta, beta in samples:
+        thetaA = [[theta[m][inv3[j]] for j in range(48)] for m in range(2)]
+        for x in range(1, 2048, 2):
+            cB, m, _, _ = sel3_cost(theta, beta, x)
+            mA, t = (1 if F3A[x][A.MODE_IDX_L3] == 1 else 0), T3A[x][2]
+            cA = beta[mA][t] + sum(thetaA[mA][j] * F3A[x][j] for j in range(48))
+            n_all += 1
+            n_eq += (m == mA and cB == cA)
+    check(n_eq == n_all == 4 * 1024,
+          f"成本橋：SelInst3 cost（B 通道）≡ β_{{m,t}} + θ_m·F3∘σ₃（A 通道 `V3`），{n_eq}/{n_all} 組 (θ, β, x) 精確相等")
+    # ── (5) 軌道 ──
+    check(all(sel3_cost(th, be, 2011)[0] == sel3_cost(th, be, 1787)[0]
+              and (sel3_cost(th, be, 2681)[0] - sel3_cost(th, be, 1787)[0])
+              + (sel3_cost(th, be, 2011)[0] - sel3_cost(th, be, 2681)[0]) == 0
+              for th, be in samples)
+          and [todd_via_U(x) for x in LEAN_RB_W] == [2681, 2011],
+          "軌道：cost3(2011) = cost3(1787)（`orbit_cost_eq3`）且兩步差分和零（`no_go_sel3_signed` 可見形），4 組 (θ, β)")
+    # ── (6) 負向 ──
+    bad = {k: list(v) for k, v in LEAN_RBL3_FEATLIST.items()}
+    bad[2011][5] = 45
+    check(not all(feat_list3(x) == v for x, v in bad.items()), "負向：竄改 featList3 2011 一位（44→45）⟹ 紅")
+    theta, beta = samples[-1]
+    mism = 0
+    for x in range(3, 200, 2):
+        cB, m, _, _ = sel3_cost(theta, beta, x)
+        mism += cB != beta[m][T3A[x][2]] + sum(theta[m][j] * F3A[x][j] for j in range(48))
+    check(mism > 0, f"負向：去掉 σ₃（B 的 θ 直接索引 A 的 F3）⟹ {mism}/99 個 x 不等，紅")
+    mism_t = 0
+    for x in range(3, 200, 2):
+        cB, m, _, _ = sel3_cost(theta, beta, x, tbit=lambda s: s[0][2])
+        mism_t += cB != beta[m][T3A[x][2]] + sum(theta[m][inv3[j]] * F3A[x][j] for j in range(48))
+    check(mism_t > 0, f"負向：終末位改取較新歷史位（非 `V3` 編碼）⟹ {mism_t}/99 個 x 不等，紅")
+
+
 def main() -> int:
     t0 = time.time()
     D = run_anchors()
@@ -738,6 +946,7 @@ def main() -> int:
     run_diff()
     run_b3c()
     run_selinst(sigma)
+    run_l3sel()
     print(f"\n耗時 {time.time() - t0:.2f} 秒。")
     if _failures:
         print(f"失敗 {len(_failures)} 項：")
@@ -745,7 +954,7 @@ def main() -> int:
             print("   -", f)
         return 1
     print("全部通過。B 側重推、Lean 錨、λ_B 獨立重解、與 A 的三段式認證、B2 harness、"
-          "B3b 差分自動機（成本橋、θ-LP 圖憑證、全語言 harness）、B3c Lean 字面同步、R-B Sel 實例跨側對帳一致。")
+          "B3b 差分自動機（成本橋、θ-LP 圖憑證、全語言 harness）、B3c Lean 字面同步、R-B Sel 實例與 R-B-L3 L3 Sel 實例跨側對帳一致。")
     return 0
 
 
