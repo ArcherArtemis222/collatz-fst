@@ -1,6 +1,6 @@
 # 定理狀態索引（唯一真相來源）
 
-最後更新：2026-09-12 ／ 對應 PR：`b/rb-dualmode-sel`（R-B——B 側雙模式 Sel 實例化：模式追蹤乘積 × 旗標、旗標接地、成本橋、三層定理）
+最後更新：2026-10-03 ／ 對應 PR：`b/rb-l3-dualmode`（R-B-L3——B 側 L3 語義層＋L3 雙模式 Sel 實例化：L2 核心 × 歷史暫存器、雙門、成本橋、三層定理、模式跨層恆等；B3 三條重推收口）
 
 > 本檔由 repo 現況生成：定理名逐條 grep 核實、一句話摘要取自各定理 docstring。
 > 歷史敘述見 [HANDOVER.md](HANDOVER.md)（快照，不再更新）；待辦見
@@ -140,7 +140,7 @@ Kirchhoff 鏈：trace 層流守恆 → 特徵層泛函 → 差分層 9 條（秩
 出處：`tools/l3_recon.py` ⑥（精確有理對帳，含推導打印）＋
 `ProjectA/Collatz_FST_L3_Delta.lean` 檔頭「65 條的帳」＋ ROADMAP-A A-3。
 
-## Project B — B0 語義層＋B1 reweighting＋B1.5 structured gauge＋B3a 實例化橋＋B3b 差分自動機＋B3c Lean 鏡射＋R-B Sel 實例化（皆已完成）
+## Project B — B0 語義層＋B1 reweighting＋B1.5 structured gauge＋B3a 實例化橋＋B3b 差分自動機＋B3c Lean 鏡射＋R-B Sel 實例化＋R-B-L3 L3 Sel 實例化（皆已完成）
 
 ProjectB 分區首批實體（B0，2026-08-28）。全部非 paper-facing，不入 registry、
 不入 Audit 信任基底。B0-3 的標記字母表修正（原 ROADMAP 註記在未標記字母表上
@@ -192,7 +192,16 @@ R-B（2026-09-12，B 側雙模式 Sel 實例化；B3 殘項收口、Level 2）�
 （`F_B x 6 + F_B x 13 = 1` 對全體 x：模式 = 走的是哪道 K 出口門）；成本橋 `cost_eq_sel`（對全體 x）；三層定理
 `orbit_cost_eq`／`no_go_sel_signed`／`no_go_sel_bounded_below`（`BoundedBelow` 逐字為假設、a fortiori 棄置——
 證明路線是軌道 1787 → 2681 → 2011，gauge 未被使用）；全檔恰兩條記帳歸納。attest §I 跨側對帳。L3 = 續 PR
-（Core 零暴露、素材全在 ProjectA）。設計定案（Q1–Q6、D1–D11）與完成紀錄見 ROADMAP-B.md 的 B3 節。
+（Core 零暴露、素材全在 ProjectA；已完成，下段）。設計定案（Q1–Q6、D1–D11）與完成紀錄見 ROADMAP-B.md 的 B3 節。
+
+R-B-L3（2026-10-03，B3 最後一條重推——L3 雙模式；**B3 三條重推全數收口**）：兩檔。語義層
+`ProjectB/Collatz_FST_B3_L3Machine.lean`（誠實重定義；L3 態 = L2 核心 (c,P,p) × 較舊歷史位 h，一步 = Core `step2` ＋
+歷史暫存器）——可達恰 14（閉包＋見證合證）、`Inv3`、B 自產終態定理 `run3_extIn_terminal_B`、48 維座標 `featIdx3_B`／`F3_B`、
+雙門 `boundary_sum3_B`（`F3_B x 16 + F3_B x 33 = 1` 對全體 x，A 之 `mode_bit_endpoints3` 的 B 側重生）；Sel 實例
+`ProjectB/Collatz_FST_B3_L3SelInstance.lean`——R-B 逐項鏡射（`SelInst3`、`flag_iff3`、成本橋 `cost_eq_sel3`、三層定理、
+全稱兩式、任意函數版），另立**模式跨層恆等** `modeB3_eq_modeB`（L3 模式 = L2 模式，全體 x；A 只以 `#eval` 驗 x < 250——
+B 抽象首次反哺 A 沒有的全稱定理）。兩檔合計恰 5 條記帳歸納。attest §J 跨側對帳（σ₃ 對合移動 24 點；活座標 24/28 由資料
+唯一決定）。設計定案（Q1–Q7、E1–E11）與完成紀錄見 ROADMAP-B.md 的 B3 節。
 
 | 定理 | 檔案 | 一句話 |
 |---|---|---|
@@ -240,6 +249,20 @@ R-B（2026-09-12，B 側雙模式 Sel 實例化；B3 殘項收口、Level 2）�
 | `ProjectB.orbit_cost_eq`（＋`F_B_2011_eq`／`Todd_1787`／`Todd_2681`） | `ProjectB/Collatz_FST_B3_SelInstance.lean` | 軌道成本恆等：∀ θ βv，`cost (extInM 2011) = cost (extInM 1787)`（`F_B 2011 = F_B 1787` 由 B 座標 kernel `decide`；Todd 值經 B0 `U`）。 |
 | `ProjectB.no_go_sel_signed`、`no_go_sel_bounded_below` | `ProjectB/Collatz_FST_B3_SelInstance.lean` | 無符號 2 見證 no-go（`WB1787 = [1787, 2681]`、任意符號 θ／βv）；`BoundedBelow` 形——假設逐字取 B1.5、證明中棄置（a fortiori）：gauge 目標類在此模板為空的 kernel 可見紀錄，證明路線是軌道。 |
 | `ProjectB.no_go_sel_signed_odd`、`no_go_sel_signed_lang`、`no_feature_ranking_orbit_B` | `ProjectB/Collatz_FST_B3_SelInstance.lean` | 全稱形（∀ 奇 x > 1；語言層 `RankingDomain`＋`Uacc`）與任意函數版（B 詞彙；A-5 頭條的鏡射）。 |
+| `ProjectB.step3_B`、`run3_B`、`microTrace3_B`（＋`L3State_B`／`init3_B`／`run3_B_append`） | `ProjectB/Collatz_FST_B3_L3Machine.lean` | B 側 L3 機器（誠實重定義；Core 對 L3 零暴露）：L3 態 = L2 核心 (c,P,p) × 較舊歷史位 h（A 的 (c,P,h₂,h₁) ↔ ((c,P,h₁),h₂)），一步 = Core `step2` ＋ 歷史暫存器接收舊 p；`run3_B` = `List.foldl`。 |
+| `ProjectB.microTrace3_B_proj`、`run3_B_proj` | `ProjectB/Collatz_FST_B3_L3Machine.lean` | 兩條投影（歸納 ②③，每步 `rfl`）：L3 trace／run 忘掉歷史位 = Core `microTrace2`／`run2`。 |
+| `ProjectB.S14_B`（＋`S14_B_closed`／`S14_B_wit_run`／`S14_B_reachable`／`S14_B_K`） | `ProjectB/Collatz_FST_B3_L3Machine.lean` | 可達恰 14：閉包（含初態、對兩位元封閉）＋見證（14 字之像）合證，不另立 run 閉包定理；K 區恰 ((1,K,0),0)、((2,K,0),0)，歷史 (0,0)。 |
+| `ProjectB.microTrace3_B_mem`（＋`Inv3`／`inv3_of_mem`／`trace3_inv`） | `ProjectB/Collatz_FST_B3_L3Machine.lean` | trace 閉包（歸納 ①）；`Inv3`（進位 < 3、歷史位 < 2、K ⇒ 歷史 (0,0)）為其 `decide` 系理。 |
+| `ProjectB.run3_extIn_terminal_B`（＋`carry_digits_mem`／`sentinel3`） | `ProjectB/Collatz_FST_B3_L3Machine.lean` | B 自產 L3 終態定理：讀完 `extIn x` 恆為 ((0,S,1),0)／((0,S,0),1)（A 的 (0,S,0,1)／(0,S,1,0)），對全體 x、零新歸納（Core `terminal_carry_ne_zero`＋`run_carry_lt_three`；重推 A 的 `L3.run3_extIn_terminal`）。 |
+| `ProjectB.featIdx3_B`、`featList3_B`、`F3_B` | `ProjectB/Collatz_FST_B3_L3Machine.lean` | B 的 L3 座標（B 型字典序 16c + 8·[S] + 4p + 2h + b，48 維）與佔用向量；σ₃(B→A) 由 attest §J 認證（對合、移動 24 點）。 |
+| `ProjectB.boundary_sum3_B`（＋`gate_pointwise3`／`featIdx3_eq_33`／`mem_iff_33`／`count33_le_one`） | `ProjectB/Collatz_FST_B3_L3Machine.lean` | L3 邊界和雙門：`F3_B x 16 + F3_B x 33 = 1` 對全體 x——A 之 `mode_bit_endpoints3`（40 端點 `decide`）的 B 側重生、全稱形；L3 模式 = 走哪道 K 出口門。 |
+| `ProjectB.SelInst3`（＋`QF3`／`flagStep3`／`βsel3`／`termStates3`） | `ProjectB/Collatz_FST_B3_L3SelInstance.lean` | R-B-L3 載體：B1.5 `SelCostAutomaton` 於 `(L3State_B × LSt) × Bool`——旗標於 ((2,K,0),0) 讀 1 置真、`sel = 旗標`、`w m = θ m ∘ featIdx3_B ∘ unmark`、β 於兩終態取 `βv (sel) t`（t = 較舊歷史位，`V3` 編碼）。 |
+| `ProjectB.evalFrom_flag3`、`wpath_flag3` | `ProjectB/Collatz_FST_B3_L3SelInstance.lean` | 歸納 ④⑤（兩檔合計 5 條記帳歸納）：走行三分量顯式（機器 = `run3_B`、DFA = `extDFA`、旗標 = `flagVal3`）；路徑權重 = L3 trace 上 `θ m ∘ featIdx3_B` 之和。 |
+| `ProjectB.flag_iff3`（＋`selF_flagB3`） | `ProjectB/Collatz_FST_B3_L3SelInstance.lean` | 旗標接地：`flagB3 x = true ↔ F3_B x 33 = 1`（零歸納）；`sel` 於走行終態 = 特徵層模式 `modeB3`。 |
+| `ProjectB.cost_eq_sel3`（＋`wpath_sum3`／`βsel3_final`／`accepts_extInM_sel3`） | `ProjectB/Collatz_FST_B3_L3SelInstance.lean` | 成本橋：`cost (SelInst3 θ βv) (extInM x) = βv (modeB3 x) (termB3 x) + ∑ i, θ (modeB3 x) i * F3_B x i`，對全體 x；奇數 x 接受。 |
+| `ProjectB.orbit_cost_eq3`、`no_go_sel3_signed`、`no_go_sel3_bounded_below`（＋`F3_B_2011_eq`） | `ProjectB/Collatz_FST_B3_L3SelInstance.lean` | 三層定理（L3）：軌道成本恆等（`F3_B 2011 = F3_B 1787` 由 B 座標 kernel `decide`）、無符號 2 見證、`BoundedBelow` 形（假設逐字、a fortiori 棄置；證明路線是軌道）。 |
+| `ProjectB.no_go_sel3_signed_odd`、`no_go_sel3_signed_lang`、`no_feature_ranking_orbit3_B` | `ProjectB/Collatz_FST_B3_L3SelInstance.lean` | 全稱形兩式與任意函數版（L3）。 |
+| `ProjectB.modeB3_eq_modeB`（＋`flagB3_eq_flagB`／`termB3_eq`） | `ProjectB/Collatz_FST_B3_L3SelInstance.lean` | **模式跨層恆等（全稱定理）**：L3 模式位 = L2 模式位，對全體 x——A 只在 `L3_2Mode_Recon` §43 以 `#eval` 驗 x < 250，B 抽象首次反哺 A 沒有的定理；L3 旗標 = L2 旗標、終末位互補。 |
 
 ## Tools 錨（CI 強制）
 
@@ -253,7 +276,7 @@ R-B（2026-09-12，B 側雙模式 Sel 實例化；B3 殘項收口、Level 2）�
 | `tools/l3_recon.py` | Level 3 全套偵察對帳：14 狀態／28 邊、終末 2 態、單模式 dim 16（完備）、雙模式 dim 31（缺口 = `θ₀[16]+θ₁[33]`）、65 條上界資料。 | ~15 s（沙盒可達 ~51 s） |
 | `tools/gen_l3dim.py` | 重新生成兩個 L3 Dim 檔後 `git diff --exit-code`——「逐位可重現」是 CI 強制，不是宣稱。 | — |
 | `tools/b2_engine.py` | B2 全語言判定引擎自測（`--selftest`）：B1 玩具機已知答案 T1–T5（含 Karp 角與真 pump）、負向測試四則（竄改憑證/見證必紅）、固定種子 300 台 oracle 判準矩陣。pass 憑證 (R, C, d) 過 P1–P5 局部檢查（B3 Lean 驗證書前身）、fail 見證字直接求值。CI 步驟經專案主人具名授權（B2 PR）。 | ~0.01 s |
-| `tools/b3_attest.py` | B3a 交叉認證：B 側自含實作＋Lean 錨（見證／Todd 值／λ_B／聚合／20 條 `featList`）；λ_B 單座標掃描獨立重解（W₁₀ 上恰三個：Σλ 1024／312／34）＋精確單純形第四頂點；三段式認證（σ 雙射、`F_B ≡ F2∘σ` x < 4096、A 的 λ = 掃描 k = 2 成員、Lean 用最輕 k = 17）；B2 harness（22 態截斷、四組 θ 覆蓋 pass／循環／邊界）；負向測試四則。**§G（B3b）**：呼叫 `tools/b3b_diff.py` 的 CI 段——差分自動機構造與手算錨、成本橋兩通道、枚舉規模（65／39／75／4；328／175；8269／5140）、θ-LP 不可行的整數圖憑證三種（含對立對 (25, 315) 三件套、B3a 提升）、負向測試五則、引擎 harness 25 組 θ 全 fail 最小見證 3。**§H（B3c）**：Lean 字面同步——驗證書 T3（`MposNeg` 四欄＋憑證 (R, C, d)）／T1 見證 vs `b2_engine` 實跑與 `verify_pass_cert`；對立對 (25, 315) 的 Todd 值／四條 featList／ΔF_B(25) 向量 vs B 側重算、`b3b_diff.EXPECT_PAIR`、A 側 F2 通道；負向三則。**§I（R-B）**：跨側對帳——SelInst 成本 B 通道 ≡ A 通道 β_{m,t} + θ_m·F2∘σ（4096 組精確相等）、旗標／雙門／終態對帳 x < 4096、Lean 字面錨、負向三則。CI 步驟經專案主人具名授權（B3a PR）；B3b／B3c／R-B 不加步。 | ~2.3 s |
+| `tools/b3_attest.py` | B3a 交叉認證：B 側自含實作＋Lean 錨（見證／Todd 值／λ_B／聚合／20 條 `featList`）；λ_B 單座標掃描獨立重解（W₁₀ 上恰三個：Σλ 1024／312／34）＋精確單純形第四頂點；三段式認證（σ 雙射、`F_B ≡ F2∘σ` x < 4096、A 的 λ = 掃描 k = 2 成員、Lean 用最輕 k = 17）；B2 harness（22 態截斷、四組 θ 覆蓋 pass／循環／邊界）；負向測試四則。**§G（B3b）**：呼叫 `tools/b3b_diff.py` 的 CI 段——差分自動機構造與手算錨、成本橋兩通道、枚舉規模（65／39／75／4；328／175；8269／5140）、θ-LP 不可行的整數圖憑證三種（含對立對 (25, 315) 三件套、B3a 提升）、負向測試五則、引擎 harness 25 組 θ 全 fail 最小見證 3。**§H（B3c）**：Lean 字面同步——驗證書 T3（`MposNeg` 四欄＋憑證 (R, C, d)）／T1 見證 vs `b2_engine` 實跑與 `verify_pass_cert`；對立對 (25, 315) 的 Todd 值／四條 featList／ΔF_B(25) 向量 vs B 側重算、`b3b_diff.EXPECT_PAIR`、A 側 F2 通道；負向三則。**§I（R-B）**：跨側對帳——SelInst 成本 B 通道 ≡ A 通道 β_{m,t} + θ_m·F2∘σ（4096 組精確相等）、旗標／雙門／終態對帳 x < 4096、Lean 字面錨、負向三則。**§J（R-B-L3）**：L3 跨側對帳——閉包＋見證、終態 ≡ A 側 `run3`、σ₃（key 比對、對合移動 24 點）與 `F3_B ≡ F3∘σ₃`（x < 4096）、欄剖面認證（活座標 24/28 由資料唯一決定；A 恆等欄 F3[9] ≡ F3[12]、F3[43] ≡ F3[46]）、SelInst3 成本 ≡ A 通道 `V3`（4096 組精確相等）、旗標／雙門／跨層對帳、負向三則。CI 步驟經專案主人具名授權（B3a PR）；B3b／B3c／R-B／R-B-L3 不加步。 | ~2.5 s |
 | `tools/b3b_diff.py` | B3b 函式庫（純標準庫）：`build_diff_automaton`／`instantiate(θ)`／`decode_witness`／枚舉／自建精確單純形（輸出全數自驗）／`theta_lp`／`verify_graph_certificate`／`opposite_pairs`／`lift_b3a`；CI 段 `run_checks` 由 attest §G 呼叫；`--deep` 本機重掃（向量橋 x < 2¹⁶、對立對普查含雙模式觀察、θ sweep ×200、只留路徑列 LP）。 | 經 attest 進 CI ~1.4 s；`--deep` ~15 s（本機） |
 
 另：**Cramer 定律**（λ = 被湮滅列的 adjugate／極大子式向量、憑證整數值 = 子式、
@@ -289,5 +312,6 @@ R-B（2026-09-12，B 側雙模式 Sel 實例化；B3 殘項收口、Level 2）�
   **A-5 已完成（2026-09-12）**：雙模式／仿射無符號定理由軌道回歸落地 A 側、A 定理 bounded-below
   升級以 a fortiori 收口（上表 A-5 小段；ROADMAP-B B1.5 收口句與覆活判準）。
   **R-B 已完成（2026-09-12）**：B 側雙模式 Sel 實例化（`SelInst`、旗標接地、邊界和雙門、成本橋、三層定理；
-  attest §I 跨側對帳）落 ProjectB（上表）；L3 = 續 PR R-B-L3（Core 零暴露、素材全在 ProjectA）。下一步：D(θ) 鏡射
-  （含 `rdDFA`）、R-B-L3——皆待排程。
+  attest §I 跨側對帳）落 ProjectB（上表）；L3 = 續 PR R-B-L3（Core 零暴露、素材全在 ProjectA）。
+  **R-B-L3 已完成（2026-10-03）**：B 側 L3 語義層＋L3 雙模式 Sel 實例（兩檔；成本橋、三層定理、模式跨層恆等全稱定理；
+  attest §J）落 ProjectB（上表）——**B3 三條重推全數收口**。下一步：D(θ) 鏡射（含 `rdDFA`）——待排程。
